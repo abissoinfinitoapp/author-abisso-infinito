@@ -2,8 +2,8 @@
 // Chiave pubblica Supabase. Non inserire mai la service_role key.
 
 window.AUTHOR_CONFIG = {
-  SUPABASE_URL: "https://cbhxijmfmigfsnqtisyw.supabase.co",
-  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_hiiyDCLzvZ6gseIdx195VA_VVhyFFJ-",
+  SUPABASE_URL: "https://dcvxdfuvmrmvugedrokc.supabase.co",
+  SUPABASE_PUBLISHABLE_KEY: "sb_publishable_bkfgi6tmYnpHgFOI8RnX-A_UtFAZVQ-",
 
   TABLES: {
     allowedUsers: "author_allowed_users",
