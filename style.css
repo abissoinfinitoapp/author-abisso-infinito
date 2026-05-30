@@ -1,0 +1,431 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d0b0a;
+  --panel: rgba(24, 21, 19, 0.96);
+  --panel-soft: rgba(32, 28, 25, 0.92);
+  --card: rgba(22, 22, 22, 0.94);
+  --border: rgba(214, 168, 79, 0.22);
+  --border-soft: #333;
+  --text: #f6efe5;
+  --muted: #b9aa98;
+  --gold: #d6a84f;
+  --gold-hover: #f0c46b;
+  --danger: #cf4b4b;
+  --ok: #8de0a6;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(161, 90, 3, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(7,7,7,0.94), rgba(12,10,9,0.98));
+  color: var(--text);
+}
+
+.hidden {
+  display: none !important;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  background: #121212;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 11px;
+}
+
+button {
+  background: var(--gold);
+  color: #111;
+  border: 0;
+  padding: 11px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.18s ease, transform 0.14s ease;
+}
+
+button:hover {
+  background: var(--gold-hover);
+  transform: translateY(-1px);
+}
+
+button.danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.login-view {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px;
+  display: grid;
+  gap: 12px;
+  box-shadow: 0 22px 55px rgba(0,0,0,0.44);
+}
+
+.login-card h1,
+.login-card p {
+  text-align: center;
+  margin: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 30px;
+  color: var(--gold);
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.user-box {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  min-height: calc(100vh - 88px);
+}
+
+.sidebar {
+  background: rgba(18, 18, 18, 0.96);
+  border-right: 1px solid var(--border-soft);
+  padding: 18px;
+  overflow-y: auto;
+  max-height: calc(100vh - 88px);
+  position: sticky;
+  top: 0;
+}
+
+.sidebar h2 {
+  margin: 0 0 12px;
+  color: var(--gold);
+}
+
+.chapter-search {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.chapter-btn {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 8px;
+  background: #252525;
+  color: #fff;
+  display: grid;
+  gap: 4px;
+}
+
+.chapter-btn small {
+  color: #aaa;
+  font-weight: normal;
+  line-height: 1.35;
+}
+
+.chapter-btn.active {
+  background: var(--gold);
+  color: #111;
+}
+
+.chapter-btn.active small {
+  color: #333;
+}
+
+.content {
+  padding: 22px;
+  min-width: 0;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+}
+
+.chapter-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-header h3,
+.card h3 {
+  margin: 0;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--gold);
+  font-size: 0.83rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.95fr) minmax(420px, 1.05fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.official-panel {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100vh - 130px);
+  overflow: auto;
+}
+
+.official-text {
+  display: grid;
+  gap: 14px;
+}
+
+.official-intro {
+  color: #f2dfc2;
+  line-height: 1.7;
+  background: #101010;
+  border: 1px solid rgba(214,168,79,0.22);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.official-block {
+  background: #111;
+  border: 1px solid #2d2d2d;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.official-block h4 {
+  margin: 0 0 8px;
+  color: var(--gold);
+}
+
+.official-block p,
+.official-block li {
+  color: #e7e0d8;
+  line-height: 1.6;
+}
+
+.official-block ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.official-block.warning {
+  border-color: rgba(207,75,75,0.42);
+}
+
+.official-block.reward {
+  border-color: rgba(141,224,166,0.34);
+}
+
+.check-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #2b2b2b;
+}
+
+.check-row:last-child {
+  border-bottom: 0;
+}
+
+.check-row strong {
+  color: #fff;
+}
+
+.check-row span {
+  color: #d6c0a2;
+  text-align: right;
+}
+
+.workspace {
+  min-width: 0;
+}
+
+#authorEditor {
+  width: 100%;
+  min-height: 460px;
+  resize: vertical;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+
+#editNote,
+#newComment {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#newComment {
+  height: 108px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.status {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: #ff7676;
+}
+
+.comments,
+.versions {
+  margin-top: 12px;
+}
+
+.comment,
+.version {
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 13px;
+  margin-top: 12px;
+}
+
+.comment.reply {
+  margin-left: 20px;
+  border-left: 3px solid var(--gold);
+}
+
+.comment-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.comment small,
+.version small {
+  display: block;
+  color: #aaa;
+  margin-top: 3px;
+}
+
+.comment p,
+.version p {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.small-btn {
+  padding: 7px 9px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.reply-box {
+  margin-top: 10px;
+}
+
+.reply-box textarea {
+  width: 100%;
+  height: 70px;
+  margin-bottom: 8px;
+  resize: vertical;
+}
+
+.version pre {
+  white-space: pre-wrap;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 12px;
+  color: #eee;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.empty {
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
+@media (max-width: 1100px) {
+  .topbar,
+  .chapter-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .layout,
+  .editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .official-panel {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+}

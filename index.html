@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Area Autore - Abisso Infinito</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <section id="loginView" class="login-view hidden">
+    <div class="login-card">
+      <h1>Area Autore</h1>
+      <p>Accesso riservato alla revisione testi di Abisso Infinito</p>
+
+      <input id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
+      <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+
+      <button onclick="loginUser()">Entra</button>
+
+      <p id="loginMessage" class="status"></p>
+    </div>
+  </section>
+
+  <div id="appView" class="hidden">
+
+    <header class="topbar">
+      <div>
+        <h1>Area Autore</h1>
+        <p>Capitoli ufficiali, riscrittura autore, commenti e revisioni</p>
+      </div>
+
+      <div class="user-box">
+        <input id="userName" type="text" placeholder="Il tuo nome" />
+        <select id="userRole">
+          <option value="Autore">Autore</option>
+          <option value="Revisore">Revisore</option>
+          <option value="Admin">Admin</option>
+        </select>
+        <button onclick="saveUser()">Salva</button>
+        <button onclick="logoutUser()">Esci</button>
+      </div>
+    </header>
+
+    <main class="layout">
+
+      <aside class="sidebar">
+        <h2>Capitoli</h2>
+        <input id="chapterSearch" class="chapter-search" type="search" placeholder="Cerca capitolo..." />
+        <div id="chaptersList"></div>
+      </aside>
+
+      <section class="content">
+
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Capitolo selezionato</p>
+            <h2 id="chapterTitle">Seleziona un capitolo</h2>
+            <p id="chapterMeta" class="status"></p>
+          </div>
+          <button onclick="reloadCurrentChapter()">Aggiorna</button>
+        </div>
+
+        <div class="editor-grid">
+
+          <section class="card official-panel">
+            <div class="card-header">
+              <div>
+                <p class="eyebrow">Guida ufficiale</p>
+                <h3>Testo da seguire</h3>
+              </div>
+            </div>
+
+            <div id="officialText" class="official-text">
+              Seleziona un capitolo dalla lista.
+            </div>
+          </section>
+
+          <section class="workspace">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <p class="eyebrow">Campo principale</p>
+                  <h3>Testo autore</h3>
+                </div>
+                <button onclick="saveAuthorText()">Salva testo</button>
+              </div>
+
+              <textarea id="authorEditor" placeholder="L'autore scrive qui la versione narrativa del capitolo..."></textarea>
+
+              <input id="editNote" type="text" placeholder="Nota sulla modifica, es: riscritta introduzione del mercato" />
+              <p id="textStatus" class="status"></p>
+            </div>
+
+            <div class="card">
+              <h3>Commenti di revisione</h3>
+              <p id="commentTarget" class="status"></p>
+
+              <textarea id="newComment" placeholder="Scrivi un commento su questo capitolo..."></textarea>
+              <button onclick="addComment()">Salva commento</button>
+
+              <div id="commentsList" class="comments"></div>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Cronologia modifiche testo</h3>
+            <button onclick="loadVersions()">Aggiorna cronologia</button>
+          </div>
+          <div id="versionsList" class="versions"></div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="cell-rules-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
