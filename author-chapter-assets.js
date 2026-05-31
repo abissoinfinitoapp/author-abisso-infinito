@@ -233,12 +233,7 @@
     },
 
     mostro_terra: {
-      image: "img/mostro_terra_square.png",
-      caption: "Mostro di Terra, creatura pesante e resistente."
-    },
-
-    mostro_di_terra: {
-      image: "img/mostro_terra.png",
+      image: "img/mostro_di_terra_square.png",
       caption: "Mostro di Terra, creatura pesante e resistente."
     },
 
@@ -249,11 +244,6 @@
 
     eroe_vento: {
       image: "img/eroe_del_vento_square.png",
-      caption: "Eroe del Vento, creatura rapida legata all’aria."
-    },
-
-    eroe_del_vento: {
-      image: "img/eroe_vento.png",
       caption: "Eroe del Vento, creatura rapida legata all’aria."
     },
 
@@ -268,32 +258,27 @@
     },
 
     laceratore_grigio: {
-      image: "img/laceratore_grigio.png",
+      image: "img/laceratore_grigio_square.png",
       caption: "Laceratore Grigio, mostro maggiore del Dungeon."
     },
 
     guardia_nera: {
-      image: "img/guardia_nera.png",
+      image: "img/guardia_nera_square.png",
       caption: "Guardia Nera, sentinella maggiore del Dungeon."
     },
 
     diavolo_delle_catene: {
-      image: "img/diavolo_delle_catene.png",
+      image: "img/diavolo_delle_catene_square.png",
       caption: "Diavolo delle Catene, mostro maggiore legato al controllo."
     },
 
     celebrilith: {
-      image: "img/celebrilith.png",
-      caption: "Celebrilith, l’Albero Sacro Corrotto."
-    },
-
-    albero_sacro_corrotto: {
-      image: "img/celebrilith.png",
+      image: "img/celebrilith_square.png",
       caption: "Celebrilith, l’Albero Sacro Corrotto."
     },
 
     hezrou: {
-      image: "img/hezrou.png",
+      image: "img/hezrou_square.png",
       caption: "Hezrou, mostro maggiore demoniaco e brutale."
     },
 
