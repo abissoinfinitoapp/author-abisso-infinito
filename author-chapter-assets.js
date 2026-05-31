@@ -253,7 +253,7 @@
     },
 
     eroe_vento: {
-      image: "img/eroe_vento.png",
+      image: "img/eroe_del_vento_square.png",
       caption: "Eroe del Vento, creatura rapida legata all’aria."
     },
 
