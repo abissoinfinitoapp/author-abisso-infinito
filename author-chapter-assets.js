@@ -313,7 +313,7 @@
     },
 
     ninfa: {
-      image: "img/ninfa.png",
+      image: "img/ninfa_square.png",
       caption: "Ninfa, creatura sottile legata a grazia e magia naturale."
     },
 
