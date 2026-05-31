@@ -734,67 +734,62 @@ function renderAuthorBlockEditors(chapter, rows = []) {
     const savedContent = savedRow?.content || "";
 
     return `
-      <section class="author-block-card" data-author-block-card="${escapeHtml(block.block_key)}">
-        <div class="author-block-head">
-          <div>
-            <small>Blocco ${String(block.block_index).padStart(2, "0")} · ${escapeHtml(block.official_type)}</small>
-            <h3>${escapeHtml(block.block_title)}</h3>
-          </div>
+  <section class="author-block-card" data-author-block-card="${escapeHtml(block.block_key)}">
+    <div class="author-block-head">
+      <div>
+        <small>Blocco ${String(block.block_index).padStart(2, "0")} · ${escapeHtml(block.official_type)}</small>
+        <h3>${escapeHtml(block.block_title)}</h3>
+      </div>
 
-          <button
-            type="button"
-            class="small-btn"
-            data-save-author-block="${escapeHtml(block.block_key)}"
-          >
-            Salva blocco
-          </button>
-        </div>
+      <button
+        type="button"
+        class="small-btn"
+        data-save-author-block="${escapeHtml(block.block_key)}"
+      >
+        Salva blocco
+      </button>
+    </div>
 
-        <div class="author-block-guide">
-          <strong>Guida ufficiale</strong>
-          <p>${escapeHtml(block.official_text)}</p>
-        </div>
+    <textarea
+      class="author-block-textarea"
+      data-author-block-key="${escapeHtml(block.block_key)}"
+      placeholder="Scrivi qui il testo autore per: ${escapeHtml(block.block_title)}"
+    >${escapeHtml(savedContent)}</textarea>
 
+    <div class="author-block-footer">
+      <span data-author-block-counter="${escapeHtml(block.block_key)}">0 caratteri · 0 parole</span>
+    </div>
+
+    <div class="block-comments-box">
+      <div class="block-comments-head">
+        <h4>Commenti revisione</h4>
+        <span data-block-comments-count="${escapeHtml(block.block_key)}">0 commenti</span>
+      </div>
+
+      <div
+        class="block-comments-list"
+        data-block-comments-list="${escapeHtml(block.block_key)}"
+      >
+        <p class="empty">Nessun commento per questo blocco.</p>
+      </div>
+
+      <div class="block-comment-form">
         <textarea
-          class="author-block-textarea"
-          data-author-block-key="${escapeHtml(block.block_key)}"
-          placeholder="Scrivi qui il testo autore per: ${escapeHtml(block.block_title)}"
-        >${escapeHtml(savedContent)}</textarea>
+          data-block-comment-input="${escapeHtml(block.block_key)}"
+          placeholder="Scrivi un commento su questo blocco..."
+        ></textarea>
 
-        <div class="author-block-footer">
-          <span data-author-block-counter="${escapeHtml(block.block_key)}">0 caratteri · 0 parole</span>
-        </div>
-
-        <div class="block-comments-box">
-          <div class="block-comments-head">
-            <h4>Commenti revisione</h4>
-            <span data-block-comments-count="${escapeHtml(block.block_key)}">0 commenti</span>
-          </div>
-
-          <div
-            class="block-comments-list"
-            data-block-comments-list="${escapeHtml(block.block_key)}"
-          >
-            <p class="empty">Nessun commento per questo blocco.</p>
-          </div>
-
-          <div class="block-comment-form">
-            <textarea
-              data-block-comment-input="${escapeHtml(block.block_key)}"
-              placeholder="Scrivi un commento su questo blocco..."
-            ></textarea>
-
-            <button
-              type="button"
-              class="small-btn"
-              data-add-block-comment="${escapeHtml(block.block_key)}"
-            >
-              Salva commento
-            </button>
-          </div>
-        </div>
-      </section>
-    `;
+        <button
+          type="button"
+          class="small-btn"
+          data-add-block-comment="${escapeHtml(block.block_key)}"
+        >
+          Salva commento
+        </button>
+      </div>
+    </div>
+  </section>
+`;
   }).join("");
 
   guideBlocks.forEach((block) => {
