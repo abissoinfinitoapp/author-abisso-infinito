@@ -8,6 +8,7 @@ window.AUTHOR_CONFIG = {
   TABLES: {
     allowedUsers: "author_allowed_users",
     texts: "author_chapter_texts",
+    blocks: "author_chapter_blocks",
     versions: "author_text_versions",
     comments: "author_comments"
   }

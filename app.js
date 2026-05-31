@@ -9,6 +9,7 @@ const cfg = window.AUTHOR_CONFIG || {};
 const tableNames = {
   allowedUsers: cfg.TABLES?.allowedUsers || "author_allowed_users",
   texts: cfg.TABLES?.texts || "author_chapter_texts",
+  blocks: cfg.TABLES?.blocks || "author_chapter_blocks",
   versions: cfg.TABLES?.versions || "author_text_versions",
   comments: cfg.TABLES?.comments || "author_comments"
 };
@@ -42,6 +43,7 @@ let supabaseClient = null;
 let useSupabase = false;
 let currentChapter = CHAPTERS[0] || null;
 let currentAuthorTextFromDb = "";
+let currentAuthorBlocksFromDb = new Map();
 let activeLoadId = 0;
 let currentAllowedUser = null;
 let realtimeChannel = null;
@@ -156,6 +158,10 @@ function bindCommentDraft() {
 
 function getTextStorageKey(chapterKey) {
   return `author_text_${chapterKey}`;
+}
+
+function getBlocksStorageKey(chapterKey) {
+  return `author_blocks_${chapterKey}`;
 }
 
 function getVersionsStorageKey(chapterKey) {
@@ -409,7 +415,17 @@ async function selectChapter(chapter) {
   document.getElementById("chapterMeta").textContent =
     `Chiave: ${chapter.key} · Blocchi ufficiali: ${chapter.sections.length}`;
 
-  document.getElementById("authorEditor").value = "";
+  const legacyEditor = document.getElementById("authorEditor");
+  const blocksEditor = document.getElementById("authorBlocksEditor");
+
+  if (legacyEditor) {
+    legacyEditor.value = "";
+  }
+
+  if (blocksEditor) {
+    blocksEditor.innerHTML = `<p class="empty">Caricamento blocchi autore...</p>`;
+  }
+
   document.getElementById("commentsList").innerHTML = "";
   document.getElementById("versionsList").innerHTML = "";
 
@@ -490,25 +506,231 @@ function renderOfficialSection(section = {}) {
   `;
 }
 
+function normalizeBlockKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "_")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function sectionToPlainText(section = {}) {
+  if (Array.isArray(section.items)) {
+    return section.items.map((item) => `- ${item}`).join("\n");
+  }
+
+  if (Array.isArray(section.checks)) {
+    return section.checks
+      .map((check) => `${check.label || ""}: ${check.value || ""}`)
+      .join("\n");
+  }
+
+  return String(section.text || "").trim();
+}
+
+function getChapterGuideBlocks(chapter) {
+  if (!chapter) return [];
+
+  const blocks = [];
+
+  if (chapter.intro) {
+    blocks.push({
+      block_key: "intro",
+      block_index: 0,
+      block_title: "Introduzione",
+      official_type: "intro",
+      official_text: chapter.intro
+    });
+  }
+
+  chapter.sections.forEach((section, index) => {
+    const sectionNumber = index + 1;
+    const title = section.title || `Blocco ${sectionNumber}`;
+
+    blocks.push({
+      block_key: `section_${String(sectionNumber).padStart(2, "0")}`,
+      block_index: sectionNumber,
+      block_title: title,
+      official_type: section.type || "text",
+      official_text: sectionToPlainText(section)
+    });
+  });
+
+  return blocks;
+}
+
+function getBlockTextarea(blockKey) {
+  return document.querySelector(`[data-author-block-key="${blockKey}"]`);
+}
+
+function getBlockCounter(blockKey) {
+  return document.querySelector(`[data-author-block-counter="${blockKey}"]`);
+}
+
+function updateBlockCounter(blockKey) {
+  const textarea = getBlockTextarea(blockKey);
+  const counter = getBlockCounter(blockKey);
+
+  if (!textarea || !counter) return;
+
+  const chars = textarea.value.length;
+  const words = textarea.value.trim()
+    ? textarea.value.trim().split(/\s+/).length
+    : 0;
+
+  counter.textContent = `${chars} caratteri · ${words} parole`;
+}
+
+function renderAuthorBlockEditors(chapter, rows = []) {
+  const container = document.getElementById("authorBlocksEditor");
+
+  if (!container || !chapter) return;
+
+  const guideBlocks = getChapterGuideBlocks(chapter);
+  const rowsMap = new Map();
+
+  rows.forEach((row) => {
+    rowsMap.set(String(row.block_key || "").trim(), row);
+  });
+
+  currentAuthorBlocksFromDb = rowsMap;
+
+  if (!guideBlocks.length) {
+    container.innerHTML = `<p class="empty">Nessun blocco guida disponibile per questo capitolo.</p>`;
+    return;
+  }
+
+  container.innerHTML = guideBlocks.map((block) => {
+    const savedRow = rowsMap.get(block.block_key);
+    const savedContent = savedRow?.content || "";
+
+    return `
+      <section class="author-block-card" data-author-block-card="${escapeHtml(block.block_key)}">
+        <div class="author-block-head">
+          <div>
+            <small>Blocco ${String(block.block_index).padStart(2, "0")} · ${escapeHtml(block.official_type)}</small>
+            <h3>${escapeHtml(block.block_title)}</h3>
+          </div>
+
+          <button
+            type="button"
+            class="small-btn"
+            onclick="saveAuthorBlock('${escapeHtml(block.block_key)}')"
+          >
+            Salva blocco
+          </button>
+        </div>
+
+        <div class="author-block-guide">
+          <strong>Guida ufficiale</strong>
+          <p>${escapeHtml(block.official_text)}</p>
+        </div>
+
+        <textarea
+          class="author-block-textarea"
+          data-author-block-key="${escapeHtml(block.block_key)}"
+          placeholder="Scrivi qui il testo autore per: ${escapeHtml(block.block_title)}"
+        >${escapeHtml(savedContent)}</textarea>
+
+        <div class="author-block-footer">
+          <span data-author-block-counter="${escapeHtml(block.block_key)}">0 caratteri · 0 parole</span>
+        </div>
+      </section>
+    `;
+  }).join("");
+
+  guideBlocks.forEach((block) => {
+    const textarea = getBlockTextarea(block.block_key);
+
+    if (!textarea) return;
+
+    textarea.addEventListener("input", () => updateBlockCounter(block.block_key));
+    updateBlockCounter(block.block_key);
+  });
+}
+
+function collectAuthorBlockPayloads(chapter = currentChapter) {
+  if (!chapter) return [];
+
+  return getChapterGuideBlocks(chapter).map((block) => {
+    const textarea = getBlockTextarea(block.block_key);
+
+    return {
+      chapter_key: chapter.key,
+      block_key: block.block_key,
+      block_index: block.block_index,
+      block_title: block.block_title,
+      official_type: block.official_type,
+      content: textarea?.value.trimEnd() || "",
+      updated_at: new Date().toISOString()
+    };
+  });
+}
+
+function buildCombinedAuthorTextFromPayloads(payloads = []) {
+  return payloads
+    .filter((block) => String(block.content || "").trim())
+    .map((block) => {
+      const title = String(block.block_title || "").trim();
+      const content = String(block.content || "").trimEnd();
+
+      return title
+        ? `## ${title}\n\n${content}`
+        : content;
+    })
+    .join("\n\n---\n\n")
+    .trimEnd();
+}
+
+function buildCombinedAuthorTextFromCurrentMap(chapter = currentChapter) {
+  const guideBlocks = getChapterGuideBlocks(chapter);
+
+  const payloads = guideBlocks.map((block) => {
+    const row = currentAuthorBlocksFromDb.get(block.block_key);
+
+    return {
+      ...block,
+      chapter_key: chapter.key,
+      content: row?.content || ""
+    };
+  });
+
+  return buildCombinedAuthorTextFromPayloads(payloads);
+}
+
 async function loadAuthorText(chapterKey = currentChapter?.key, loadId = activeLoadId) {
   if (!chapterKey) return;
 
-  setTextStatus("Caricamento testo autore...");
+  setTextStatus("Caricamento blocchi autore...");
 
-  let row = null;
+  let blockRows = [];
+  let legacyRow = null;
   let error = null;
 
   if (useSupabase && supabaseClient) {
-    const result = await supabaseClient
-      .from(tableNames.texts)
-      .select("*")
-      .eq("chapter_key", chapterKey)
-      .maybeSingle();
+    const [blocksResult, legacyResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.blocks)
+        .select("*")
+        .eq("chapter_key", chapterKey)
+        .order("block_index", { ascending: true }),
 
-    row = result.data;
-    error = result.error;
+      supabaseClient
+        .from(tableNames.texts)
+        .select("*")
+        .eq("chapter_key", chapterKey)
+        .maybeSingle()
+    ]);
+
+    blockRows = blocksResult.data || [];
+    legacyRow = legacyResult.data || null;
+    error = blocksResult.error || legacyResult.error;
   } else {
-    row = readLocalJson(getTextStorageKey(chapterKey), null);
+    blockRows = readLocalJson(getBlocksStorageKey(chapterKey), []);
+    legacyRow = readLocalJson(getTextStorageKey(chapterKey), null);
   }
 
   if (loadId !== activeLoadId || chapterKey !== currentChapter?.key) {
@@ -517,53 +739,105 @@ async function loadAuthorText(chapterKey = currentChapter?.key, loadId = activeL
 
   if (error) {
     console.error(error);
-    setTextStatus("Errore caricamento testo autore", "error");
+    setTextStatus("Errore caricamento blocchi autore", "error");
     return;
   }
 
-  currentAuthorTextFromDb = row?.content || "";
-  document.getElementById("authorEditor").value = currentAuthorTextFromDb;
-  document.getElementById("editNote").value = "";
+  /*
+    Compatibilità:
+    se esiste un vecchio testo unico ma non esistono ancora blocchi,
+    lo mettiamo nel primo blocco disponibile.
+  */
+  if ((!blockRows || blockRows.length === 0) && legacyRow?.content) {
+    const firstBlock = getChapterGuideBlocks(currentChapter)[0];
 
-  if (row?.updated_at) {
+    if (firstBlock) {
+      blockRows = [{
+        chapter_key: chapterKey,
+        block_key: firstBlock.block_key,
+        block_index: firstBlock.block_index,
+        block_title: firstBlock.block_title,
+        official_type: firstBlock.official_type,
+        content: legacyRow.content,
+        updated_by: legacyRow.updated_by,
+        updated_at: legacyRow.updated_at
+      }];
+    }
+  }
+
+  renderAuthorBlockEditors(currentChapter, blockRows);
+
+  currentAuthorTextFromDb = buildCombinedAuthorTextFromCurrentMap(currentChapter);
+
+  if (legacyRow?.updated_at) {
     setTextStatus(
-      `Ultima modifica: ${new Date(row.updated_at).toLocaleString("it-IT")} - ${row.updated_by || ""}`,
+      `Ultima modifica: ${new Date(legacyRow.updated_at).toLocaleString("it-IT")} - ${legacyRow.updated_by || ""}`,
       "ok"
     );
+  } else if (blockRows.length) {
+    setTextStatus("Blocchi autore caricati.", "ok");
   } else {
     setTextStatus("Nessun testo autore salvato per questo capitolo.");
   }
+
+  const editNote = document.getElementById("editNote");
+  if (editNote) editNote.value = "";
 }
 
 async function saveAuthorText() {
   const user = getUser();
-  const content = document.getElementById("authorEditor").value.trimEnd();
-  const editNote = document.getElementById("editNote").value.trim();
+  const editNote = document.getElementById("editNote")?.value.trim() || "";
 
   if (!currentChapter) {
     alert("Seleziona un capitolo");
     return;
   }
 
-  if (content === currentAuthorTextFromDb) {
+  const payloads = collectAuthorBlockPayloads(currentChapter);
+  const combinedContent = buildCombinedAuthorTextFromPayloads(payloads);
+
+  const hasChanges = payloads.some((payload) => {
+    const oldContent = currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
+    return payload.content !== oldContent;
+  });
+
+  if (!hasChanges) {
     setTextStatus("Nessuna modifica da salvare.");
     return;
   }
 
-  setTextStatus("Salvataggio in corso...");
+  setTextStatus("Salvataggio blocchi in corso...");
+
+  const updatedBy = `${user.name} - ${user.role}`;
+
+  const changedPayloads = payloads
+    .filter((payload) => {
+      const oldContent = currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
+      return payload.content !== oldContent;
+    })
+    .map((payload) => ({
+      chapter_key: payload.chapter_key,
+      block_key: payload.block_key,
+      block_index: payload.block_index,
+      block_title: payload.block_title,
+      official_type: payload.official_type,
+      content: payload.content,
+      updated_by: updatedBy,
+      updated_at: new Date().toISOString()
+    }));
 
   const versionPayload = {
     chapter_key: currentChapter.key,
     content: currentAuthorTextFromDb || "[Prima versione vuota]",
-    edited_by: `${user.name} - ${user.role}`,
-    edit_note: editNote || "Modifica testo autore",
+    edited_by: updatedBy,
+    edit_note: editNote || "Modifica blocchi autore",
     created_at: new Date().toISOString()
   };
 
   const textPayload = {
     chapter_key: currentChapter.key,
-    content,
-    updated_by: `${user.name} - ${user.role}`,
+    content: combinedContent,
+    updated_by: updatedBy,
     updated_at: new Date().toISOString()
   };
 
@@ -583,13 +857,27 @@ async function saveAuthorText() {
       return;
     }
 
-    const { error } = await supabaseClient
-      .from(tableNames.texts)
-      .upsert(textPayload, { onConflict: "chapter_key" });
+    const { error: blocksError } = await supabaseClient
+      .from(tableNames.blocks)
+      .upsert(changedPayloads, {
+        onConflict: "chapter_key,block_key"
+      });
 
-    if (error) {
-      console.error(error);
-      setTextStatus("Errore nel salvataggio del testo autore", "error");
+    if (blocksError) {
+      console.error(blocksError);
+      setTextStatus("Errore nel salvataggio dei blocchi autore", "error");
+      return;
+    }
+
+    const { error: textError } = await supabaseClient
+      .from(tableNames.texts)
+      .upsert(textPayload, {
+        onConflict: "chapter_key"
+      });
+
+    if (textError) {
+      console.error(textError);
+      setTextStatus("Errore nel salvataggio del testo completo", "error");
       return;
     }
   } else {
@@ -604,15 +892,175 @@ async function saveAuthorText() {
       JSON.stringify(versions)
     );
 
+    const existingRows = readLocalJson(getBlocksStorageKey(currentChapter.key), []);
+    const rowsMap = new Map();
+
+    existingRows.forEach((row) => {
+      rowsMap.set(row.block_key, row);
+    });
+
+    changedPayloads.forEach((row) => {
+      rowsMap.set(row.block_key, row);
+    });
+
+    localStorage.setItem(
+      getBlocksStorageKey(currentChapter.key),
+      JSON.stringify(Array.from(rowsMap.values()))
+    );
+
     localStorage.setItem(
       getTextStorageKey(currentChapter.key),
       JSON.stringify(textPayload)
     );
   }
 
-  currentAuthorTextFromDb = content;
-  document.getElementById("editNote").value = "";
-  setTextStatus("Testo autore salvato correttamente", "ok");
+  changedPayloads.forEach((row) => {
+    currentAuthorBlocksFromDb.set(row.block_key, row);
+  });
+
+  currentAuthorTextFromDb = combinedContent;
+
+  const editNoteEl = document.getElementById("editNote");
+  if (editNoteEl) editNoteEl.value = "";
+
+  setTextStatus("Blocchi autore salvati correttamente", "ok");
+
+  await loadVersions();
+}
+
+async function saveAuthorBlock(blockKey) {
+  const user = getUser();
+
+  if (!currentChapter) {
+    alert("Seleziona un capitolo");
+    return;
+  }
+
+  const payload = collectAuthorBlockPayloads(currentChapter)
+    .find((item) => item.block_key === blockKey);
+
+  if (!payload) {
+    alert("Blocco non trovato.");
+    return;
+  }
+
+  const oldContent = currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
+
+  if (payload.content === oldContent) {
+    setTextStatus(`Nessuna modifica nel blocco: ${payload.block_title}`);
+    return;
+  }
+
+  setTextStatus(`Salvataggio blocco: ${payload.block_title}...`);
+
+  const updatedBy = `${user.name} - ${user.role}`;
+
+  const blockPayload = {
+    chapter_key: payload.chapter_key,
+    block_key: payload.block_key,
+    block_index: payload.block_index,
+    block_title: payload.block_title,
+    official_type: payload.official_type,
+    content: payload.content,
+    updated_by: updatedBy,
+    updated_at: new Date().toISOString()
+  };
+
+  const versionPayload = {
+    chapter_key: currentChapter.key,
+    content: currentAuthorTextFromDb || "[Prima versione vuota]",
+    edited_by: updatedBy,
+    edit_note: `Modifica blocco: ${payload.block_title}`,
+    created_at: new Date().toISOString()
+  };
+
+  if (useSupabase && supabaseClient) {
+    const { error: versionError } = await supabaseClient
+      .from(tableNames.versions)
+      .insert({
+        chapter_key: versionPayload.chapter_key,
+        content: versionPayload.content,
+        edited_by: versionPayload.edited_by,
+        edit_note: versionPayload.edit_note
+      });
+
+    if (versionError) {
+      console.error(versionError);
+      setTextStatus("Errore nel salvataggio della cronologia", "error");
+      return;
+    }
+
+    const { error: blockError } = await supabaseClient
+      .from(tableNames.blocks)
+      .upsert(blockPayload, {
+        onConflict: "chapter_key,block_key"
+      });
+
+    if (blockError) {
+      console.error(blockError);
+      setTextStatus("Errore nel salvataggio del blocco", "error");
+      return;
+    }
+  } else {
+    const versions = readLocalJson(getVersionsStorageKey(currentChapter.key), []);
+    versions.unshift({
+      ...versionPayload,
+      id: cryptoRandomId()
+    });
+
+    localStorage.setItem(
+      getVersionsStorageKey(currentChapter.key),
+      JSON.stringify(versions)
+    );
+
+    const existingRows = readLocalJson(getBlocksStorageKey(currentChapter.key), []);
+    const rowsMap = new Map();
+
+    existingRows.forEach((row) => {
+      rowsMap.set(row.block_key, row);
+    });
+
+    rowsMap.set(blockPayload.block_key, blockPayload);
+
+    localStorage.setItem(
+      getBlocksStorageKey(currentChapter.key),
+      JSON.stringify(Array.from(rowsMap.values()))
+    );
+  }
+
+  currentAuthorBlocksFromDb.set(blockPayload.block_key, blockPayload);
+
+  const combinedContent = buildCombinedAuthorTextFromCurrentMap(currentChapter);
+
+  const textPayload = {
+    chapter_key: currentChapter.key,
+    content: combinedContent,
+    updated_by: updatedBy,
+    updated_at: new Date().toISOString()
+  };
+
+  if (useSupabase && supabaseClient) {
+    const { error: textError } = await supabaseClient
+      .from(tableNames.texts)
+      .upsert(textPayload, {
+        onConflict: "chapter_key"
+      });
+
+    if (textError) {
+      console.error(textError);
+      setTextStatus("Blocco salvato, ma errore nel testo completo", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(
+      getTextStorageKey(currentChapter.key),
+      JSON.stringify(textPayload)
+    );
+  }
+
+  currentAuthorTextFromDb = combinedContent;
+
+  setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
 
   await loadVersions();
 }
