@@ -23,7 +23,7 @@
     {
       type: "reward",
       title: "Obiettivo Finale",
-      text: "Sconfiggere Bel, reclamare il Sigillo Maledetto e riportarlo a Elyndar per spezzare la corruzione e ristabilire la pace nel regno."
+      text: "Sconfiggere Bel, e tutte le sue manifestazioni sotto forma di eco di mostri e riportare la pace a Elyndar e purificarsi al 100%."
     }
   ]
 },
