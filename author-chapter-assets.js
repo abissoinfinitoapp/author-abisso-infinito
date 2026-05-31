@@ -189,7 +189,7 @@
     },
 
     assassini_dell_ombra: {
-      image: "img/assassini_dell_ombra.png",
+      image: "img/assassini_ombra.png",
       caption: "Assassini dell’Ombra, banda letale legata a trappole e silenzio."
     },
 
@@ -268,7 +268,7 @@
     },
 
     dragone_nero: {
-      image: "img/dragone_nero.png",
+      image: "img/dragone_nero_square.png.png",
       caption: "Dragone Nero, guardiano dell’ingresso al Dungeon."
     },
 
