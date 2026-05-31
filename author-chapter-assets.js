@@ -268,7 +268,7 @@
     },
 
     dragone_nero: {
-      image: "img/dragone_nero_square.png.png",
+      image: "img/dragone_nero_square.png",
       caption: "Dragone Nero, guardiano dell’ingresso al Dungeon."
     },
 
