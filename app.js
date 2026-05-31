@@ -172,6 +172,10 @@ function getCommentsStorageKey(chapterKey) {
   return `author_comments_${chapterKey}`;
 }
 
+function getBlockCommentsStorageKey(chapterKey) {
+  return `author_block_comments_${chapterKey}`;
+}
+
 function getCommentDraftKey(chapterKey) {
   return `author_comment_draft_${chapterKey}`;
 }
@@ -618,7 +622,7 @@ function renderAuthorBlockEditors(chapter, rows = []) {
           <button
             type="button"
             class="small-btn"
-            onclick="saveAuthorBlock('${escapeHtml(block.block_key)}')"
+            data-save-author-block="${escapeHtml(block.block_key)}"
           >
             Salva blocco
           </button>
@@ -638,6 +642,35 @@ function renderAuthorBlockEditors(chapter, rows = []) {
         <div class="author-block-footer">
           <span data-author-block-counter="${escapeHtml(block.block_key)}">0 caratteri · 0 parole</span>
         </div>
+
+        <div class="block-comments-box">
+          <div class="block-comments-head">
+            <h4>Commenti revisione</h4>
+            <span data-block-comments-count="${escapeHtml(block.block_key)}">0 commenti</span>
+          </div>
+
+          <div
+            class="block-comments-list"
+            data-block-comments-list="${escapeHtml(block.block_key)}"
+          >
+            <p class="empty">Nessun commento per questo blocco.</p>
+          </div>
+
+          <div class="block-comment-form">
+            <textarea
+              data-block-comment-input="${escapeHtml(block.block_key)}"
+              placeholder="Scrivi un commento su questo blocco..."
+            ></textarea>
+
+            <button
+              type="button"
+              class="small-btn"
+              data-add-block-comment="${escapeHtml(block.block_key)}"
+            >
+              Salva commento
+            </button>
+          </div>
+        </div>
       </section>
     `;
   }).join("");
@@ -645,10 +678,22 @@ function renderAuthorBlockEditors(chapter, rows = []) {
   guideBlocks.forEach((block) => {
     const textarea = getBlockTextarea(block.block_key);
 
-    if (!textarea) return;
+    if (textarea) {
+      textarea.addEventListener("input", () => updateBlockCounter(block.block_key));
+      updateBlockCounter(block.block_key);
+    }
+  });
 
-    textarea.addEventListener("input", () => updateBlockCounter(block.block_key));
-    updateBlockCounter(block.block_key);
+  container.querySelectorAll("[data-save-author-block]").forEach((button) => {
+    button.addEventListener("click", () => {
+      saveAuthorBlock(button.dataset.saveAuthorBlock);
+    });
+  });
+
+  container.querySelectorAll("[data-add-block-comment]").forEach((button) => {
+    button.addEventListener("click", () => {
+      addBlockComment(button.dataset.addBlockComment);
+    });
   });
 }
 
@@ -766,6 +811,8 @@ async function loadAuthorText(chapterKey = currentChapter?.key, loadId = activeL
   }
 
   renderAuthorBlockEditors(currentChapter, blockRows);
+
+  await loadBlockComments(chapterKey);
 
   currentAuthorTextFromDb = buildCombinedAuthorTextFromCurrentMap(currentChapter);
 
@@ -1063,6 +1110,382 @@ async function saveAuthorBlock(blockKey) {
   setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
 
   await loadVersions();
+}
+
+let currentBlockCommentsFromDb = [];
+
+async function loadBlockComments(chapterKey = currentChapter?.key) {
+  if (!chapterKey) return;
+
+  let rows = [];
+  let error = null;
+
+  if (useSupabase && supabaseClient) {
+    const result = await supabaseClient
+      .from(tableNames.comments)
+      .select("*")
+      .eq("chapter_key", chapterKey)
+      .order("created_at", { ascending: true });
+
+    rows = result.data || [];
+    error = result.error;
+  } else {
+    rows = readLocalJson(getBlockCommentsStorageKey(chapterKey), []);
+  }
+
+  if (error) {
+    console.error(error);
+    setTextStatus("Errore caricamento commenti blocco", "error");
+    return;
+  }
+
+  currentBlockCommentsFromDb = rows.filter((row) => {
+    return String(row.block_key || "").trim();
+  });
+
+  renderBlockComments();
+}
+
+function renderBlockComments() {
+  if (!currentChapter) return;
+
+  const commentsByBlock = new Map();
+
+  currentBlockCommentsFromDb.forEach((comment) => {
+    const blockKey = String(comment.block_key || "").trim();
+    if (!blockKey) return;
+
+    if (!commentsByBlock.has(blockKey)) {
+      commentsByBlock.set(blockKey, []);
+    }
+
+    commentsByBlock.get(blockKey).push(comment);
+  });
+
+  getChapterGuideBlocks(currentChapter).forEach((block) => {
+    const listEl = document.querySelector(`[data-block-comments-list="${block.block_key}"]`);
+    const countEl = document.querySelector(`[data-block-comments-count="${block.block_key}"]`);
+
+    if (!listEl) return;
+
+    const comments = commentsByBlock.get(block.block_key) || [];
+    const parentComments = comments.filter((comment) => !comment.parent_id);
+
+    if (countEl) {
+      countEl.textContent = `${comments.length} commenti`;
+    }
+
+    if (!comments.length) {
+      listEl.innerHTML = `<p class="empty">Nessun commento per questo blocco.</p>`;
+      return;
+    }
+
+    listEl.innerHTML = parentComments.map((comment) => {
+      const replies = comments.filter((reply) => {
+        return String(reply.parent_id || "") === String(comment.id || "");
+      });
+
+      return renderBlockCommentItem(comment, replies);
+    }).join("");
+
+    listEl.querySelectorAll("[data-edit-block-comment]").forEach((button) => {
+      button.addEventListener("click", () => {
+        editBlockComment(button.dataset.editBlockComment);
+      });
+    });
+
+    listEl.querySelectorAll("[data-delete-block-comment]").forEach((button) => {
+      button.addEventListener("click", () => {
+        deleteBlockComment(button.dataset.deleteBlockComment);
+      });
+    });
+
+    listEl.querySelectorAll("[data-reply-block-comment]").forEach((button) => {
+      button.addEventListener("click", () => {
+        replyBlockComment(button.dataset.replyBlockComment);
+      });
+    });
+  });
+}
+
+function renderBlockCommentItem(comment, replies = []) {
+  const createdAt = comment.created_at
+    ? new Date(comment.created_at).toLocaleString("it-IT")
+    : "";
+
+  return `
+    <article class="block-comment-item">
+      <div class="block-comment-meta">
+        <strong>${escapeHtml(comment.author || "Utente")}</strong>
+        <span>${escapeHtml(comment.role || "")}</span>
+        <small>${escapeHtml(createdAt)}</small>
+      </div>
+
+      <p>${escapeHtml(comment.body || "")}</p>
+
+      <div class="block-comment-actions">
+        <button type="button" data-reply-block-comment="${escapeHtml(comment.id)}">Rispondi</button>
+        <button type="button" data-edit-block-comment="${escapeHtml(comment.id)}">Modifica</button>
+        <button type="button" data-delete-block-comment="${escapeHtml(comment.id)}">Cancella</button>
+      </div>
+
+      ${
+        replies.length
+          ? `<div class="block-comment-replies">
+              ${replies.map((reply) => renderBlockCommentReply(reply)).join("")}
+            </div>`
+          : ""
+      }
+    </article>
+  `;
+}
+
+function renderBlockCommentReply(reply) {
+  const createdAt = reply.created_at
+    ? new Date(reply.created_at).toLocaleString("it-IT")
+    : "";
+
+  return `
+    <article class="block-comment-reply">
+      <div class="block-comment-meta">
+        <strong>${escapeHtml(reply.author || "Utente")}</strong>
+        <span>${escapeHtml(reply.role || "")}</span>
+        <small>${escapeHtml(createdAt)}</small>
+      </div>
+
+      <p>${escapeHtml(reply.body || "")}</p>
+
+      <div class="block-comment-actions">
+        <button type="button" data-edit-block-comment="${escapeHtml(reply.id)}">Modifica</button>
+        <button type="button" data-delete-block-comment="${escapeHtml(reply.id)}">Cancella</button>
+      </div>
+    </article>
+  `;
+}
+
+async function addBlockComment(blockKey) {
+  const cleanBlockKey = String(blockKey || "").trim();
+  const input = document.querySelector(`[data-block-comment-input="${cleanBlockKey}"]`);
+  const body = String(input?.value || "").trim();
+  const user = getUser();
+
+  if (!currentChapter || !cleanBlockKey) {
+    alert("Blocco non valido.");
+    return;
+  }
+
+  if (!body) {
+    alert("Scrivi un commento prima di salvare.");
+    return;
+  }
+
+  const payload = {
+    chapter_key: currentChapter.key,
+    block_key: cleanBlockKey,
+    parent_id: null,
+    author: user.name,
+    role: user.role,
+    body,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.comments)
+      .insert({
+        chapter_key: payload.chapter_key,
+        block_key: payload.block_key,
+        parent_id: payload.parent_id,
+        author: payload.author,
+        role: payload.role,
+        body: payload.body
+      });
+
+    if (error) {
+      console.error(error);
+      setTextStatus("Errore salvataggio commento blocco", "error");
+      return;
+    }
+  } else {
+    const rows = readLocalJson(getBlockCommentsStorageKey(currentChapter.key), []);
+    rows.push({
+      ...payload,
+      id: cryptoRandomId()
+    });
+
+    localStorage.setItem(
+      getBlockCommentsStorageKey(currentChapter.key),
+      JSON.stringify(rows)
+    );
+  }
+
+  if (input) input.value = "";
+
+  await loadBlockComments();
+}
+
+async function replyBlockComment(commentId) {
+  const cleanCommentId = String(commentId || "").trim();
+  const parent = currentBlockCommentsFromDb.find((comment) => {
+    return String(comment.id || "") === cleanCommentId;
+  });
+
+  if (!parent) {
+    alert("Commento non trovato.");
+    return;
+  }
+
+  const body = prompt("Risposta al commento:", "");
+
+  if (body === null) return;
+
+  const cleanBody = String(body || "").trim();
+
+  if (!cleanBody) {
+    alert("Risposta vuota.");
+    return;
+  }
+
+  const user = getUser();
+
+  const payload = {
+    chapter_key: currentChapter.key,
+    block_key: parent.block_key,
+    parent_id: parent.id,
+    author: user.name,
+    role: user.role,
+    body: cleanBody,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.comments)
+      .insert({
+        chapter_key: payload.chapter_key,
+        block_key: payload.block_key,
+        parent_id: payload.parent_id,
+        author: payload.author,
+        role: payload.role,
+        body: payload.body
+      });
+
+    if (error) {
+      console.error(error);
+      setTextStatus("Errore salvataggio risposta", "error");
+      return;
+    }
+  } else {
+    const rows = readLocalJson(getBlockCommentsStorageKey(currentChapter.key), []);
+    rows.push({
+      ...payload,
+      id: cryptoRandomId()
+    });
+
+    localStorage.setItem(
+      getBlockCommentsStorageKey(currentChapter.key),
+      JSON.stringify(rows)
+    );
+  }
+
+  await loadBlockComments();
+}
+
+async function editBlockComment(commentId) {
+  const cleanCommentId = String(commentId || "").trim();
+  const comment = currentBlockCommentsFromDb.find((item) => {
+    return String(item.id || "") === cleanCommentId;
+  });
+
+  if (!comment) {
+    alert("Commento non trovato.");
+    return;
+  }
+
+  const nextBody = prompt("Modifica commento:", comment.body || "");
+
+  if (nextBody === null) return;
+
+  const cleanBody = String(nextBody || "").trim();
+
+  if (!cleanBody) {
+    alert("Il commento non può essere vuoto.");
+    return;
+  }
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.comments)
+      .update({
+        body: cleanBody,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", cleanCommentId);
+
+    if (error) {
+      console.error(error);
+      setTextStatus("Errore modifica commento", "error");
+      return;
+    }
+  } else {
+    const rows = readLocalJson(getBlockCommentsStorageKey(currentChapter.key), []);
+    const nextRows = rows.map((row) => {
+      if (String(row.id || "") !== cleanCommentId) return row;
+
+      return {
+        ...row,
+        body: cleanBody,
+        updated_at: new Date().toISOString()
+      };
+    });
+
+    localStorage.setItem(
+      getBlockCommentsStorageKey(currentChapter.key),
+      JSON.stringify(nextRows)
+    );
+  }
+
+  await loadBlockComments();
+}
+
+async function deleteBlockComment(commentId) {
+  const cleanCommentId = String(commentId || "").trim();
+
+  if (!cleanCommentId) return;
+
+  const ok = confirm("Vuoi cancellare questo commento?");
+
+  if (!ok) return;
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.comments)
+      .delete()
+      .eq("id", cleanCommentId);
+
+    if (error) {
+      console.error(error);
+      setTextStatus("Errore cancellazione commento", "error");
+      return;
+    }
+  } else {
+    const rows = readLocalJson(getBlockCommentsStorageKey(currentChapter.key), []);
+    const nextRows = rows.filter((row) => {
+      return (
+        String(row.id || "") !== cleanCommentId &&
+        String(row.parent_id || "") !== cleanCommentId
+      );
+    });
+
+    localStorage.setItem(
+      getBlockCommentsStorageKey(currentChapter.key),
+      JSON.stringify(nextRows)
+    );
+  }
+
+  await loadBlockComments();
 }
 
 async function addComment(parentId = null, textAreaId = "newComment") {
@@ -1408,14 +1831,26 @@ function startRealtime() {
       { event: "*", schema: "public", table: tableNames.comments },
       payload => {
         const row = payload.new || payload.old;
+
         if (!row || row.chapter_key === currentChapter?.key) {
-          loadComments();
+          loadComments?.();
+          loadBlockComments?.();
         }
       }
     )
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: tableNames.texts },
+      payload => {
+        const row = payload.new || payload.old;
+        if (row && row.chapter_key === currentChapter?.key) {
+          loadAuthorText();
+        }
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: tableNames.blocks },
       payload => {
         const row = payload.new || payload.old;
         if (row && row.chapter_key === currentChapter?.key) {
@@ -1472,3 +1907,14 @@ function escapeHtml(text) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+window.loginUser = loginUser;
+window.logoutUser = logoutUser;
+window.saveUser = saveUser;
+window.saveAuthorText = saveAuthorText;
+window.addComment = addComment;
+
+window.addBlockComment = addBlockComment;
+window.replyBlockComment = replyBlockComment;
+window.editBlockComment = editBlockComment;
+window.deleteBlockComment = deleteBlockComment;
