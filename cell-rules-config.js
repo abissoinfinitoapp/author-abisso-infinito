@@ -340,8 +340,6 @@ porta_dei_teschi: {
   ]
 },
 
-
-
 banca_regno: {
   title: "Banca del Regno",
   intro: "Nel cuore del Distretto Aureo sorge la Banca del Regno, una fortezza di pietra, ferro e sigilli, dove il denaro decide il destino degli uomini quanto la spada decide il destino dei campi di battaglia. Qui i ricchi si fanno più ricchi, i disperati si indebitano, e i folli tentano la sorte sfidando le guardie e le leggi del regno.",
@@ -1865,8 +1863,6 @@ fabbro_base: {
   ]
 },
 
-
-
 raccolta_diamanti: {
   title: "Diamanti",
   intro: "Nelle profondità dove la roccia custodisce i propri segreti più preziosi, giacciono i diamanti: gemme dure, rare e splendenti, nate sotto pressioni che spezzerebbero qualsiasi cosa viva. Non sono semplici ricchezze, ma simboli di potere, prestigio e possibilità superiori.",
@@ -2192,8 +2188,6 @@ potere_terra: {
   ]
 },
 
-
-
 potere_acqua: {
   title: "Potere Elementale dell’Acqua",
   intro: "L’acqua non avanza con rumore, eppure scava la pietra, piega i sentieri e trova sempre una via. Chi riesce ad assorbirne l’essenza non ottiene una forza brutale, ma un vantaggio sottile, fluido e costante contro le creature del regno.",
@@ -2473,8 +2467,6 @@ mostro_terra: {
     }
   ]
 },
-
-
 
 mostro_degli_abissi: {
   title: "Mostro degli Abissi",
@@ -2982,6 +2974,116 @@ stanza_dei_fili_taglienti: {
       type: "text",
       title: "Consiglio del viandante",
       text: "Qui non serve correre. Serve vedere prima degli occhi, respirare prima del passo e scegliere ogni movimento come se fosse l’unico. Nella Stanza dei Fili Taglienti spesso sopravvive chi si controlla meglio, non chi si crede più forte."
+    }
+  ]
+},
+
+sentiero_delle_ombre: {
+  title: "Sentiero delle Ombre",
+  intro: "Il Sentiero delle Ombre non si attraversa soltanto con i piedi. Qui la luce si spegne a tratti, i rumori cambiano direzione e ogni passo sembra osservato da qualcosa che non vuole mostrarsi. È un percorso dove il coraggio pesa meno della lucidità.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Natura del percorso",
+      text: "Il Sentiero delle Ombre è un percorso insidioso basato su paura, inganno e perdita di orientamento. Non mette alla prova solo la forza del giocatore, ma anche la capacità di restare calmo quando il cammino diventa incerto."
+    },
+    {
+      type: "steps",
+      title: "Come si affronta",
+      items: [
+        "Il giocatore tira prima un dado contro il Master.",
+        "Se il giocatore vince il confronto iniziale, affronta solo l’evento del percorso.",
+        "Se il giocatore perde il confronto iniziale, affronta l’evento con l’opposizione del Master.",
+        "Viene generato un evento casuale del Sentiero delle Ombre.",
+        "L’esito finale dipende dalla prova generata e dalla modalità in cui il giocatore entra nell’evento."
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Regole del percorso",
+      checks: [
+        { label: "Difficoltà", value: "Media/Difficile" },
+        { label: "Ingresso alla prova", value: "Confronto dado giocatore vs Master" },
+        { label: "Esito favorevole", value: "Evento affrontato da solo" },
+        { label: "Esito sfavorevole", value: "Evento affrontato contro il Master" },
+        { label: "Completamento", value: "Una sola volta per giocatore" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Minaccia delle ombre",
+      text: "Le ombre non colpiscono sempre direttamente. A volte confondono, rallentano, separano il giocatore dalla strada sicura o trasformano una scelta semplice in un dubbio pericoloso."
+    },
+    {
+      type: "warning",
+      title: "Prezzo del fallimento",
+      text: "Fallire il percorso può causare perdita di salute, stamina o penalità temporanee legate alla paura e allo smarrimento. Se il Master entra nella prova, il rischio aumenta."
+    },
+    {
+      type: "reward",
+      title: "Premio del successo",
+      text: "Superare il Sentiero delle Ombre concede ricompense di percorso, prestigio e il riconoscimento di aver attraversato un luogo dove molti perdono il coraggio prima ancora della battaglia."
+    },
+    {
+      type: "text",
+      title: "Consiglio del viandante oscuro",
+      text: "Non correre nel buio. Ascolta, osserva e scegli con calma. Nel Sentiero delle Ombre spesso sopravvive chi non reagisce alla prima paura."
+    }
+  ]
+},
+
+selva_delle_lame: {
+  title: "Selva delle Lame",
+  intro: "La Selva delle Lame è un groviglio innaturale di rovi metallici, spuntoni spezzati e tagli nascosti tra ombre e radici. Ogni passaggio pretende precisione, ogni esitazione può diventare ferita, ogni movimento sbagliato lascia sangue sul cammino.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Natura del percorso",
+      text: "La Selva delle Lame è un percorso fisico e letale, basato su destrezza, controllo e resistenza. Non è un semplice ostacolo naturale: è una trappola estesa, dove il terreno stesso sembra combattere contro il viandante."
+    },
+    {
+      type: "steps",
+      title: "Come si affronta",
+      items: [
+        "Il giocatore tira prima un dado contro il Master.",
+        "Se il giocatore vince il confronto iniziale, affronta solo l’evento del percorso.",
+        "Se il giocatore perde il confronto iniziale, affronta l’evento con l’opposizione del Master.",
+        "Viene generato un evento casuale della Selva delle Lame.",
+        "L’esito finale dipende dalla prova generata, dalla precisione del giocatore e dalla pressione del Master."
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Regole del percorso",
+      checks: [
+        { label: "Difficoltà", value: "Difficile" },
+        { label: "Ingresso alla prova", value: "Confronto dado giocatore vs Master" },
+        { label: "Esito favorevole", value: "Evento affrontato da solo" },
+        { label: "Esito sfavorevole", value: "Evento affrontato contro il Master" },
+        { label: "Completamento", value: "Una sola volta per giocatore" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Pericolo delle lame",
+      text: "Le lame non perdonano la fretta. Possono colpire con tagli improvvisi, bloccare il passaggio, consumare stamina e costringere il giocatore a scegliere tra avanzare lentamente o rischiare ferite più gravi."
+    },
+    {
+      type: "warning",
+      title: "Prezzo del fallimento",
+      text: "Fallire nella Selva delle Lame può causare perdita di salute, stamina e possibili penalità legate alla fatica o alla precisione. Quando il Master partecipa alla prova, il percorso diventa ancora più crudele."
+    },
+    {
+      type: "reward",
+      title: "Premio del successo",
+      text: "Superare la Selva delle Lame concede ricompense di percorso, prestigio e la certezza di aver attraversato uno dei passaggi più dolorosi e selettivi del regno."
+    },
+    {
+      type: "text",
+      title: "Consiglio del sopravvissuto",
+      text: "Muoviti come se ogni ramo fosse una lama e ogni lama una scelta. Nella Selva non vince chi corre: vince chi sa passare senza offrire carne al metallo."
     }
   ]
 },
@@ -3940,6 +4042,213 @@ mostro_fuoco: {
       type: "text",
       title: "Consiglio del veterano",
       text: "Non sottovalutarlo perché è un mostro minore. Il fuoco sembra piccolo finché resta scintilla, ma basta un errore perché diventi incendio."
+    }
+  ]
+},
+
+spettro_cremisi: {
+  title: "Spettro Cremisi",
+  intro: "Dalle fenditure più silenziose dell’Abisso emerge lo Spettro Cremisi, una creatura sospesa tra carne, ombra e sangue antico. Non è un fantasma puro, ma un residuo vivente di battaglie dimenticate, animato da una volontà oscura e da una fame sottile di energia vitale.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Origine della creatura",
+      text: "Si dice che lo Spettro Cremisi nasca nei luoghi dove molti guerrieri sono caduti senza ricevere sepoltura. Il sangue versato, contaminato dalla magia dell’Abisso, prende forma e diventa una creatura rapida, instabile e difficile da colpire."
+    },
+    {
+      type: "requirements",
+      title: "Identità del mostro",
+      checks: [
+        { label: "Categoria", value: "Mostro Minore" },
+        { label: "Potenza Totale", value: "260" },
+        { label: "Salute", value: "55" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Distribuzione del Potere",
+      checks: [
+        { label: "Forza", value: "45" },
+        { label: "Astuzia", value: "35" },
+        { label: "Ingegno", value: "40" },
+        { label: "Magia", value: "85" },
+        { label: "Destrezza", value: "55" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Accesso ai mostri",
+      checks: [
+        { label: "Per Mostri Minori", value: "Serve almeno 1 scrigno aperto" },
+        { label: "Per Mostri Maggiori", value: "Servono almeno 4 scrigni aperti" }
+      ]
+    },
+    {
+      type: "warning",
+      title: "Sigillo d’accesso",
+      text: "Lo Spettro Cremisi appartiene ai Mostri Minori. Per affrontarlo devi aver già aperto almeno uno scrigno."
+    },
+    {
+      type: "text",
+      title: "Stile di combattimento",
+      text: "Lo Spettro Cremisi non combatte con pura forza. La sua vera minaccia è la magia, unita a una buona destrezza. Colpisce velocemente, confonde il nemico e cerca di logorare la volontà del giocatore prima dello scontro decisivo."
+    },
+    {
+      type: "steps",
+      title: "Come affrontarlo",
+      items: [
+        "Seleziona il giocatore che combatterà.",
+        "Verifica di aver aperto almeno 1 scrigno.",
+        "Scegli da 1 a 5 attributi da usare nello scontro.",
+        "Inserisci i risultati dei dadi per ogni attributo scelto.",
+        "Confronta la tua potenza con quella dello Spettro Cremisi."
+      ]
+    },
+    {
+      type: "warning",
+      title: "Perché è pericoloso",
+      text: "Anche se la sua potenza totale è inferiore rispetto ad altri mostri, lo Spettro Cremisi è insidioso perché concentra molta energia nella magia. Può diventare pericoloso per giocatori poco preparati negli attributi mentali o magici."
+    },
+    {
+      type: "reward",
+      title: "Ricompense",
+      text: "Sconfiggere lo Spettro Cremisi concede 68000 monete, 180 punti magia e 90 punti astuzia. È una vittoria utile per chi vuole crescere nella gestione delle forze arcane e nella lettura degli inganni."
+    },
+    {
+      type: "text",
+      title: "Consiglio del veterano",
+      text: "Non affrontarlo come se fosse solo un’ombra. Lo Spettro Cremisi sembra fragile, ma ogni sua apparizione nasconde un colpo preciso. Porta con te magia, lucidità e abbastanza salute per resistere al suo assalto."
+    }
+  ]
+},
+
+raccolta_oro: {
+  title: "Oro",
+  intro: "Nascosto nelle vene più preziose della terra, l’oro brilla come promessa di ricchezza, potere e ambizione. Non è solo una risorsa: è simbolo di prestigio, scambio e dominio economico. Chi sa raccoglierlo e conservarlo con saggezza può trasformare ogni pepita in un vantaggio decisivo.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Natura della risorsa",
+      text: "L’oro è una delle risorse più preziose di Abisso Infinito. Viene raccolto nelle caselle dedicate, conservato inizialmente nello zaino e diventa realmente disponibile solo dopo essere stato depositato nell’inventario."
+    },
+    {
+      type: "steps",
+      title: "Come funziona la raccolta",
+      items: [
+        "Raggiungi una casella risorsa dedicata all’oro.",
+        "Tira 2 dadi e calcola la somma totale.",
+        "Moltiplica il risultato per 2 per conoscere la quantità raccolta.",
+        "L’oro ottenuto viene inserito prima nello zaino.",
+        "Deposita il contenuto dello zaino nell’inventario per poter usare davvero la risorsa."
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Regole di raccolta",
+      checks: [
+        { label: "Dadi usati", value: "2d6" },
+        { label: "Valore tiro valido", value: "Da 2 a 12" },
+        { label: "Quantità ottenuta", value: "Somma dei dadi ×2" },
+        { label: "Primo deposito", value: "Zaino" },
+        { label: "Uso effettivo", value: "Dopo deposito in inventario" }
+      ]
+    },
+    {
+      type: "warning",
+      title: "Limite dello zaino",
+      text: "L’oro raccolto occupa spazio nello zaino come tutte le altre risorse. Finché resta lì, non può essere speso davvero e limita la capacità di raccogliere altro materiale. Depositarlo al momento giusto è fondamentale."
+    },
+    {
+      type: "text",
+      title: "Deposito e disponibilità",
+      text: "Solo dopo il deposito nell’inventario l’oro diventa una risorsa utilizzabile. Da quel momento può essere impiegato per acquisti importanti, reclutamenti, banca, bande, scambi o strategie economiche avanzate."
+    },
+    {
+      type: "list",
+      title: "A cosa serve l’oro",
+      items: [
+        "Reclutare bande dopo averle sconfitte",
+        "Gestire garanzie e operazioni in banca",
+        "Sostenere acquisti costosi",
+        "Completare richieste avanzate",
+        "Vendere o convertire ricchezza quando necessario",
+        "Prepararsi a fasi più dure della partita"
+      ]
+    },
+    {
+      type: "text",
+      title: "Il ruolo dell’oro",
+      text: "L’oro è una risorsa di valore superiore. Dove legno, ferro e rame sostengono la crescita strutturale, l’oro apre possibilità più rare e decisive. È una riserva di potere economico che può cambiare il ritmo della partita."
+    },
+    {
+      type: "reward",
+      title: "Valore strategico",
+      text: "Accumularlo con intelligenza permette al giocatore di affrontare scelte importanti con maggiore libertà. L’oro può diventare garanzia, pagamento, riserva o chiave per ottenere alleati e vantaggi difficili da raggiungere in altro modo."
+    },
+    {
+      type: "warning",
+      title: "Errore comune dei novizi",
+      text: "Molti giocatori vendono o spendono l’oro appena lo ottengono, attratti dal beneficio immediato. Ma l’oro vale spesso di più quando viene conservato per una scelta decisiva, come una banda, una cauzione o un passaggio economico importante."
+    },
+    {
+      type: "text",
+      title: "Consiglio del tesoriere",
+      text: "Non trattare l’oro come semplice denaro. Trattalo come leva di potere. Chi lo conserva troppo non cresce, ma chi lo spende senza piano perde una delle risorse più influenti del regno."
+    }
+  ]
+},
+
+potere_aria: {
+  title: "Potere Elementale dell’Aria",
+  intro: "L’aria non si vede, ma muove ogni cosa. Scivola tra le lame, attraversa le fessure, solleva polvere e porta con sé presagi di tempesta. Chi riesce ad assorbirne l’essenza ottiene una forza leggera, rapida e imprevedibile, utile soprattutto quando lo scontro si decide sul filo del movimento.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Natura del potere",
+      text: "Il Potere Elementale dell’Aria è una forma di energia primordiale che il giocatore può acquisire. Non è un oggetto fisico né una risorsa materiale, ma un’influenza che accompagna il personaggio durante gli scontri contro i mostri."
+    },
+    {
+      type: "text",
+      title: "Effetto",
+      text: "Una volta ottenuto, il potere dell’aria conferisce un piccolo bonus alla potenza del giocatore nei combattimenti contro i mostri. È un vantaggio leggero, ma può diventare prezioso quando lo scontro è equilibrato."
+    },
+    {
+      type: "requirements",
+      title: "Caratteristiche del potere",
+      checks: [
+        { label: "Tipo", value: "Potere elementale" },
+        { label: "Effetto", value: "Bonus contro i mostri" },
+        { label: "Intensità", value: "Leggera" },
+        { label: "Uso", value: "Automatico durante il combattimento" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Forza dell’Aria",
+      text: "L’aria rappresenta velocità, leggerezza e adattamento. Il suo potere non schiaccia il nemico con forza bruta, ma aiuta il giocatore a rendere lo scontro più fluido, rapido e difficile da prevedere."
+    },
+    {
+      type: "warning",
+      title: "Potere limitato",
+      text: "Il Potere dell’Aria non è pensato per ribaltare da solo uno scontro impossibile. È un supporto elementale leggero, utile come vantaggio aggiuntivo, ma non sostituisce preparazione, attributi e strategia."
+    },
+    {
+      type: "reward",
+      title: "Valore strategico",
+      text: "Anche un piccolo bonus può fare la differenza quando un combattimento contro un mostro si decide per poco. Il Potere dell’Aria è utile proprio perché aggiunge mobilità simbolica e spinta nei momenti in cui serve superare un margine sottile."
+    },
+    {
+      type: "text",
+      title: "Evoluzione futura",
+      text: "Questa è solo una prima forma del legame con l’aria. In futuro i poteri elementali potranno diventare più profondi, con effetti più distinti e un impatto maggiore sul modo in cui il personaggio affronta le creature del regno."
+    },
+    {
+      type: "text",
+      title: "Consiglio del custode del vento",
+      text: "Non tutto ciò che è potente deve pesare. A volte vince chi sa muoversi, adattarsi e restare imprendibile. L’aria insegna che la forza più sottile può cambiare la direzione di una battaglia."
     }
   ]
 },
