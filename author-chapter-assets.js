@@ -222,13 +222,8 @@
       caption: "Mostro di Fuoco, creatura ardente e devastante."
     },
 
-    mostro_di_fuoco: {
-      image: "img/mostro_di_fuoco_square.png",
-      caption: "Mostro di Fuoco, creatura ardente e devastante."
-    },
-
     mostro_ghiaccio: {
-      image: "img/mostro_ghiaccio.png",
+      image: "img/mostro_di_ghiaccio_square.png",
       caption: "Mostro di Ghiaccio, creatura minore legata al gelo."
     },
 
@@ -238,7 +233,7 @@
     },
 
     mostro_terra: {
-      image: "img/mostro_terra.png",
+      image: "img/mostro_terra_square.png",
       caption: "Mostro di Terra, creatura pesante e resistente."
     },
 
@@ -263,7 +258,7 @@
     },
 
     zombie: {
-      image: "img/zombie.png",
+      image: "img/zombie_square.png",
       caption: "Zombie, primo contatto con i non morti."
     },
 
