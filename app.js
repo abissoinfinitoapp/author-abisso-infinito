@@ -16,14 +16,27 @@ const tableNames = {
 const cellRulesConfig = window.AbissoCellRulesConfig;
 const CELL_RULES = cellRulesConfig?.CELL_RULES || {};
 
-const CHAPTERS = Object.entries(CELL_RULES).map(([key, value], index) => ({
-  key,
-  number: index + 1,
-  title: value?.title || key,
-  intro: value?.intro || "",
-  sections: Array.isArray(value?.sections) ? value.sections : [],
-  official: value || {}
-}));
+const CHAPTERS = Object.entries(CELL_RULES)
+  .map(([key, value]) => ({
+    key,
+    title: value?.title || key,
+    intro: value?.intro || "",
+    sections: Array.isArray(value?.sections) ? value.sections : [],
+    official: value || {}
+  }))
+  .sort((a, b) => {
+    const titleA = String(a.title || a.key || "").toLocaleLowerCase("it-IT");
+    const titleB = String(b.title || b.key || "").toLocaleLowerCase("it-IT");
+
+    return titleA.localeCompare(titleB, "it-IT", {
+      sensitivity: "base",
+      numeric: true
+    });
+  })
+  .map((chapter, index) => ({
+    ...chapter,
+    number: index + 1
+  }));
 
 let supabaseClient = null;
 let useSupabase = false;
