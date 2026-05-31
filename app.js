@@ -17,15 +17,52 @@ const tableNames = {
 const cellRulesConfig = window.AbissoCellRulesConfig;
 const CELL_RULES = cellRulesConfig?.CELL_RULES || {};
 
+const chapterCategoriesConfig = window.AuthorChapterCategories || null;
+
+const CATEGORY_DEFINITIONS = chapterCategoriesConfig?.categories || [
+  { key: "all", label: "Tutti" },
+  { key: "luoghi", label: "Luoghi" },
+  { key: "mostri", label: "Mostri" },
+  { key: "bande", label: "Bande" },
+  { key: "eventi", label: "Eventi" },
+  { key: "poteri", label: "Poteri" },
+  { key: "altro", label: "Altro" }
+];
+
+let activeChapterCategory =
+  localStorage.getItem("author_active_chapter_category") || "all";
+
 const CHAPTERS = Object.entries(CELL_RULES)
-  .map(([key, value]) => ({
-    key,
-    title: value?.title || key,
-    intro: value?.intro || "",
-    sections: Array.isArray(value?.sections) ? value.sections : [],
-    official: value || {}
-  }))
+  .map(([key, value]) => {
+    const baseChapter = {
+      key,
+      title: value?.title || key,
+      intro: value?.intro || "",
+      sections: Array.isArray(value?.sections) ? value.sections : [],
+      official: value || {}
+    };
+
+    const category = getChapterCategoryMeta(baseChapter);
+
+    return {
+      ...baseChapter,
+      categoryKey: category.key,
+      categoryLabel: category.label
+    };
+  })
   .sort((a, b) => {
+    const categoryA = String(a.categoryLabel || "").toLocaleLowerCase("it-IT");
+    const categoryB = String(b.categoryLabel || "").toLocaleLowerCase("it-IT");
+
+    const categoryCompare = categoryA.localeCompare(categoryB, "it-IT", {
+      sensitivity: "base",
+      numeric: true
+    });
+
+    if (categoryCompare !== 0) {
+      return categoryCompare;
+    }
+
     const titleA = String(a.title || a.key || "").toLocaleLowerCase("it-IT");
     const titleB = String(b.title || b.key || "").toLocaleLowerCase("it-IT");
 
@@ -50,6 +87,7 @@ let realtimeChannel = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
+  bindCategoryFilter();
   bindCommentDraft();
 
   useSupabase = shouldUseSupabase();
@@ -134,6 +172,72 @@ function shouldUseSupabase() {
     cfg.SUPABASE_URL &&
     cfg.SUPABASE_PUBLISHABLE_KEY
   );
+}
+
+function getChapterCategoryMeta(chapter) {
+  if (chapterCategoriesConfig?.getCategory) {
+    return chapterCategoriesConfig.getCategory(chapter);
+  }
+
+  return CATEGORY_DEFINITIONS.find((item) => item.key === "altro") || {
+    key: "altro",
+    label: "Altro"
+  };
+}
+
+function bindCategoryFilter() {
+  renderCategoryFilter();
+
+  const select = document.getElementById("chapterCategoryFilter");
+
+  if (!select) return;
+
+  select.addEventListener("change", () => {
+    activeChapterCategory = select.value || "all";
+
+    localStorage.setItem(
+      "author_active_chapter_category",
+      activeChapterCategory
+    );
+
+    renderChapters();
+  });
+}
+
+function renderCategoryFilter() {
+  const select = document.getElementById("chapterCategoryFilter");
+
+  if (!select) return;
+
+  const existingCategories = new Set(
+    CHAPTERS.map((chapter) => chapter.categoryKey || "altro")
+  );
+
+  const categoriesToShow = CATEGORY_DEFINITIONS.filter((category) => {
+    return category.key === "all" || existingCategories.has(category.key);
+  });
+
+  const hasActiveCategory = categoriesToShow.some((category) => {
+    return category.key === activeChapterCategory;
+  });
+
+  if (!hasActiveCategory) {
+    activeChapterCategory = "all";
+  }
+
+  select.innerHTML = categoriesToShow.map((category) => {
+    const count = category.key === "all"
+      ? CHAPTERS.length
+      : CHAPTERS.filter((chapter) => chapter.categoryKey === category.key).length;
+
+    return `
+      <option value="${escapeHtml(category.key)}">
+        ${escapeHtml(category.label)} (${count})
+      </option>
+    `;
+  }).join("");
+
+  select.value = activeChapterCategory;
 }
 
 function bindSearch() {
@@ -374,31 +478,49 @@ function renderChapters() {
   container.innerHTML = "";
 
   const chapters = CHAPTERS.filter((chapter) => {
-    const haystack = `${chapter.key} ${chapter.title} ${chapter.intro}`.toLowerCase();
-    return haystack.includes(query);
+    const haystack = `${chapter.key} ${chapter.title} ${chapter.intro} ${chapter.categoryLabel}`.toLowerCase();
+
+    const matchesSearch = haystack.includes(query);
+
+    const matchesCategory =
+      activeChapterCategory === "all" ||
+      chapter.categoryKey === activeChapterCategory;
+
+    return matchesSearch && matchesCategory;
   });
 
   if (!chapters.length) {
-    container.innerHTML = `<p class="empty">Nessun capitolo trovato.</p>`;
+    container.innerHTML = `<p class="empty">Nessun capitolo trovato in questa categoria.</p>`;
     return;
   }
 
-  chapters.forEach((chapter) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "chapter-btn";
-    btn.innerHTML = `
-      <strong>${String(chapter.number).padStart(2, "0")} - ${escapeHtml(chapter.title)}</strong>
-      <small>${escapeHtml(chapter.key)}</small>
+  container.innerHTML = chapters.map((chapter) => {
+    const isActive = currentChapter?.key === chapter.key;
+
+    return `
+      <button
+        type="button"
+        class="chapter-btn ${isActive ? "active" : ""}"
+        data-chapter-key="${escapeHtml(chapter.key)}"
+      >
+        <strong>${String(chapter.number).padStart(2, "0")} - ${escapeHtml(chapter.title)}</strong>
+        <small>
+          <span class="chapter-category-pill">${escapeHtml(chapter.categoryLabel || "Altro")}</span>
+          ${escapeHtml(chapter.key)}
+        </small>
+      </button>
     `;
+  }).join("");
 
-    btn.addEventListener("click", () => selectChapter(chapter));
+  container.querySelectorAll("[data-chapter-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const chapterKey = button.dataset.chapterKey;
+      const chapter = CHAPTERS.find((item) => item.key === chapterKey);
 
-    if (currentChapter?.key === chapter.key) {
-      btn.classList.add("active");
-    }
-
-    container.appendChild(btn);
+      if (chapter) {
+        selectChapter(chapter);
+      }
+    });
   });
 }
 

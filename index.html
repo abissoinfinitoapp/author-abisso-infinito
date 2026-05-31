@@ -47,11 +47,26 @@
 
     <main class="layout">
 
-      <aside class="sidebar">
-        <h2>Capitoli</h2>
-        <input id="chapterSearch" class="chapter-search" type="search" placeholder="Cerca capitolo..." />
-        <div id="chaptersList"></div>
-      </aside>
+<aside class="sidebar">
+  <h2>Capitoli</h2>
+
+  <div class="filter-box">
+    <label for="chapterCategoryFilter">Categoria</label>
+    <select id="chapterCategoryFilter"></select>
+  </div>
+
+  <div class="filter-box">
+    <label for="chapterSearch">Cerca capitolo</label>
+    <input
+      id="chapterSearch"
+      class="chapter-search"
+      type="search"
+      placeholder="Cerca capitolo..."
+    />
+  </div>
+
+  <div id="chaptersList"></div>
+</aside>
 
       <section class="content">
 
@@ -128,9 +143,10 @@
     </main>
   </div>
 
-  <script src="config.js"></script>
-  <script src="cell-rules-config.js"></script>
-  <script src="author-chapter-assets.js"></script>
-  <script src="app.js"></script>
+<script src="config.js"></script>
+<script src="cell-rules-config.js"></script>
+<script src="author-chapter-assets.js"></script>
+<script src="author-chapter-categories.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

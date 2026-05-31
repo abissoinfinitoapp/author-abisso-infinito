@@ -649,3 +649,38 @@ button.danger {
   font: inherit;
   line-height: 1.45;
 }
+
+
+.filter-box {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.filter-box label {
+  color: #ddd;
+  font-size: 0.95rem;
+}
+
+.filter-box select,
+.filter-box input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #0f0f0f;
+  color: #fff;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.chapter-category-pill {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 6px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 140, 0, 0.14);
+  border: 1px solid rgba(255, 140, 0, 0.28);
+  color: #ffd27a;
+  font-size: 0.82rem;
+}
