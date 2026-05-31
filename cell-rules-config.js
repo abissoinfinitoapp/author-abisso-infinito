@@ -4313,6 +4313,99 @@ pozione_emporio: {
   ]
 },
 
+ninfa: {
+  title: "Ninfa",
+  intro: "Fra radure silenziose, acque ferme e luci che sembrano danzare tra le foglie, appare la Ninfa. Non è una creatura di pura violenza: il suo pericolo nasce dalla grazia, dall’inganno e da una magia sottile che confonde chi la osserva troppo a lungo. Dove altri mostri spezzano le ossa, lei piega la volontà.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Origine della creatura",
+      text: "La Ninfa è una creatura legata alla natura antica, alla magia delle acque e agli spiriti dei boschi. Un tempo poteva essere una presenza benevola, ma la corruzione dell’Abisso ha trasformato la sua bellezza in una trappola. Ora attira i viandanti con apparenza gentile, per poi colpirli quando la loro guardia si abbassa."
+    },
+    {
+      type: "requirements",
+      title: "Identità del mostro",
+      checks: [
+        { label: "Categoria", value: "Mostro Minore" },
+        { label: "Difficoltà", value: "Media" },
+        { label: "Livello", value: "2" },
+        { label: "Potenza Totale", value: "110" },
+        { label: "Salute", value: "35" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Distribuzione del Potere",
+      checks: [
+        { label: "Forza", value: "90" },
+        { label: "Astuzia", value: "260" },
+        { label: "Ingegno", value: "220" },
+        { label: "Magia", value: "240" },
+        { label: "Destrezza", value: "290" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Accesso ai mostri",
+      checks: [
+        { label: "Per Mostri Minori", value: "Serve almeno 1 scrigno aperto" },
+        { label: "Per Mostri Maggiori", value: "Servono almeno 4 scrigni aperti" }
+      ]
+    },
+    {
+      type: "warning",
+      title: "Sigillo d’accesso",
+      text: "La Ninfa appartiene ai Mostri Minori. Per affrontarla devi aver già aperto almeno uno scrigno durante la partita. Questo requisito impedisce ai guerrieri impreparati di entrare troppo presto nel ciclo delle creature corrotte."
+    },
+    {
+      type: "text",
+      title: "Stile di combattimento",
+      text: "La Ninfa non domina con la forza fisica. La sua minaccia principale nasce da astuzia, ingegno e magia. Usa il fascino, la distrazione e l’ambiente circostante per rendere lo scontro instabile, costringendo il giocatore a combattere con lucidità e non solo con potenza."
+    },
+    {
+      type: "text",
+      title: "La minaccia dell’illusione",
+      text: "Affrontare la Ninfa significa combattere contro qualcosa che non sempre mostra il proprio vero volto. Ogni gesto può essere una trappola, ogni apparente debolezza può nascondere un inganno. Chi si affida solo alla forza rischia di colpire il nulla mentre la creatura prepara il vero attacco."
+    },
+    {
+      type: "steps",
+      title: "Come affrontarla",
+      items: [
+        "Seleziona il giocatore che combatterà.",
+        "Verifica di aver aperto almeno 1 scrigno, requisito necessario per i mostri minori.",
+        "Scegli da 1 a 5 attributi da utilizzare nello scontro.",
+        "Inserisci i risultati dei dadi per ogni attributo scelto.",
+        "Confronta la tua potenza con quella della Ninfa per determinare l’esito."
+      ]
+    },
+    {
+      type: "warning",
+      title: "Perché è pericolosa",
+      text: "La Ninfa può sembrare meno brutale di altri mostri, ma è proprio questa la sua forza. La difficoltà media e il livello 2 la rendono accessibile, ma la sua distribuzione degli attributi premia uno scontro equilibrato. Se la sottovaluti, può logorarti con inganno e magia."
+    },
+    {
+      type: "reward",
+      title: "Ricompense",
+      text: "Sconfiggere la Ninfa garantisce 12800 monete. Inoltre il vincitore ottiene +33 magia e +30 forza, come se una parte dell’energia naturale e corrotta della creatura venisse assorbita dal guerriero."
+    },
+    {
+      type: "requirements",
+      title: "Premio del vincitore",
+      checks: [
+        { label: "Monete", value: "12800" },
+        { label: "Magia", value: "+33" },
+        { label: "Forza", value: "+30" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Consiglio del veterano",
+      text: "Non lasciarti ingannare dalla grazia della Ninfa. Contro di lei serve equilibrio: abbastanza forza per resistere, abbastanza magia e astuzia per non cadere nelle sue illusioni. Chi entra nello scontro pensando di affrontare una creatura fragile rischia di uscirne spezzato nel corpo e nella mente."
+    }
+  ]
+},
+
   };
 
   window.AbissoCellRulesConfig = {
