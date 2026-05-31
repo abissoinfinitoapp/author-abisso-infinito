@@ -429,3 +429,32 @@ button.danger {
     max-height: none;
   }
 }
+
+.chapter-visual {
+  margin: 0 0 16px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.chapter-visual img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
+  background: rgba(10, 10, 10, 0.75);
+}
+
+.chapter-visual figcaption {
+  margin-top: 8px;
+  color: #cfcfcf;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}

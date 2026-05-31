@@ -3,6 +3,8 @@
 // Offline: usa localStorage.
 // Online: usa Supabase con le tabelle dedicate author_* definite in supabase-author-schema.sql.
 
+const chapterAssets = window.AuthorChapterAssets || null;
+
 const cfg = window.AUTHOR_CONFIG || {};
 const tableNames = {
   allowedUsers: cfg.TABLES?.allowedUsers || "author_allowed_users",
@@ -64,6 +66,50 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   enterLocalApp();
 });
+
+function getCurrentChapterKey(chapter) {
+  return String(
+    chapter?.key ||
+    chapter?.id ||
+    currentChapter?.key ||
+    currentChapter?.id ||
+    ""
+  ).trim();
+}
+
+function getChapterVisualAsset(chapter) {
+  const chapterKey = getCurrentChapterKey(chapter);
+
+  if (!chapterKey || !chapterAssets?.get) {
+    return null;
+  }
+
+  return chapterAssets.get(chapterKey);
+}
+
+function renderChapterVisual(chapter) {
+  const box = document.getElementById("chapterVisual");
+  const img = document.getElementById("chapterVisualImg");
+  const caption = document.getElementById("chapterVisualCaption");
+
+  if (!box || !img || !caption) return;
+
+  const asset = getChapterVisualAsset(chapter);
+
+  if (!asset?.imageUrl) {
+    box.classList.add("hidden");
+    img.removeAttribute("src");
+    img.alt = "";
+    caption.textContent = "";
+    return;
+  }
+
+  img.src = asset.imageUrl;
+  img.alt = chapter?.title || "Immagine capitolo";
+  caption.textContent = asset.caption || chapter?.title || "";
+
+  box.classList.remove("hidden");
+}
 
 function shouldUseSupabase() {
   if (cfg.USE_LOCAL_MODE === true) return false;
@@ -338,6 +384,8 @@ async function selectChapter(chapter) {
 
   const loadId = ++activeLoadId;
   currentChapter = chapter;
+
+  renderChapterVisual(chapter);
 
   loadCommentDraftForChapter(chapter);
   setCommentTarget(chapter);
