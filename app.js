@@ -82,6 +82,7 @@ let currentChapter = CHAPTERS[0] || null;
 let currentAuthorTextFromDb = "";
 let currentAuthorBlocksFromDb = new Map();
 let blockStatusTimers = new Map();
+let pendingBlockStatuses = new Map();
 let activeLoadId = 0;
 let currentAllowedUser = null;
 let realtimeChannel = null;
@@ -716,6 +717,13 @@ function setBlockInlineStatus(blockKey, message, type = "ok", autoClearMs = 5000
 
   if (!cleanBlockKey) return;
 
+  pendingBlockStatuses.set(cleanBlockKey, {
+    message,
+    type,
+    autoClearMs,
+    createdAt: Date.now()
+  });
+
   const statusEl = document.querySelector(
     `[data-author-block-status="${cleanBlockKey}"]`
   );
@@ -735,10 +743,34 @@ function setBlockInlineStatus(blockKey, message, type = "ok", autoClearMs = 5000
   const timer = window.setTimeout(() => {
     statusEl.textContent = "";
     statusEl.className = "block-inline-status";
+
     blockStatusTimers.delete(cleanBlockKey);
+    pendingBlockStatuses.delete(cleanBlockKey);
   }, autoClearMs);
 
   blockStatusTimers.set(cleanBlockKey, timer);
+}
+
+function restorePendingBlockStatuses() {
+  const now = Date.now();
+
+  pendingBlockStatuses.forEach((status, blockKey) => {
+    const elapsed = now - Number(status.createdAt || 0);
+    const total = Number(status.autoClearMs || 5000);
+    const remaining = Math.max(800, total - elapsed);
+
+    if (elapsed >= total) {
+      pendingBlockStatuses.delete(blockKey);
+      return;
+    }
+
+    setBlockInlineStatus(
+      blockKey,
+      status.message,
+      status.type,
+      remaining
+    );
+  });
 }
 
 function renderAuthorBlockEditors(chapter, rows = []) {
@@ -848,6 +880,8 @@ function renderAuthorBlockEditors(chapter, rows = []) {
       addBlockComment(button.dataset.addBlockComment);
     });
   });
+
+  restorePendingBlockStatuses();
 }
 
 function collectAuthorBlockPayloads(chapter = currentChapter) {
