@@ -711,7 +711,7 @@ function updateBlockCounter(blockKey) {
   counter.textContent = `${chars} caratteri · ${words} parole`;
 }
 
-function setBlockInlineStatus(blockKey, message, type = "ok", autoClearMs = 3500) {
+function setBlockInlineStatus(blockKey, message, type = "ok", autoClearMs = 5000) {
   const cleanBlockKey = String(blockKey || "").trim();
 
   if (!cleanBlockKey) return;
