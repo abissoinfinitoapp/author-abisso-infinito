@@ -684,3 +684,52 @@ button.danger {
   color: #ffd27a;
   font-size: 0.82rem;
 }
+
+/* Pulsanti principali dentro i blocchi autore */
+
+.block-save-btn {
+  background: #a15a03;
+  color: #fff;
+  border: 1px solid rgba(255, 210, 122, 0.35);
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.18);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.block-save-btn:hover {
+  background: #ff8c00;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 140, 0, 0.35);
+}
+
+.block-comment-save-btn {
+  background: #2f7d32;
+  color: #fff;
+  border: 1px solid rgba(125, 255, 154, 0.35);
+  box-shadow: 0 0 10px rgba(125, 255, 154, 0.12);
+  font-weight: 700;
+  opacity: 1;
+}
+
+.block-comment-save-btn:hover {
+  background: #37b24d;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(125, 255, 154, 0.28);
+}
+
+/* Evita che i pulsanti piccoli sembrino disabilitati */
+
+.author-block-card .small-btn {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.author-block-card .small-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #3c3c3c;
+  color: #999;
+  box-shadow: none;
+}

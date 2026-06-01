@@ -743,10 +743,10 @@ function renderAuthorBlockEditors(chapter, rows = []) {
 
       <button
         type="button"
-        class="small-btn"
+        class="small-btn block-save-btn"
         data-save-author-block="${escapeHtml(block.block_key)}"
       >
-        Salva blocco
+        💾 Salva blocco
       </button>
     </div>
 
@@ -781,10 +781,10 @@ function renderAuthorBlockEditors(chapter, rows = []) {
 
         <button
           type="button"
-          class="small-btn"
+          class="small-btn block-comment-save-btn"
           data-add-block-comment="${escapeHtml(block.block_key)}"
         >
-          Salva commento
+          💬 Salva commento
         </button>
       </div>
     </div>
