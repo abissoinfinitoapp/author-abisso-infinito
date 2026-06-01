@@ -1550,10 +1550,31 @@ async function addBlockComment(blockKey) {
     return;
   }
 
-  if (!body) {
-    alert("Scrivi un commento prima di salvare.");
+  if (!input) {
+    setBlockInlineStatus(
+      cleanBlockKey,
+      "Campo commento non trovato.",
+      "error",
+      0
+    );
     return;
   }
+
+  if (!body) {
+    setBlockInlineStatus(
+      cleanBlockKey,
+      "Scrivi un commento prima di salvare.",
+      "muted"
+    );
+    return;
+  }
+
+  setBlockInlineStatus(
+    cleanBlockKey,
+    "Salvataggio commento in corso...",
+    "loading",
+    0
+  );
 
   const payload = {
     chapter_key: currentChapter.key,
@@ -1567,7 +1588,7 @@ async function addBlockComment(blockKey) {
   };
 
   if (useSupabase && supabaseClient) {
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from(tableNames.comments)
       .insert({
         chapter_key: payload.chapter_key,
@@ -1576,15 +1597,28 @@ async function addBlockComment(blockKey) {
         author: payload.author,
         role: payload.role,
         body: payload.body
-      });
+      })
+      .select("*")
+      .single();
 
     if (error) {
-      console.error(error);
+      console.error("Errore salvataggio commento blocco:", error);
+
       setTextStatus("Errore salvataggio commento blocco", "error");
+      setBlockInlineStatus(
+        cleanBlockKey,
+        `Errore salvataggio commento: ${error.message || "controlla Supabase"}`,
+        "error",
+        0
+      );
+
       return;
     }
+
+    currentBlockCommentsFromDb.push(data);
   } else {
     const rows = readLocalJson(getBlockCommentsStorageKey(currentChapter.key), []);
+
     rows.push({
       ...payload,
       id: cryptoRandomId()
@@ -1594,17 +1628,24 @@ async function addBlockComment(blockKey) {
       getBlockCommentsStorageKey(currentChapter.key),
       JSON.stringify(rows)
     );
+
+    currentBlockCommentsFromDb = rows.filter((row) => {
+      return String(row.block_key || "").trim();
+    });
   }
 
-  if (input) input.value = "";
+  input.value = "";
 
+  renderBlockComments();
+
+  setTextStatus("Commento salvato correttamente", "ok");
   setBlockInlineStatus(
     cleanBlockKey,
     "✅ Commento salvato.",
     "ok"
   );
 
-  await loadBlockComments();
+  requestCurrentChapterReload?.("block-comment-save", 700);
 }
 
 async function replyBlockComment(commentId) {
@@ -1861,7 +1902,9 @@ async function loadComments(chapterKey = currentChapter?.key, loadId = activeLoa
     return;
   }
 
-  renderComments(comments);
+  renderComments(
+  comments.filter((comment) => !String(comment.block_key || "").trim())
+);
 }
 
 function renderComments(comments) {
