@@ -528,6 +528,23 @@ function renderChapters() {
   });
 }
 
+function setSafeHtml(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function setSafeText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function showBlocksError(message) {
+  setSafeHtml(
+    "authorBlocksEditor",
+    `<p class="empty error">${escapeHtml(message || "Errore caricamento blocchi.")}</p>`
+  );
+}
+
 async function selectChapter(chapter) {
   saveCurrentCommentDraft();
 
@@ -570,11 +587,25 @@ async function selectChapter(chapter) {
 async function reloadCurrentChapter(loadId = ++activeLoadId, chapterKey = currentChapter?.key) {
   if (!chapterKey) return;
 
-  await Promise.all([
-    loadAuthorText(chapterKey, loadId),
-    loadComments(chapterKey, loadId),
-    loadVersions(chapterKey, loadId)
-  ]);
+  try {
+    await loadAuthorText(chapterKey, loadId);
+  } catch (error) {
+    console.error("Errore loadAuthorText:", error);
+    setTextStatus("Errore caricamento blocchi autore.", "error");
+    showBlocksError("Errore caricamento blocchi autore.");
+  }
+
+  try {
+    await loadComments(chapterKey, loadId);
+  } catch (error) {
+    console.error("Errore loadComments:", error);
+  }
+
+  try {
+    await loadVersions(chapterKey, loadId);
+  } catch (error) {
+    console.error("Errore loadVersions:", error);
+  }
 }
 
 function renderOfficialText(chapter) {
@@ -1551,30 +1582,16 @@ async function addBlockComment(blockKey) {
   }
 
   if (!input) {
-    setBlockInlineStatus(
-      cleanBlockKey,
-      "Campo commento non trovato.",
-      "error",
-      0
-    );
+    setBlockInlineStatus(cleanBlockKey, "Campo commento non trovato.", "error", 0);
     return;
   }
 
   if (!body) {
-    setBlockInlineStatus(
-      cleanBlockKey,
-      "Scrivi un commento prima di salvare.",
-      "muted"
-    );
+    setBlockInlineStatus(cleanBlockKey, "Scrivi un commento prima di salvare.", "muted");
     return;
   }
 
-  setBlockInlineStatus(
-    cleanBlockKey,
-    "Salvataggio commento in corso...",
-    "loading",
-    0
-  );
+  setBlockInlineStatus(cleanBlockKey, "Salvataggio commento in corso...", "loading", 0);
 
   const payload = {
     chapter_key: currentChapter.key,
@@ -1607,7 +1624,7 @@ async function addBlockComment(blockKey) {
       setTextStatus("Errore salvataggio commento blocco", "error");
       setBlockInlineStatus(
         cleanBlockKey,
-        `Errore salvataggio commento: ${error.message || "controlla Supabase"}`,
+        `Errore commento: ${error.message || "controlla Supabase"}`,
         "error",
         0
       );
@@ -1639,13 +1656,11 @@ async function addBlockComment(blockKey) {
   renderBlockComments();
 
   setTextStatus("Commento salvato correttamente", "ok");
-  setBlockInlineStatus(
-    cleanBlockKey,
-    "✅ Commento salvato.",
-    "ok"
-  );
+  setBlockInlineStatus(cleanBlockKey, "✅ Commento salvato.", "ok");
 
-  requestCurrentChapterReload?.("block-comment-save", 700);
+  if (typeof requestCurrentChapterReload === "function") {
+    requestCurrentChapterReload("block-comment-save", 700);
+  }
 }
 
 async function replyBlockComment(commentId) {
@@ -1909,15 +1924,24 @@ async function loadComments(chapterKey = currentChapter?.key, loadId = activeLoa
 
 function renderComments(comments) {
   const container = document.getElementById("commentsList");
-  container.innerHTML = "";
 
-  if (!comments.length) {
-    container.innerHTML = `<p class="empty">Nessun commento per questo capitolo.</p>`;
+  if (!container) {
     return;
   }
 
-  const parents = comments.filter(comment => !comment.parent_id);
-  const replies = comments.filter(comment => comment.parent_id);
+  container.innerHTML = "";
+
+  const generalComments = comments.filter((comment) => {
+    return !String(comment.block_key || "").trim();
+  });
+
+  if (!generalComments.length) {
+    container.innerHTML = `<p class="empty">Nessun commento generale per questo capitolo.</p>`;
+    return;
+  }
+
+  const parents = generalComments.filter(comment => !comment.parent_id);
+  const replies = generalComments.filter(comment => comment.parent_id);
 
   parents.forEach(comment => {
     container.appendChild(createCommentElement(comment, replies));
@@ -2118,7 +2142,12 @@ async function loadVersions(chapterKey = currentChapter?.key, loadId = activeLoa
   }
 
   const container = document.getElementById("versionsList");
-  container.innerHTML = "";
+
+if (!container) {
+  return;
+}
+
+container.innerHTML = "";
 
   if (!versions || versions.length === 0) {
     container.innerHTML = `<p class="empty">Nessuna modifica precedente.</p>`;
