@@ -84,6 +84,8 @@ let currentAuthorBlocksFromDb = new Map();
 let blockStatusTimers = new Map();
 let pendingBlockStatuses = new Map();
 let activeLoadId = 0;
+let liveReloadTimer = null;
+let lastAuthorEditorInputAt = 0;
 let currentAllowedUser = null;
 let realtimeChannel = null;
 
@@ -864,7 +866,10 @@ function renderAuthorBlockEditors(chapter, rows = []) {
     const textarea = getBlockTextarea(block.block_key);
 
     if (textarea) {
-      textarea.addEventListener("input", () => updateBlockCounter(block.block_key));
+      textarea.addEventListener("input", () => {
+  markAuthorInputActivity();
+  updateBlockCounter(block.block_key);
+});
       updateBlockCounter(block.block_key);
     }
   });
@@ -931,6 +936,56 @@ function buildCombinedAuthorTextFromCurrentMap(chapter = currentChapter) {
   });
 
   return buildCombinedAuthorTextFromPayloads(payloads);
+}
+
+function markAuthorInputActivity() {
+  lastAuthorEditorInputAt = Date.now();
+}
+
+function hasUnsavedAuthorBlockChanges(chapter = currentChapter) {
+  if (!chapter) return false;
+
+  return collectAuthorBlockPayloads(chapter).some((payload) => {
+    const oldContent =
+      currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
+
+    return payload.content !== oldContent;
+  });
+}
+
+function requestCurrentChapterReload(reason = "realtime", delay = 500) {
+  if (!currentChapter) return;
+
+  if (liveReloadTimer) {
+    clearTimeout(liveReloadTimer);
+    liveReloadTimer = null;
+  }
+
+  liveReloadTimer = window.setTimeout(async () => {
+    liveReloadTimer = null;
+
+    if (!currentChapter) return;
+
+    const typedRecently = Date.now() - lastAuthorEditorInputAt < 1200;
+
+    if (typedRecently || hasUnsavedAuthorBlockChanges(currentChapter)) {
+      setTextStatus(
+        "Aggiornamento live sospeso: ci sono modifiche non salvate.",
+        "warning"
+      );
+      return;
+    }
+
+    const chapterKey = currentChapter.key;
+    const loadId = ++activeLoadId;
+
+    try {
+      await reloadCurrentChapter(loadId, chapterKey);
+    } catch (error) {
+      console.error("Errore reload live author:", reason, error);
+      setTextStatus("Errore aggiornamento live.", "error");
+    }
+  }, Math.max(0, Number(delay) || 0));
 }
 
 async function loadAuthorText(chapterKey = currentChapter?.key, loadId = activeLoadId) {
@@ -1157,9 +1212,9 @@ async function saveAuthorText() {
   const editNoteEl = document.getElementById("editNote");
   if (editNoteEl) editNoteEl.value = "";
 
-  setTextStatus("Blocchi autore salvati correttamente", "ok");
+  await reloadCurrentChapter(++activeLoadId, currentChapter.key);
 
-  await loadVersions();
+setTextStatus("Blocchi autore salvati correttamente", "ok");
 }
 
 async function saveAuthorBlock(blockKey) {
@@ -1321,16 +1376,16 @@ async function saveAuthorBlock(blockKey) {
     );
   }
 
-  currentAuthorTextFromDb = combinedContent;
+ currentAuthorTextFromDb = combinedContent;
 
-  setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
-  setBlockInlineStatus(
-    payload.block_key,
-    "✅ Blocco salvato correttamente.",
-    "ok"
-  );
+await reloadCurrentChapter(++activeLoadId, currentChapter.key);
 
-  await loadVersions();
+setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
+setBlockInlineStatus(
+  payload.block_key,
+  "✅ Blocco salvato correttamente.",
+  "ok"
+);
 }
 
 let currentBlockCommentsFromDb = [];
@@ -2060,8 +2115,7 @@ function startRealtime() {
         const row = payload.new || payload.old;
 
         if (!row || row.chapter_key === currentChapter?.key) {
-          loadComments?.();
-          loadBlockComments?.();
+          requestCurrentChapterReload("comments", 350);
         }
       }
     )
@@ -2070,8 +2124,9 @@ function startRealtime() {
       { event: "*", schema: "public", table: tableNames.texts },
       payload => {
         const row = payload.new || payload.old;
+
         if (row && row.chapter_key === currentChapter?.key) {
-          loadAuthorText();
+          requestCurrentChapterReload("texts", 500);
         }
       }
     )
@@ -2080,8 +2135,9 @@ function startRealtime() {
       { event: "*", schema: "public", table: tableNames.blocks },
       payload => {
         const row = payload.new || payload.old;
+
         if (row && row.chapter_key === currentChapter?.key) {
-          loadAuthorText();
+          requestCurrentChapterReload("blocks", 500);
         }
       }
     )
@@ -2090,12 +2146,19 @@ function startRealtime() {
       { event: "*", schema: "public", table: tableNames.versions },
       payload => {
         const row = payload.new || payload.old;
+
         if (row && row.chapter_key === currentChapter?.key) {
           loadVersions();
         }
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      console.log("[AUTHOR REALTIME]", status);
+
+      if (status === "SUBSCRIBED") {
+        requestCurrentChapterReload("subscribed", 300);
+      }
+    });
 }
 
 function setTextStatus(message, type = "") {
