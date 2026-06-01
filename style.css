@@ -733,3 +733,27 @@ button.danger {
   color: #999;
   box-shadow: none;
 }
+
+.block-inline-status {
+  min-height: 22px;
+  margin: -4px 0 2px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: #aaa;
+}
+
+.block-inline-status.ok {
+  color: #7dff9a;
+}
+
+.block-inline-status.error {
+  color: #ff9a9a;
+}
+
+.block-inline-status.loading {
+  color: #ffd27a;
+}
+
+.block-inline-status.muted {
+  color: #b8b8b8;
+}

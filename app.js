@@ -81,6 +81,7 @@ let useSupabase = false;
 let currentChapter = CHAPTERS[0] || null;
 let currentAuthorTextFromDb = "";
 let currentAuthorBlocksFromDb = new Map();
+let blockStatusTimers = new Map();
 let activeLoadId = 0;
 let currentAllowedUser = null;
 let realtimeChannel = null;
@@ -710,6 +711,36 @@ function updateBlockCounter(blockKey) {
   counter.textContent = `${chars} caratteri · ${words} parole`;
 }
 
+function setBlockInlineStatus(blockKey, message, type = "ok", autoClearMs = 3500) {
+  const cleanBlockKey = String(blockKey || "").trim();
+
+  if (!cleanBlockKey) return;
+
+  const statusEl = document.querySelector(
+    `[data-author-block-status="${cleanBlockKey}"]`
+  );
+
+  if (!statusEl) return;
+
+  if (blockStatusTimers.has(cleanBlockKey)) {
+    clearTimeout(blockStatusTimers.get(cleanBlockKey));
+    blockStatusTimers.delete(cleanBlockKey);
+  }
+
+  statusEl.textContent = message || "";
+  statusEl.className = `block-inline-status ${type}`.trim();
+
+  if (!message || !autoClearMs) return;
+
+  const timer = window.setTimeout(() => {
+    statusEl.textContent = "";
+    statusEl.className = "block-inline-status";
+    blockStatusTimers.delete(cleanBlockKey);
+  }, autoClearMs);
+
+  blockStatusTimers.set(cleanBlockKey, timer);
+}
+
 function renderAuthorBlockEditors(chapter, rows = []) {
   const container = document.getElementById("authorBlocksEditor");
 
@@ -759,6 +790,11 @@ function renderAuthorBlockEditors(chapter, rows = []) {
     <div class="author-block-footer">
       <span data-author-block-counter="${escapeHtml(block.block_key)}">0 caratteri · 0 parole</span>
     </div>
+    <p
+      class="block-inline-status"
+      data-author-block-status="${escapeHtml(block.block_key)}"
+      aria-live="polite"
+    ></p>
 
     <div class="block-comments-box">
       <div class="block-comments-head">
@@ -1112,10 +1148,21 @@ async function saveAuthorBlock(blockKey) {
 
   if (payload.content === oldContent) {
     setTextStatus(`Nessuna modifica nel blocco: ${payload.block_title}`);
+    setBlockInlineStatus(
+      payload.block_key,
+      "Nessuna modifica da salvare.",
+      "muted"
+    );
     return;
   }
 
   setTextStatus(`Salvataggio blocco: ${payload.block_title}...`);
+  setBlockInlineStatus(
+    payload.block_key,
+    "Salvataggio in corso...",
+    "loading",
+    0
+  );
 
   const updatedBy = `${user.name} - ${user.role}`;
 
@@ -1151,6 +1198,12 @@ async function saveAuthorBlock(blockKey) {
     if (versionError) {
       console.error(versionError);
       setTextStatus("Errore nel salvataggio della cronologia", "error");
+      setBlockInlineStatus(
+        payload.block_key,
+        "Errore nel salvataggio della cronologia.",
+        "error",
+        0
+      );
       return;
     }
 
@@ -1163,6 +1216,12 @@ async function saveAuthorBlock(blockKey) {
     if (blockError) {
       console.error(blockError);
       setTextStatus("Errore nel salvataggio del blocco", "error");
+      setBlockInlineStatus(
+        payload.block_key,
+        "Errore nel salvataggio del blocco.",
+        "error",
+        0
+      );
       return;
     }
   } else {
@@ -1213,6 +1272,12 @@ async function saveAuthorBlock(blockKey) {
     if (textError) {
       console.error(textError);
       setTextStatus("Blocco salvato, ma errore nel testo completo", "error");
+      setBlockInlineStatus(
+        payload.block_key,
+        "Blocco salvato, ma errore nel testo completo.",
+        "error",
+        0
+      );
       return;
     }
   } else {
@@ -1225,6 +1290,11 @@ async function saveAuthorBlock(blockKey) {
   currentAuthorTextFromDb = combinedContent;
 
   setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
+  setBlockInlineStatus(
+    payload.block_key,
+    "✅ Blocco salvato correttamente.",
+    "ok"
+  );
 
   await loadVersions();
 }
@@ -1438,6 +1508,12 @@ async function addBlockComment(blockKey) {
   }
 
   if (input) input.value = "";
+
+  setBlockInlineStatus(
+    cleanBlockKey,
+    "✅ Commento salvato.",
+    "ok"
+  );
 
   await loadBlockComments();
 }
