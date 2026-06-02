@@ -82,6 +82,8 @@ let currentChapter = CHAPTERS[0] || null;
 let currentAuthorTextFromDb = "";
 let currentAuthorBlocksFromDb = new Map();
 let blockStatusTimers = new Map();
+let activeBlockSaveKeys = new Set();
+let lastLocalAuthorSaveAt = 0;
 let pendingBlockStatuses = new Map();
 let activeLoadId = 0;
 let liveReloadTimer = null;
@@ -93,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
   bindCategoryFilter();
   bindCommentDraft();
+  bindGlobalActionButtons();
 
   useSupabase = shouldUseSupabase();
 
@@ -261,6 +264,29 @@ function bindCommentDraft() {
       getCommentDraftKey(currentChapter.key),
       textarea.value
     );
+  });
+}
+
+function bindGlobalActionButtons() {
+  const actions = [
+    ["loginBtn", loginUser],
+    ["logoutBtn", logoutUser],
+    ["saveUserBtn", saveUser],
+    ["saveAuthorTextBtn", saveAuthorText],
+    ["addCommentBtn", () => addComment()]
+  ];
+
+  actions.forEach(([id, handler]) => {
+    const button = document.getElementById(id);
+
+    if (!button || button.dataset.bound === "1") return;
+
+    button.dataset.bound = "1";
+
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      handler();
+    });
   });
 }
 
@@ -806,6 +832,21 @@ function restorePendingBlockStatuses() {
   });
 }
 
+function getBlockSaveButton(blockKey) {
+  return document.querySelector(`[data-save-author-block="${blockKey}"]`);
+}
+
+function setBlockSaveButtonState(blockKey, isSaving) {
+  const button = getBlockSaveButton(blockKey);
+
+  if (!button) return;
+
+  button.disabled = !!isSaving;
+  button.textContent = isSaving
+    ? "Salvataggio..."
+    : "💾 Salva blocco";
+}
+
 function renderAuthorBlockEditors(chapter, rows = []) {
   const container = document.getElementById("authorBlocksEditor");
 
@@ -1249,6 +1290,23 @@ setTextStatus("Blocchi autore salvati correttamente", "ok");
 }
 
 async function saveAuthorBlock(blockKey) {
+  const cleanBlockKey = String(blockKey || "").trim();
+
+  if (!cleanBlockKey) {
+    alert("Blocco non valido.");
+    return;
+  }
+
+  if (activeBlockSaveKeys.has(cleanBlockKey)) {
+    setBlockInlineStatus(
+      cleanBlockKey,
+      "Salvataggio già in corso...",
+      "loading",
+      0
+    );
+    return;
+  }
+
   const user = getUser();
 
   if (!currentChapter) {
@@ -1257,14 +1315,15 @@ async function saveAuthorBlock(blockKey) {
   }
 
   const payload = collectAuthorBlockPayloads(currentChapter)
-    .find((item) => item.block_key === blockKey);
+    .find((item) => item.block_key === cleanBlockKey);
 
   if (!payload) {
     alert("Blocco non trovato.");
     return;
   }
 
-  const oldContent = currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
+  const oldContent =
+    currentAuthorBlocksFromDb.get(payload.block_key)?.content || "";
 
   if (payload.content === oldContent) {
     setTextStatus(`Nessuna modifica nel blocco: ${payload.block_title}`);
@@ -1276,6 +1335,9 @@ async function saveAuthorBlock(blockKey) {
     return;
   }
 
+  activeBlockSaveKeys.add(cleanBlockKey);
+  setBlockSaveButtonState(cleanBlockKey, true);
+
   setTextStatus(`Salvataggio blocco: ${payload.block_title}...`);
   setBlockInlineStatus(
     payload.block_key,
@@ -1284,139 +1346,129 @@ async function saveAuthorBlock(blockKey) {
     0
   );
 
-  const updatedBy = `${user.name} - ${user.role}`;
+  try {
+    const updatedBy = `${user.name} - ${user.role}`;
 
-  const blockPayload = {
-    chapter_key: payload.chapter_key,
-    block_key: payload.block_key,
-    block_index: payload.block_index,
-    block_title: payload.block_title,
-    official_type: payload.official_type,
-    content: payload.content,
-    updated_by: updatedBy,
-    updated_at: new Date().toISOString()
-  };
+    const blockPayload = {
+      chapter_key: payload.chapter_key,
+      block_key: payload.block_key,
+      block_index: payload.block_index,
+      block_title: payload.block_title,
+      official_type: payload.official_type,
+      content: payload.content,
+      updated_by: updatedBy,
+      updated_at: new Date().toISOString()
+    };
 
-  const versionPayload = {
-    chapter_key: currentChapter.key,
-    content: currentAuthorTextFromDb || "[Prima versione vuota]",
-    edited_by: updatedBy,
-    edit_note: `Modifica blocco: ${payload.block_title}`,
-    created_at: new Date().toISOString()
-  };
+    const allPayloads = collectAuthorBlockPayloads(currentChapter);
+    const combinedContent = buildCombinedAuthorTextFromPayloads(allPayloads);
 
-  if (useSupabase && supabaseClient) {
-    const { error: versionError } = await supabaseClient
-      .from(tableNames.versions)
-      .insert({
-        chapter_key: versionPayload.chapter_key,
-        content: versionPayload.content,
-        edited_by: versionPayload.edited_by,
-        edit_note: versionPayload.edit_note
+    const textPayload = {
+      chapter_key: currentChapter.key,
+      content: combinedContent,
+      updated_by: updatedBy,
+      updated_at: new Date().toISOString()
+    };
+
+    const versionPayload = {
+      chapter_key: currentChapter.key,
+      content: currentAuthorTextFromDb || "[Prima versione vuota]",
+      edited_by: updatedBy,
+      edit_note: `Modifica blocco: ${payload.block_title}`,
+      created_at: new Date().toISOString()
+    };
+
+    if (useSupabase && supabaseClient) {
+      const { error: blockError } = await supabaseClient
+        .from(tableNames.blocks)
+        .upsert(blockPayload, {
+          onConflict: "chapter_key,block_key"
+        });
+
+      if (blockError) {
+        throw blockError;
+      }
+
+      const { error: textError } = await supabaseClient
+        .from(tableNames.texts)
+        .upsert(textPayload, {
+          onConflict: "chapter_key"
+        });
+
+      if (textError) {
+        throw textError;
+      }
+
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.versions)
+        .insert({
+          chapter_key: versionPayload.chapter_key,
+          content: versionPayload.content,
+          edited_by: versionPayload.edited_by,
+          edit_note: versionPayload.edit_note
+        });
+
+      if (versionError) {
+        console.warn("Cronologia non salvata, ma blocco salvato:", versionError);
+      }
+    } else {
+      const versions = readLocalJson(getVersionsStorageKey(currentChapter.key), []);
+      versions.unshift({
+        ...versionPayload,
+        id: cryptoRandomId()
       });
 
-    if (versionError) {
-      console.error(versionError);
-      setTextStatus("Errore nel salvataggio della cronologia", "error");
-      setBlockInlineStatus(
-        payload.block_key,
-        "Errore nel salvataggio della cronologia.",
-        "error",
-        0
+      localStorage.setItem(
+        getVersionsStorageKey(currentChapter.key),
+        JSON.stringify(versions)
       );
-      return;
-    }
 
-    const { error: blockError } = await supabaseClient
-      .from(tableNames.blocks)
-      .upsert(blockPayload, {
-        onConflict: "chapter_key,block_key"
+      const existingRows = readLocalJson(getBlocksStorageKey(currentChapter.key), []);
+      const rowsMap = new Map();
+
+      existingRows.forEach((row) => {
+        rowsMap.set(row.block_key, row);
       });
 
-    if (blockError) {
-      console.error(blockError);
-      setTextStatus("Errore nel salvataggio del blocco", "error");
-      setBlockInlineStatus(
-        payload.block_key,
-        "Errore nel salvataggio del blocco.",
-        "error",
-        0
+      rowsMap.set(blockPayload.block_key, blockPayload);
+
+      localStorage.setItem(
+        getBlocksStorageKey(currentChapter.key),
+        JSON.stringify(Array.from(rowsMap.values()))
       );
-      return;
+
+      localStorage.setItem(
+        getTextStorageKey(currentChapter.key),
+        JSON.stringify(textPayload)
+      );
     }
-  } else {
-    const versions = readLocalJson(getVersionsStorageKey(currentChapter.key), []);
-    versions.unshift({
-      ...versionPayload,
-      id: cryptoRandomId()
-    });
 
-    localStorage.setItem(
-      getVersionsStorageKey(currentChapter.key),
-      JSON.stringify(versions)
+    currentAuthorBlocksFromDb.set(blockPayload.block_key, blockPayload);
+    currentAuthorTextFromDb = combinedContent;
+    lastLocalAuthorSaveAt = Date.now();
+
+    setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
+    setBlockInlineStatus(
+      payload.block_key,
+      "✅ Blocco salvato correttamente.",
+      "ok"
     );
 
-    const existingRows = readLocalJson(getBlocksStorageKey(currentChapter.key), []);
-    const rowsMap = new Map();
+    await loadVersions(currentChapter.key, activeLoadId);
+  } catch (error) {
+    console.error("Errore saveAuthorBlock:", error);
 
-    existingRows.forEach((row) => {
-      rowsMap.set(row.block_key, row);
-    });
-
-    rowsMap.set(blockPayload.block_key, blockPayload);
-
-    localStorage.setItem(
-      getBlocksStorageKey(currentChapter.key),
-      JSON.stringify(Array.from(rowsMap.values()))
+    setTextStatus("Errore nel salvataggio del blocco", "error");
+    setBlockInlineStatus(
+      payload.block_key,
+      `Errore salvataggio: ${error.message || "controlla console"}`,
+      "error",
+      0
     );
+  } finally {
+    activeBlockSaveKeys.delete(cleanBlockKey);
+    setBlockSaveButtonState(cleanBlockKey, false);
   }
-
-  currentAuthorBlocksFromDb.set(blockPayload.block_key, blockPayload);
-
-  const combinedContent = buildCombinedAuthorTextFromCurrentMap(currentChapter);
-
-  const textPayload = {
-    chapter_key: currentChapter.key,
-    content: combinedContent,
-    updated_by: updatedBy,
-    updated_at: new Date().toISOString()
-  };
-
-  if (useSupabase && supabaseClient) {
-    const { error: textError } = await supabaseClient
-      .from(tableNames.texts)
-      .upsert(textPayload, {
-        onConflict: "chapter_key"
-      });
-
-    if (textError) {
-      console.error(textError);
-      setTextStatus("Blocco salvato, ma errore nel testo completo", "error");
-      setBlockInlineStatus(
-        payload.block_key,
-        "Blocco salvato, ma errore nel testo completo.",
-        "error",
-        0
-      );
-      return;
-    }
-  } else {
-    localStorage.setItem(
-      getTextStorageKey(currentChapter.key),
-      JSON.stringify(textPayload)
-    );
-  }
-
- currentAuthorTextFromDb = combinedContent;
-
-await reloadCurrentChapter(++activeLoadId, currentChapter.key);
-
-setTextStatus(`Blocco salvato: ${payload.block_title}`, "ok");
-setBlockInlineStatus(
-  payload.block_key,
-  "✅ Blocco salvato correttamente.",
-  "ok"
-);
 }
 
 let currentBlockCommentsFromDb = [];
@@ -2186,20 +2238,10 @@ function startRealtime() {
       payload => {
         const row = payload.new || payload.old;
 
-        if (!row || row.chapter_key === currentChapter?.key) {
-          requestCurrentChapterReload("comments", 350);
-        }
-      }
-    )
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: tableNames.texts },
-      payload => {
-        const row = payload.new || payload.old;
+        if (!row || row.chapter_key !== currentChapter?.key) return;
 
-        if (row && row.chapter_key === currentChapter?.key) {
-          requestCurrentChapterReload("texts", 500);
-        }
+        loadComments?.();
+        loadBlockComments?.();
       }
     )
     .on(
@@ -2208,9 +2250,50 @@ function startRealtime() {
       payload => {
         const row = payload.new || payload.old;
 
-        if (row && row.chapter_key === currentChapter?.key) {
-          requestCurrentChapterReload("blocks", 500);
+        if (!row || row.chapter_key !== currentChapter?.key) return;
+
+        const isLocalSaveRecent = Date.now() - lastLocalAuthorSaveAt < 2500;
+        const isSavingNow = activeBlockSaveKeys.size > 0;
+
+        if (isLocalSaveRecent || isSavingNow) {
+          return;
         }
+
+        if (hasUnsavedAuthorBlockChanges?.(currentChapter)) {
+          setTextStatus(
+            "Aggiornamento live sospeso: ci sono modifiche non salvate.",
+            "warning"
+          );
+          return;
+        }
+
+        requestCurrentChapterReload?.("blocks", 600);
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: tableNames.texts },
+      payload => {
+        const row = payload.new || payload.old;
+
+        if (!row || row.chapter_key !== currentChapter?.key) return;
+
+        const isLocalSaveRecent = Date.now() - lastLocalAuthorSaveAt < 2500;
+        const isSavingNow = activeBlockSaveKeys.size > 0;
+
+        if (isLocalSaveRecent || isSavingNow) {
+          return;
+        }
+
+        if (hasUnsavedAuthorBlockChanges?.(currentChapter)) {
+          setTextStatus(
+            "Aggiornamento live sospeso: ci sono modifiche non salvate.",
+            "warning"
+          );
+          return;
+        }
+
+        requestCurrentChapterReload?.("texts", 800);
       }
     )
     .on(
@@ -2226,10 +2309,6 @@ function startRealtime() {
     )
     .subscribe((status) => {
       console.log("[AUTHOR REALTIME]", status);
-
-      if (status === "SUBSCRIBED") {
-        requestCurrentChapterReload("subscribed", 300);
-      }
     });
 }
 
