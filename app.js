@@ -17,9 +17,18 @@ const tableNames = {
 const cellRulesConfig = window.AbissoCellRulesConfig;
 const CELL_RULES = cellRulesConfig?.CELL_RULES || {};
 
+const playerBackgroundsConfig = window.AbissoPlayerBackgroundsConfig || null;
+const PLAYER_BACKGROUND_RULES =
+  playerBackgroundsConfig?.PLAYER_BACKGROUND_RULES || {};
+
+const AUTHOR_RULES = {
+  ...CELL_RULES,
+  ...PLAYER_BACKGROUND_RULES
+};
+
 const chapterCategoriesConfig = window.AuthorChapterCategories || null;
 
-const CATEGORY_DEFINITIONS = chapterCategoriesConfig?.categories || [
+const BASE_CATEGORY_DEFINITIONS = chapterCategoriesConfig?.categories || [
   { key: "all", label: "Tutti" },
   { key: "luoghi", label: "Luoghi" },
   { key: "mostri", label: "Mostri" },
@@ -29,17 +38,27 @@ const CATEGORY_DEFINITIONS = chapterCategoriesConfig?.categories || [
   { key: "altro", label: "Altro" }
 ];
 
+const CATEGORY_DEFINITIONS = [
+  ...BASE_CATEGORY_DEFINITIONS.filter((category) => {
+    return category.key !== "giocatori";
+  }),
+  { key: "giocatori", label: "Giocatori" }
+];
+
 let activeChapterCategory =
   localStorage.getItem("author_active_chapter_category") || "all";
 
-const CHAPTERS = Object.entries(CELL_RULES)
+const CHAPTERS = Object.entries(AUTHOR_RULES)
   .map(([key, value]) => {
+    const source = value && typeof value === "object" ? value : {};
+
     const baseChapter = {
+      ...source,
       key,
-      title: value?.title || key,
-      intro: value?.intro || "",
-      sections: Array.isArray(value?.sections) ? value.sections : [],
-      official: value || {}
+      title: source.title || key,
+      intro: source.intro || "",
+      sections: Array.isArray(source.sections) ? source.sections : [],
+      official: source
     };
 
     const category = getChapterCategoryMeta(baseChapter);
@@ -75,6 +94,13 @@ const CHAPTERS = Object.entries(CELL_RULES)
     ...chapter,
     number: index + 1
   }));
+
+  window.AUTHOR_DEBUG = {
+  AUTHOR_RULES,
+  PLAYER_BACKGROUND_RULES,
+  CHAPTERS,
+  CATEGORY_DEFINITIONS
+};
 
 let supabaseClient = null;
 let useSupabase = false;
@@ -140,11 +166,22 @@ function getCurrentChapterKey(chapter) {
 function getChapterVisualAsset(chapter) {
   const chapterKey = getCurrentChapterKey(chapter);
 
-  if (!chapterKey || !chapterAssets?.get) {
-    return null;
+  if (chapterKey && chapterAssets?.get) {
+    const asset = chapterAssets.get(chapterKey);
+
+    if (asset?.imageUrl) {
+      return asset;
+    }
   }
 
-  return chapterAssets.get(chapterKey);
+  if (chapter?.imageUrl) {
+    return {
+      imageUrl: chapter.imageUrl,
+      caption: chapter.caption || chapter.title || ""
+    };
+  }
+
+  return null;
 }
 
 function renderChapterVisual(chapter) {
@@ -182,6 +219,27 @@ function shouldUseSupabase() {
 }
 
 function getChapterCategoryMeta(chapter) {
+  const directCategoryKey = String(
+    chapter?.categoryKey ||
+    chapter?.category ||
+    ""
+  ).trim();
+
+  if (directCategoryKey) {
+    const directCategory = CATEGORY_DEFINITIONS.find((item) => {
+      return item.key === directCategoryKey;
+    });
+
+    if (directCategory) {
+      return directCategory;
+    }
+
+    return {
+      key: directCategoryKey,
+      label: chapter?.categoryLabel || directCategoryKey
+    };
+  }
+
   if (chapterCategoriesConfig?.getCategory) {
     return chapterCategoriesConfig.getCategory(chapter);
   }
