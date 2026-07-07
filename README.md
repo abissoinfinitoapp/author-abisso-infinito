@@ -35,3 +35,35 @@ Per ora `config.js` è in modalità offline con `USE_LOCAL_MODE: true`, quindi s
 - `author_text_versions`: cronologia dei testi precedenti.
 - `author_comments`: commenti e risposte.
 - `author_allowed_users`: whitelist accesso.
+
+## Testi delle quest
+
+- `quest-text-catalog.js`: catalogo generato dai tre file del gioco.
+- `author_quest_texts`: bozze private dell'autore.
+- `author_quest_text_versions`: cronologia delle riscritture.
+- `author_published_quest_texts`: soli testi approvati, leggibili dal gioco.
+- `scripts/generate-quest-text-catalog.mjs`: rigenera il catalogo quando cambiano
+  `map-objects-library.js`, `mini-maps-config.js` o
+  `main-map-interactions-config.js`.
+
+Per rigenerare:
+
+```powershell
+node scripts/generate-quest-text-catalog.mjs
+```
+
+L'integrazione da copiare nel progetto gioco si trova in `game-integration/`.
+
+## Descrizioni armi
+
+- `author-weapons-catalog.js`: catalogo generato da `armi.html`.
+- `author_weapon_texts`: un blocco bozza per ogni arma.
+- `author_weapon_text_versions`: cronologia delle riscritture.
+- `author_published_weapon_texts`: descrizioni approvate, leggibili dal gioco.
+- `scripts/generate-weapon-catalog.mjs`: rigenera il catalogo quando cambia `armi.html`.
+
+Per rigenerare dal percorso predefinito:
+
+```powershell
+node scripts/generate-weapon-catalog.mjs
+```

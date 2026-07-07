@@ -30,7 +30,12 @@
     <header class="topbar">
       <div>
         <h1>Area Autore</h1>
-        <p>Capitoli ufficiali, riscrittura autore, commenti e revisioni</p>
+        <p>Capitoli, testi delle quest, commenti e revisioni</p>
+        <nav class="workspace-tabs" aria-label="Sezioni area autore">
+          <button id="chaptersTabBtn" type="button" class="workspace-tab active">Capitoli</button>
+          <button id="questsTabBtn" type="button" class="workspace-tab">Testi quest</button>
+          <button id="weaponsTabBtn" type="button" class="workspace-tab">Armi</button>
+        </nav>
       </div>
 
       <div class="user-box">
@@ -45,7 +50,7 @@
       </div>
     </header>
 
-    <main class="layout">
+    <main id="chaptersWorkspace" class="layout">
 
 <aside class="sidebar">
   <h2>Capitoli</h2>
@@ -141,6 +146,95 @@
       </section>
 
     </main>
+
+    <main id="questsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Testi quest</h2>
+
+        <div class="filter-box">
+          <label for="questSourceFilter">File sorgente</label>
+          <select id="questSourceFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="questSearch">Cerca elemento</label>
+          <input id="questSearch" type="search" placeholder="Titolo, chiave o testo..." />
+        </div>
+
+        <p id="questCatalogMeta" class="status"></p>
+        <div id="questUnitsList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Elemento quest selezionato</p>
+            <h2 id="questUnitTitle">Seleziona un elemento</h2>
+            <p id="questUnitMeta" class="status"></p>
+          </div>
+          <button id="reloadQuestUnitBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            A sinistra trovi il testo provvisorio estratto dai tre file di gioco.
+            Riscrivilo nel campo autore. La pubblicazione rende disponibile il testo
+            al gioco senza modificare requisiti, effetti, stati o sequenze.
+          </p>
+        </div>
+
+        <div id="questFieldsEditor">
+          <div class="card">
+            <p class="empty">Seleziona un elemento quest dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main id="weaponsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Armi</h2>
+
+        <div class="filter-box">
+          <label for="weaponCharacterFilter">Personaggio</label>
+          <select id="weaponCharacterFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="weaponSearch">Cerca arma</label>
+          <input id="weaponSearch" type="search" placeholder="Nome arma, personaggio o descrizione..." />
+        </div>
+
+        <p id="weaponCatalogMeta" class="status"></p>
+        <div id="weaponsList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Arma selezionata</p>
+            <h2 id="weaponTitle">Seleziona un'arma</h2>
+            <p id="weaponMeta" class="status"></p>
+          </div>
+          <button id="reloadWeaponBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Ogni arma ha un unico blocco editoriale: la descrizione provvisoria
+            estratta dal file gioco e il testo autore da salvare o pubblicare.
+          </p>
+        </div>
+
+        <div id="weaponBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona un'arma dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
 <script src="config.js"></script>
@@ -148,6 +242,8 @@
 <script src="author-chapter-assets.js"></script>
 <script src="author-chapter-categories.js"></script>
 <script src="author-player-backgrounds-config.js"></script>
+<script src="quest-text-catalog.js"></script>
+<script src="author-weapons-catalog.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

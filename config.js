@@ -10,6 +10,12 @@ window.AUTHOR_CONFIG = {
     texts: "author_chapter_texts",
     blocks: "author_chapter_blocks",
     versions: "author_text_versions",
-    comments: "author_comments"
+    comments: "author_comments",
+    questTexts: "author_quest_texts",
+    questVersions: "author_quest_text_versions",
+    publishedQuestTexts: "author_published_quest_texts",
+    weaponTexts: "author_weapon_texts",
+    weaponVersions: "author_weapon_text_versions",
+    publishedWeaponTexts: "author_published_weapon_texts"
   }
 };

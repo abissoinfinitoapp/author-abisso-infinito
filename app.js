@@ -11,7 +11,15 @@ const tableNames = {
   texts: cfg.TABLES?.texts || "author_chapter_texts",
   blocks: cfg.TABLES?.blocks || "author_chapter_blocks",
   versions: cfg.TABLES?.versions || "author_text_versions",
-  comments: cfg.TABLES?.comments || "author_comments"
+  comments: cfg.TABLES?.comments || "author_comments",
+  questTexts: cfg.TABLES?.questTexts || "author_quest_texts",
+  questVersions: cfg.TABLES?.questVersions || "author_quest_text_versions",
+  publishedQuestTexts:
+    cfg.TABLES?.publishedQuestTexts || "author_published_quest_texts",
+  weaponTexts: cfg.TABLES?.weaponTexts || "author_weapon_texts",
+  weaponVersions: cfg.TABLES?.weaponVersions || "author_weapon_text_versions",
+  publishedWeaponTexts:
+    cfg.TABLES?.publishedWeaponTexts || "author_published_weapon_texts"
 };
 
 const cellRulesConfig = window.AbissoCellRulesConfig;
@@ -116,12 +124,27 @@ let liveReloadTimer = null;
 let lastAuthorEditorInputAt = 0;
 let currentAllowedUser = null;
 let realtimeChannel = null;
+const questCatalog = window.AbissoQuestTextCatalog || { units: [], sources: [] };
+let currentQuestUnit = questCatalog.units?.[0] || null;
+let currentQuestRows = new Map();
+let currentPublishedQuestRows = new Map();
+let questLoadId = 0;
+const weaponCatalog = window.AuthorWeaponsCatalog || {
+  weapons: [],
+  characters: []
+};
+let currentWeapon = weaponCatalog.weapons?.[0] || null;
+let currentWeaponRows = new Map();
+let currentPublishedWeaponRows = new Map();
+let weaponLoadId = 0;
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
   bindCategoryFilter();
   bindCommentDraft();
   bindGlobalActionButtons();
+  bindQuestWorkspace();
+  bindWeaponWorkspace();
 
   useSupabase = shouldUseSupabase();
 
@@ -209,6 +232,10 @@ function renderChapterVisual(chapter) {
 }
 
 function shouldUseSupabase() {
+  if (new URLSearchParams(window.location.search).get("offline") === "1") {
+    return false;
+  }
+
   if (cfg.USE_LOCAL_MODE === true) return false;
 
   return Boolean(
@@ -2377,6 +2404,827 @@ function setTextStatus(message, type = "") {
 
   status.textContent = message || "";
   status.className = `status ${type}`.trim();
+}
+
+function bindQuestWorkspace() {
+  const chaptersTab = document.getElementById("chaptersTabBtn");
+  const questsTab = document.getElementById("questsTabBtn");
+  const sourceFilter = document.getElementById("questSourceFilter");
+  const search = document.getElementById("questSearch");
+  const reloadButton = document.getElementById("reloadQuestUnitBtn");
+
+  chaptersTab?.addEventListener("click", () => switchAuthorWorkspace("chapters"));
+  questsTab?.addEventListener("click", () => switchAuthorWorkspace("quests"));
+  sourceFilter?.addEventListener("change", renderQuestUnits);
+  search?.addEventListener("input", renderQuestUnits);
+  reloadButton?.addEventListener("click", () => loadCurrentQuestUnit());
+
+  if (sourceFilter) {
+    sourceFilter.innerHTML = [
+      `<option value="all">Tutti i file</option>`,
+      ...(questCatalog.sources || []).map((source) => `
+        <option value="${escapeHtml(source.id)}">${escapeHtml(source.label)}</option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("questCatalogMeta");
+
+  if (meta) {
+    meta.textContent =
+      `${questCatalog.unitCount || 0} elementi · ${questCatalog.textCount || 0} campi testuali`;
+  }
+
+  renderQuestUnits();
+}
+
+function switchAuthorWorkspace(workspace) {
+  const showChapters = workspace === "chapters";
+  const showQuests = workspace === "quests";
+  const showWeapons = workspace === "weapons";
+
+  document.getElementById("chaptersWorkspace")?.classList.toggle("hidden", !showChapters);
+  document.getElementById("questsWorkspace")?.classList.toggle("hidden", !showQuests);
+  document.getElementById("weaponsWorkspace")?.classList.toggle("hidden", !showWeapons);
+  document.getElementById("chaptersTabBtn")?.classList.toggle("active", showChapters);
+  document.getElementById("questsTabBtn")?.classList.toggle("active", showQuests);
+  document.getElementById("weaponsTabBtn")?.classList.toggle("active", showWeapons);
+
+  if (showQuests && currentQuestUnit) {
+    loadCurrentQuestUnit();
+  }
+
+  if (showWeapons && currentWeapon) {
+    loadCurrentWeapon();
+  }
+}
+
+function getFilteredQuestUnits() {
+  const source = document.getElementById("questSourceFilter")?.value || "all";
+  const query = (
+    document.getElementById("questSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (questCatalog.units || []).filter((unit) => {
+    if (source !== "all" && unit.sourceId !== source) return false;
+    if (!query) return true;
+
+    const text = [
+      unit.title,
+      unit.entityKey,
+      unit.groupLabel,
+      unit.sourceLabel,
+      ...unit.fields.map((field) => field.provisionalText)
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderQuestUnits() {
+  const container = document.getElementById("questUnitsList");
+  if (!container) return;
+
+  const units = getFilteredQuestUnits();
+
+  if (!units.length) {
+    container.innerHTML = `<p class="empty">Nessun testo quest trovato.</p>`;
+    return;
+  }
+
+  let previousGroup = "";
+
+  container.innerHTML = units.map((unit) => {
+    const groupId = `${unit.sourceId}:${unit.groupKey}`;
+    const heading = groupId !== previousGroup
+      ? `<h3 class="quest-group-heading">${escapeHtml(unit.groupLabel)}</h3>`
+      : "";
+
+    previousGroup = groupId;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn ${currentQuestUnit?.unitKey === unit.unitKey ? "active" : ""}"
+        data-quest-unit-key="${escapeHtml(unit.unitKey)}"
+      >
+        <strong>${escapeHtml(unit.title)}</strong>
+        <small>${escapeHtml(unit.entityKey)} · ${unit.fields.length} testi</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-quest-unit-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const unit = (questCatalog.units || []).find(
+        (item) => item.unitKey === button.dataset.questUnitKey
+      );
+
+      if (!unit) return;
+
+      currentQuestUnit = unit;
+      renderQuestUnits();
+      loadCurrentQuestUnit();
+    });
+  });
+}
+
+function questLocalDraftKey(textKey) {
+  return `author_quest_text_${textKey}`;
+}
+
+function questLocalPublishedKey(textKey) {
+  return `author_published_quest_text_${textKey}`;
+}
+
+function canPublishQuestTexts() {
+  const role = String(currentAllowedUser?.role || getUser().role || "")
+    .trim()
+    .toLowerCase();
+
+  return ["admin", "owner", "revisore"].includes(role);
+}
+
+async function loadCurrentQuestUnit() {
+  if (!currentQuestUnit) return;
+
+  const loadId = ++questLoadId;
+  const keys = currentQuestUnit.fields.map((field) => field.textKey);
+
+  document.getElementById("questUnitTitle").textContent = currentQuestUnit.title;
+  document.getElementById("questUnitMeta").textContent =
+    `${currentQuestUnit.sourceFile} · ${currentQuestUnit.entityKey}`;
+  document.getElementById("questFieldsEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento testi quest...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.questTexts)
+        .select("*")
+        .in("text_key", keys),
+      supabaseClient
+        .from(tableNames.publishedQuestTexts)
+        .select("*")
+        .in("text_key", keys)
+    ]);
+
+    if (loadId !== questLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("questFieldsEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento dei testi quest.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = keys
+      .map((key) => readLocalJson(questLocalDraftKey(key), null))
+      .filter(Boolean);
+    published = keys
+      .map((key) => readLocalJson(questLocalPublishedKey(key), null))
+      .filter(Boolean);
+  }
+
+  currentQuestRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedQuestRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderQuestFields();
+}
+
+function renderQuestFields() {
+  const container = document.getElementById("questFieldsEditor");
+  if (!container || !currentQuestUnit) return;
+
+  const allowPublish = canPublishQuestTexts();
+
+  container.innerHTML = currentQuestUnit.fields.map((field, index) => {
+    const draft = currentQuestRows.get(field.textKey);
+    const published = currentPublishedQuestRows.get(field.textKey);
+    const isPublished =
+      published && published.content === String(draft?.content || "").trim();
+
+    return `
+      <section class="card quest-field-card" data-quest-field-card="${escapeHtml(field.textKey)}">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Campo ${String(index + 1).padStart(2, "0")}</p>
+            <h3>${escapeHtml(field.fieldName)}</h3>
+            <small class="status">${escapeHtml(field.fieldPath)}</small>
+          </div>
+          <span class="quest-status-pill ${isPublished ? "published" : ""}">
+            ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+          </span>
+        </div>
+
+        <div class="quest-field-grid">
+          <div class="quest-field-column">
+            <span class="quest-field-label">Traccia provvisoria</span>
+            <p class="quest-provisional-text">${escapeHtml(field.provisionalText)}</p>
+          </div>
+
+          <div class="quest-field-column">
+            <label class="quest-field-label" for="quest-${index}">Testo autore</label>
+            <textarea
+              id="quest-${index}"
+              class="quest-author-text"
+              data-quest-text-key="${escapeHtml(field.textKey)}"
+              placeholder="Riscrivi qui il testo seguendo la traccia..."
+            >${escapeHtml(draft?.content || "")}</textarea>
+          </div>
+        </div>
+
+        <div class="quest-field-actions">
+          <button type="button" data-copy-provisional="${escapeHtml(field.textKey)}">
+            Copia la traccia
+          </button>
+          <button type="button" data-save-quest-text="${escapeHtml(field.textKey)}">
+            Salva bozza
+          </button>
+          ${allowPublish ? `
+            <button
+              type="button"
+              class="quest-publish-btn"
+              data-publish-quest-text="${escapeHtml(field.textKey)}"
+            >
+              Pubblica nel gioco
+            </button>
+          ` : ""}
+          <span class="status" data-quest-field-status="${escapeHtml(field.textKey)}"></span>
+        </div>
+      </section>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-copy-provisional]").forEach((button) => {
+    button.addEventListener("click", () => copyQuestProvisional(button.dataset.copyProvisional));
+  });
+
+  container.querySelectorAll("[data-save-quest-text]").forEach((button) => {
+    button.addEventListener("click", () => saveQuestText(button.dataset.saveQuestText));
+  });
+
+  container.querySelectorAll("[data-publish-quest-text]").forEach((button) => {
+    button.addEventListener("click", () => publishQuestText(button.dataset.publishQuestText));
+  });
+}
+
+function getQuestField(textKey) {
+  return currentQuestUnit?.fields.find((field) => field.textKey === textKey) || null;
+}
+
+function getQuestTextarea(textKey) {
+  return document.querySelector(`[data-quest-text-key="${textKey}"]`);
+}
+
+function setQuestFieldStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-quest-field-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyQuestProvisional(textKey) {
+  const field = getQuestField(textKey);
+  const textarea = getQuestTextarea(textKey);
+
+  if (!field || !textarea) return;
+
+  textarea.value = field.provisionalText;
+  textarea.focus();
+  setQuestFieldStatus(textKey, "Traccia copiata. Salva la bozza.", "ok");
+}
+
+async function saveQuestText(textKey, { quiet = false } = {}) {
+  const field = getQuestField(textKey);
+  const textarea = getQuestTextarea(textKey);
+
+  if (!field || !textarea || !currentQuestUnit) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentQuestRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setQuestFieldStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: currentQuestUnit.sourceFile,
+    source_id: currentQuestUnit.sourceId,
+    group_key: currentQuestUnit.groupKey,
+    entity_key: currentQuestUnit.entityKey,
+    field_path: field.fieldPath,
+    field_name: field.fieldName,
+    provisional_text: field.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setQuestFieldStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.questVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo quest non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.questTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setQuestFieldStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(questLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentQuestRows.set(textKey, payload);
+
+  if (!quiet) {
+    setQuestFieldStatus(textKey, "Bozza salvata.", "ok");
+    renderQuestFields();
+  }
+
+  return payload;
+}
+
+async function publishQuestText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setQuestFieldStatus(textKey, "Solo revisore o admin può pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveQuestText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setQuestFieldStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    source_id: draft.source_id,
+    group_key: draft.group_key,
+    entity_key: draft.entity_key,
+    field_path: draft.field_path,
+    field_name: draft.field_name,
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setQuestFieldStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedQuestTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setQuestFieldStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(questLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedQuestRows.set(textKey, payload);
+  setQuestFieldStatus(textKey, "Testo pubblicato.", "ok");
+  renderQuestFields();
+}
+
+function bindWeaponWorkspace() {
+  const weaponsTab = document.getElementById("weaponsTabBtn");
+  const characterFilter = document.getElementById("weaponCharacterFilter");
+  const search = document.getElementById("weaponSearch");
+  const reloadButton = document.getElementById("reloadWeaponBtn");
+
+  weaponsTab?.addEventListener("click", () => switchAuthorWorkspace("weapons"));
+  characterFilter?.addEventListener("change", renderWeaponsList);
+  search?.addEventListener("input", renderWeaponsList);
+  reloadButton?.addEventListener("click", () => loadCurrentWeapon());
+
+  if (characterFilter) {
+    characterFilter.innerHTML = [
+      `<option value="all">Tutti i personaggi</option>`,
+      ...(weaponCatalog.characters || []).map((character) => `
+        <option value="${escapeHtml(character.key)}">
+          ${escapeHtml(character.label)} (${Number(character.weaponCount || 0)})
+        </option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("weaponCatalogMeta");
+
+  if (meta) {
+    meta.textContent =
+      `${weaponCatalog.weaponCount || 0} armi · ${weaponCatalog.characterCount || 0} personaggi`;
+  }
+
+  renderWeaponsList();
+}
+
+function getFilteredWeapons() {
+  const character =
+    document.getElementById("weaponCharacterFilter")?.value || "all";
+  const query = (
+    document.getElementById("weaponSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (weaponCatalog.weapons || []).filter((weapon) => {
+    if (character !== "all" && weapon.characterKey !== character) return false;
+    if (!query) return true;
+
+    const text = [
+      weapon.name,
+      weapon.weaponId,
+      weapon.characterLabel,
+      weapon.provisionalText,
+      weapon.tier
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderWeaponsList() {
+  const container = document.getElementById("weaponsList");
+  if (!container) return;
+
+  const weapons = getFilteredWeapons();
+
+  if (!weapons.length) {
+    container.innerHTML = `<p class="empty">Nessuna arma trovata.</p>`;
+    return;
+  }
+
+  let previousCharacter = "";
+
+  container.innerHTML = weapons.map((weapon) => {
+    const heading = weapon.characterKey !== previousCharacter
+      ? `<h3 class="quest-group-heading">${escapeHtml(weapon.characterLabel)}</h3>`
+      : "";
+
+    previousCharacter = weapon.characterKey;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn weapon-unit-btn ${currentWeapon?.textKey === weapon.textKey ? "active" : ""}"
+        data-weapon-text-key="${escapeHtml(weapon.textKey)}"
+      >
+        <strong>${escapeHtml(weapon.name)}</strong>
+        <small>${escapeHtml(weapon.characterLabel)} · Maestria ${Number(weapon.mastery || 1)} · ${escapeHtml(weapon.tier)}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-weapon-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const weapon = (weaponCatalog.weapons || []).find(
+        (item) => item.textKey === button.dataset.weaponTextKey
+      );
+
+      if (!weapon) return;
+
+      currentWeapon = weapon;
+      renderWeaponsList();
+      loadCurrentWeapon();
+    });
+  });
+}
+
+function weaponLocalDraftKey(textKey) {
+  return `author_weapon_text_${textKey}`;
+}
+
+function weaponLocalPublishedKey(textKey) {
+  return `author_published_weapon_text_${textKey}`;
+}
+
+async function loadCurrentWeapon() {
+  if (!currentWeapon) return;
+
+  const loadId = ++weaponLoadId;
+  const textKey = currentWeapon.textKey;
+
+  document.getElementById("weaponTitle").textContent = currentWeapon.name;
+  document.getElementById("weaponMeta").textContent =
+    `${currentWeapon.characterLabel} · Maestria ${Number(currentWeapon.mastery || 1)} · Costo ${Number(currentWeapon.cost || 0)}`;
+  document.getElementById("weaponBlockEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento arma...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.weaponTexts)
+        .select("*")
+        .eq("text_key", textKey),
+      supabaseClient
+        .from(tableNames.publishedWeaponTexts)
+        .select("*")
+        .eq("text_key", textKey)
+    ]);
+
+    if (loadId !== weaponLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("weaponBlockEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento dell'arma.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = [readLocalJson(weaponLocalDraftKey(textKey), null)].filter(Boolean);
+    published = [readLocalJson(weaponLocalPublishedKey(textKey), null)].filter(Boolean);
+  }
+
+  currentWeaponRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedWeaponRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderWeaponBlock();
+}
+
+function renderWeaponBlock() {
+  const container = document.getElementById("weaponBlockEditor");
+  if (!container || !currentWeapon) return;
+
+  const draft = currentWeaponRows.get(currentWeapon.textKey);
+  const published = currentPublishedWeaponRows.get(currentWeapon.textKey);
+  const isPublished =
+    published && published.content === String(draft?.content || "").trim();
+  const allowPublish = canPublishQuestTexts();
+  const incrementText = Object.entries(currentWeapon.increment || {})
+    .map(([attribute, value]) => `${attribute}: +${value}`)
+    .join(", ");
+
+  container.innerHTML = `
+    <section class="card quest-field-card weapon-field-card">
+      <div class="card-header">
+        <div>
+          <p class="eyebrow">Blocco arma</p>
+          <h3>${escapeHtml(currentWeapon.name)}</h3>
+          <small class="status">
+            ${escapeHtml(currentWeapon.characterLabel)} · ${escapeHtml(currentWeapon.weaponId)}
+          </small>
+        </div>
+        <span class="quest-status-pill ${isPublished ? "published" : ""}">
+          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        </span>
+      </div>
+
+      <div class="weapon-detail-grid">
+        ${currentWeapon.imageUrl ? `
+          <figure class="weapon-preview">
+            <img src="${escapeHtml(currentWeapon.imageUrl)}" alt="${escapeHtml(currentWeapon.name)}" />
+          </figure>
+        ` : ""}
+
+        <div class="weapon-facts">
+          <span>Maestria <strong>${Number(currentWeapon.mastery || 1)}</strong></span>
+          <span>Tier <strong>${escapeHtml(currentWeapon.tier || "common")}</strong></span>
+          <span>Costo <strong>${Number(currentWeapon.cost || 0)}</strong></span>
+          <span>Bonus <strong>${escapeHtml(incrementText || "-")}</strong></span>
+        </div>
+      </div>
+
+      <div class="quest-field-grid">
+        <div class="quest-field-column">
+          <span class="quest-field-label">Descrizione provvisoria</span>
+          <p class="quest-provisional-text">${escapeHtml(currentWeapon.provisionalText)}</p>
+        </div>
+
+        <div class="quest-field-column">
+          <label class="quest-field-label" for="weapon-author-text">Testo autore</label>
+          <textarea
+            id="weapon-author-text"
+            class="quest-author-text weapon-author-text"
+            data-weapon-author-text="${escapeHtml(currentWeapon.textKey)}"
+            placeholder="Riscrivi qui la descrizione dell'arma..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="quest-field-actions">
+        <button type="button" data-copy-weapon-text="${escapeHtml(currentWeapon.textKey)}">
+          Copia descrizione
+        </button>
+        <button type="button" data-save-weapon-text="${escapeHtml(currentWeapon.textKey)}">
+          Salva bozza
+        </button>
+        ${allowPublish ? `
+          <button
+            type="button"
+            class="quest-publish-btn"
+            data-publish-weapon-text="${escapeHtml(currentWeapon.textKey)}"
+          >
+            Pubblica nel gioco
+          </button>
+        ` : ""}
+        <span class="status" data-weapon-status="${escapeHtml(currentWeapon.textKey)}"></span>
+      </div>
+    </section>
+  `;
+
+  container.querySelector("[data-copy-weapon-text]")?.addEventListener(
+    "click",
+    () => copyWeaponProvisional(currentWeapon.textKey)
+  );
+  container.querySelector("[data-save-weapon-text]")?.addEventListener(
+    "click",
+    () => saveWeaponText(currentWeapon.textKey)
+  );
+  container.querySelector("[data-publish-weapon-text]")?.addEventListener(
+    "click",
+    () => publishWeaponText(currentWeapon.textKey)
+  );
+}
+
+function getWeaponByTextKey(textKey) {
+  return (weaponCatalog.weapons || []).find((weapon) => {
+    return weapon.textKey === textKey;
+  }) || null;
+}
+
+function getWeaponTextarea(textKey) {
+  return document.querySelector(`[data-weapon-author-text="${textKey}"]`);
+}
+
+function setWeaponStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-weapon-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyWeaponProvisional(textKey) {
+  const weapon = getWeaponByTextKey(textKey);
+  const textarea = getWeaponTextarea(textKey);
+
+  if (!weapon || !textarea) return;
+
+  textarea.value = weapon.provisionalText;
+  textarea.focus();
+  setWeaponStatus(textKey, "Descrizione copiata. Salva la bozza.", "ok");
+}
+
+async function saveWeaponText(textKey, { quiet = false } = {}) {
+  const weapon = getWeaponByTextKey(textKey);
+  const textarea = getWeaponTextarea(textKey);
+
+  if (!weapon || !textarea) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentWeaponRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setWeaponStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: weaponCatalog.sourceFile || "armi.html",
+    character_key: weapon.characterKey,
+    character_label: weapon.characterLabel,
+    weapon_id: weapon.weaponId,
+    weapon_name: weapon.name,
+    provisional_text: weapon.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setWeaponStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.weaponVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo arma non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.weaponTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setWeaponStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(weaponLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentWeaponRows.set(textKey, payload);
+
+  if (!quiet) {
+    setWeaponStatus(textKey, "Bozza salvata.", "ok");
+    renderWeaponBlock();
+  }
+
+  return payload;
+}
+
+async function publishWeaponText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setWeaponStatus(textKey, "Solo revisore o admin può pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveWeaponText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setWeaponStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    character_key: draft.character_key,
+    character_label: draft.character_label,
+    weapon_id: draft.weapon_id,
+    weapon_name: draft.weapon_name,
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setWeaponStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedWeaponTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setWeaponStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(weaponLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedWeaponRows.set(textKey, payload);
+  setWeaponStatus(textKey, "Testo pubblicato.", "ok");
+  renderWeaponBlock();
 }
 
 function readLocalJson(key, fallback) {
