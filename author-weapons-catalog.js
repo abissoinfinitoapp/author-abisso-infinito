@@ -1,9 +1,9 @@
 // author-weapons-catalog.js
-// Generato da scripts/generate-weapon-catalog.mjs.
+// Catalogo allineato a Supabase con correzione progressione Vornax.
 
 window.AuthorWeaponsCatalog = {
   "sourceFile": "armi.html",
-  "generatedAt": "2026-07-07T10:06:00.940Z",
+  "generatedAt": "2026-07-25T01:16:44.957Z",
   "characterCount": 16,
   "weaponCount": 177,
   "characters": [
@@ -1822,7 +1822,7 @@ window.AuthorWeaponsCatalog = {
       "increment": {
         "forza": 30,
         "stamina": 10,
-        "xp": 8
+        "xp": 10
       }
     },
     {
@@ -1857,10 +1857,10 @@ window.AuthorWeaponsCatalog = {
       "imageUrl": "https://assets.abissoinfinito.it/img/martello_creatore.webp",
       "provisionalText": "Un'arma in grado di forgiare o distruggere la realtà stessa.",
       "increment": {
-        "forza": 20,
+        "forza": 30,
         "ingegno": 15,
         "destrezza": 10,
-        "xp": 10
+        "xp": 20
       }
     },
     {
@@ -2508,22 +2508,22 @@ window.AuthorWeaponsCatalog = {
       }
     },
     {
-      "textKey": "hextor:lama_danzante",
+      "textKey": "hextor:mazze_gemelle_battito_ferreo",
       "characterKey": "hextor",
       "characterLabel": "Hextor",
-      "weaponId": "lama_danzante",
-      "name": "Lama Danzante",
+      "weaponId": "mazze_gemelle_battito_ferreo",
+      "name": "Mazze Gemelle del Battito Ferreo",
       "mastery": 3,
       "tier": "rare",
       "cost": 3000,
-      "image": "img/lama_danzante.webp",
-      "imageUrl": "https://assets.abissoinfinito.it/img/lama_danzante.webp",
-      "provisionalText": "Una spada che consente movimenti agili e rapidi attacchi consecutivi.",
+      "image": "img/mazze_gemelle_battito_ferreo.png",
+      "imageUrl": "https://assets.abissoinfinito.it/img/mazze_gemelle_battito_ferreo.png",
+      "provisionalText": "Due mazze corte forgiate nello stesso blocco di ferro oscuro. Hextor le alterna in una sequenza incessante di colpi, trasformando il loro peso in un ritmo di guerra impossibile da interrompere.",
       "increment": {
+        "xp": 25,
         "forza": 40,
-        "destrezza": 10,
         "magia": 10,
-        "xp": 25
+        "destrezza": 10
       }
     },
     {
@@ -2546,41 +2546,41 @@ window.AuthorWeaponsCatalog = {
       }
     },
     {
-      "textKey": "hextor:lama_abisso_calmo",
+      "textKey": "hextor:catene_quiete_lacerante",
       "characterKey": "hextor",
       "characterLabel": "Hextor",
-      "weaponId": "lama_abisso_calmo",
-      "name": "Lama dell’Abisso Calmo",
+      "weaponId": "catene_quiete_lacerante",
+      "name": "Catene della Quiete Lacerante",
       "mastery": 5,
       "tier": "epic",
       "cost": 12000,
-      "image": "img/lama_abisso_calmo.webp",
-      "imageUrl": "https://assets.abissoinfinito.it/img/lama_abisso_calmo.webp",
-      "provisionalText": "Spada lunga nera come l’ossidiana, priva di riflesso è sempre fredda al tatto, e quando viene brandita, il suono si attenua intorno.",
+      "image": "img/catene_quiete_lacerante.png",
+      "imageUrl": "https://assets.abissoinfinito.it/img/catene_quiete_lacerante.png",
+      "provisionalText": "Una coppia di catene da guerra forgiate nel ferro nero, pesanti e vive di tensione trattenuta. Dai loro anelli si aprono lame ricurve e segmenti taglienti, che scattano all’improvviso trasformando ogni movimento di Hextor in una traiettoria di strazio.",
       "increment": {
+        "xp": 35,
         "forza": 75,
-        "stamina": 30,
         "magia": 20,
-        "xp": 35
+        "stamina": 30
       }
     },
     {
-      "textKey": "hextor:spada_giuramento_infranto",
+      "textKey": "hextor:ascia_patto_sepolto",
       "characterKey": "hextor",
       "characterLabel": "Hextor",
-      "weaponId": "spada_giuramento_infranto",
-      "name": "Spada del Giuramento Infranto",
+      "weaponId": "ascia_patto_sepolto",
+      "name": "Ascia del Patto Sepolto",
       "mastery": 6,
       "tier": "epic",
       "cost": 50000,
-      "image": "img/spada_giuramento_infranto.webp",
-      "imageUrl": "https://assets.abissoinfinito.it/img/spada_giuramento_infranto.webp",
-      "provisionalText": "Si dice che sia stata forgiata da un tradimento, e che brilli solo in presenza di anime pure.",
+      "image": "img/ascia_patto_sepolto.png",
+      "imageUrl": "https://assets.abissoinfinito.it/img/ascia_patto_sepolto.png",
+      "provisionalText": "Un’ascia bipenne costruita con frammenti di armi appartenute a guerrieri caduti. Sulla testa sono ancora visibili antiche promesse incise nel metallo, cancellate una dopo l’altra da colpi di martello.",
       "increment": {
+        "xp": 35,
         "forza": 400,
         "destrezza": 300,
-        "prestigio": 80,
-        "xp": 35
+        "prestigio": 80
       }
     },
     {
@@ -2622,22 +2622,22 @@ window.AuthorWeaponsCatalog = {
       }
     },
     {
-      "textKey": "hextor:spada_custode_silenzioso",
+      "textKey": "hextor:maglio_ultimo_assedio",
       "characterKey": "hextor",
       "characterLabel": "Hextor",
-      "weaponId": "spada_custode_silenzioso",
-      "name": "Spada del Custode Silenzioso",
+      "weaponId": "maglio_ultimo_assedio",
+      "name": "Maglio dell’Ultimo Assedio",
       "mastery": 9,
       "tier": "legend",
       "cost": 500000,
-      "image": "img/spada_custode_silenzioso.webp",
-      "imageUrl": "https://assets.abissoinfinito.it/img/spada_custode_silenzioso.webp",
-      "provisionalText": "Non ha peso apparente, ma lascia scie nere nell’aria come fendenti nel vuoto.",
+      "image": "img/maglio_ultimo_assedio.png",
+      "imageUrl": "https://assets.abissoinfinito.it/img/maglio_ultimo_assedio.png",
+      "provisionalText": "Un maglio colossale nato per abbattere mura, portoni e creature abbastanza grandi da essere scambiate per fortezze. La sua testa conserva profonde fratture, ma nessuna forza è mai riuscita a spezzarla completamente.",
       "increment": {
+        "xp": 75,
         "forza": 1300,
         "destrezza": 1000,
-        "prestigio": 90,
-        "xp": 75
+        "prestigio": 90
       }
     },
     {
