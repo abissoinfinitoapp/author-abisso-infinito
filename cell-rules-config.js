@@ -2468,6 +2468,99 @@ mostro_terra: {
   ]
 },
 
+mago_nero: {
+  title: "Mago Nero",
+  intro: "Avvolto da vesti scure e da un silenzio innaturale, il Mago Nero porta sul campo una magia ostile e precisa. Non cerca lo scontro frontale: spezza la concentrazione, altera il ritmo del combattimento e costringe il guerriero a difendersi da forze che non sempre si vedono arrivare.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Origine della creatura",
+      text: "Il Mago Nero è una creatura arcana corrotta dall'Abisso, nata dove lo studio della magia ha smesso di servire la conoscenza ed è diventato dominio. Le sue formule non illuminano: oscurano, confondono e trasformano ogni errore del nemico in una possibilità di controllo."
+    },
+    {
+      type: "requirements",
+      title: "Identità del mostro",
+      checks: [
+        { label: "Categoria", value: "Mostro Minore" },
+        { label: "Difficoltà", value: "Difficile" },
+        { label: "Livello", value: "4" },
+        { label: "Potenza Totale", value: "2200" },
+        { label: "Salute", value: "110" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Distribuzione del Potere",
+      checks: [
+        { label: "Forza", value: "150" },
+        { label: "Astuzia", value: "360" },
+        { label: "Ingegno", value: "340" },
+        { label: "Magia", value: "760" },
+        { label: "Destrezza", value: "590" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Accesso ai mostri",
+      checks: [
+        { label: "Per Mostri Minori", value: "Serve almeno 1 scrigno aperto" },
+        { label: "Per Mostri Maggiori", value: "Servono almeno 4 scrigni aperti" }
+      ]
+    },
+    {
+      type: "warning",
+      title: "Sigillo d'accesso",
+      text: "Il Mago Nero appartiene ai Mostri Minori. Per affrontarlo devi aver già aperto almeno uno scrigno durante la partita. Anche se non è un mostro maggiore, la sua magia lo rende una prova pericolosa per chi entra nello scontro senza preparazione."
+    },
+    {
+      type: "text",
+      title: "Stile di combattimento",
+      text: "Il Mago Nero domina soprattutto attraverso magia e destrezza. Colpisce a distanza, cambia ritmo, sfrutta incantesimi oscuri e obbliga il giocatore a non affidarsi a una sola caratteristica. Chi trascura la difesa mentale o la rapidità rischia di essere travolto prima ancora di avvicinarsi."
+    },
+    {
+      type: "text",
+      title: "La minaccia dell'oscurità",
+      text: "Il pericolo non sta solo nella potenza dei suoi colpi, ma nella capacità di rendere instabile lo scontro. Ogni turno contro il Mago Nero può diventare una prova di lucidità: la paura, l'ombra e l'incertezza sono parte della sua arma."
+    },
+    {
+      type: "steps",
+      title: "Come affrontarlo",
+      items: [
+        "Seleziona il giocatore che combatterà.",
+        "Verifica di aver aperto almeno 1 scrigno, requisito dei mostri minori.",
+        "Scegli da 1 a 5 attributi da utilizzare nello scontro.",
+        "Inserisci i risultati dei dadi per ogni attributo scelto.",
+        "Confronta la tua potenza con quella del Mago Nero per determinare l'esito."
+      ]
+    },
+    {
+      type: "warning",
+      title: "Perché è pericoloso",
+      text: "Con una potenza totale di 2200, il Mago Nero è più insidioso di molti mostri minori iniziali. La sua magia molto alta e la sua destrezza elevata lo rendono difficile da controllare, soprattutto per i giocatori che puntano solo sulla forza fisica."
+    },
+    {
+      type: "reward",
+      title: "Ricompense",
+      text: "Sconfiggere il Mago Nero garantisce 23400 monete, oltre a una crescita di +160 magia e +140 forza. È una vittoria importante per chi vuole assorbire parte dell'energia arcana dell'Abisso senza perdere capacità offensiva."
+    },
+    {
+      type: "requirements",
+      title: "Premio del vincitore",
+      checks: [
+        { label: "Monete", value: "23400" },
+        { label: "Magia", value: "+160" },
+        { label: "Forza", value: "+140" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Consiglio del veterano",
+      text: "Non trattarlo come un semplice incantatore fragile. Il Mago Nero è rapido, lucido e abbastanza potente da punire chi entra nello scontro senza equilibrio. Porta magia, resistenza e una strategia capace di reggere il buio."
+    }
+  ]
+},
+
 mostro_degli_abissi: {
   title: "Mostro degli Abissi",
   intro: "Là dove la luce si spegne e il silenzio diventa peso, si muove il Mostro degli Abissi. Non appartiene del tutto alla terra né all’acqua, ma a qualcosa di più antico e più profondo. Chi lo guarda troppo a lungo ha la sensazione di essere osservato da un buio che pensa.",
