@@ -19,7 +19,27 @@ const tableNames = {
   weaponTexts: cfg.TABLES?.weaponTexts || "author_weapon_texts",
   weaponVersions: cfg.TABLES?.weaponVersions || "author_weapon_text_versions",
   publishedWeaponTexts:
-    cfg.TABLES?.publishedWeaponTexts || "author_published_weapon_texts"
+    cfg.TABLES?.publishedWeaponTexts || "author_published_weapon_texts",
+  creatureTexts: cfg.TABLES?.creatureTexts || "author_creature_texts",
+  creatureVersions: cfg.TABLES?.creatureVersions || "author_creature_text_versions",
+  publishedCreatureTexts:
+    cfg.TABLES?.publishedCreatureTexts || "author_published_creature_texts",
+  zoneGuardianTexts:
+    cfg.TABLES?.zoneGuardianTexts || "author_zone_guardian_texts",
+  zoneGuardianVersions:
+    cfg.TABLES?.zoneGuardianVersions || "author_zone_guardian_text_versions",
+  publishedZoneGuardianTexts:
+    cfg.TABLES?.publishedZoneGuardianTexts || "author_published_zone_guardian_texts",
+  fragmentTexts: cfg.TABLES?.fragmentTexts || "author_fragment_texts",
+  fragmentVersions:
+    cfg.TABLES?.fragmentVersions || "author_fragment_text_versions",
+  publishedFragmentTexts:
+    cfg.TABLES?.publishedFragmentTexts || "author_published_fragment_texts",
+  modalTexts: cfg.TABLES?.modalTexts || "author_modal_texts",
+  modalVersions:
+    cfg.TABLES?.modalVersions || "author_modal_text_versions",
+  publishedModalTexts:
+    cfg.TABLES?.publishedModalTexts || "author_published_modal_texts"
 };
 
 const cellRulesConfig = window.AbissoCellRulesConfig;
@@ -137,6 +157,38 @@ let currentWeapon = weaponCatalog.weapons?.[0] || null;
 let currentWeaponRows = new Map();
 let currentPublishedWeaponRows = new Map();
 let weaponLoadId = 0;
+const creatureCatalog = window.AuthorCreaturesCatalog || {
+  creatures: [],
+  elements: []
+};
+let currentCreature = creatureCatalog.creatures?.[0] || null;
+let currentCreatureRows = new Map();
+let currentPublishedCreatureRows = new Map();
+let creatureLoadId = 0;
+const zoneGuardianCatalog = window.AuthorZoneGuardiansCatalog || {
+  guardians: [],
+  maps: []
+};
+let currentZoneGuardian = zoneGuardianCatalog.guardians?.[0] || null;
+let currentZoneGuardianRows = new Map();
+let currentPublishedZoneGuardianRows = new Map();
+let zoneGuardianLoadId = 0;
+const fragmentCatalog = window.AuthorFragmentsCatalog || {
+  fragments: [],
+  classes: []
+};
+let currentFragment = fragmentCatalog.fragments?.[0] || null;
+let currentFragmentRows = new Map();
+let currentPublishedFragmentRows = new Map();
+let fragmentLoadId = 0;
+const modalTextCatalog = window.AuthorModalTextsCatalog || {
+  units: [],
+  modals: []
+};
+let currentModalText = modalTextCatalog.units?.[0] || null;
+let currentModalTextRows = new Map();
+let currentPublishedModalTextRows = new Map();
+let modalTextLoadId = 0;
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
@@ -145,6 +197,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindGlobalActionButtons();
   bindQuestWorkspace();
   bindWeaponWorkspace();
+  bindCreatureWorkspace();
+  bindZoneGuardianWorkspace();
+  bindFragmentWorkspace();
+  bindModalTextWorkspace();
 
   useSupabase = shouldUseSupabase();
 
@@ -2442,13 +2498,25 @@ function switchAuthorWorkspace(workspace) {
   const showChapters = workspace === "chapters";
   const showQuests = workspace === "quests";
   const showWeapons = workspace === "weapons";
+  const showCreatures = workspace === "creatures";
+  const showZoneGuardians = workspace === "zoneGuardians";
+  const showFragments = workspace === "fragments";
+  const showModals = workspace === "modals";
 
   document.getElementById("chaptersWorkspace")?.classList.toggle("hidden", !showChapters);
   document.getElementById("questsWorkspace")?.classList.toggle("hidden", !showQuests);
   document.getElementById("weaponsWorkspace")?.classList.toggle("hidden", !showWeapons);
+  document.getElementById("creaturesWorkspace")?.classList.toggle("hidden", !showCreatures);
+  document.getElementById("zoneGuardiansWorkspace")?.classList.toggle("hidden", !showZoneGuardians);
+  document.getElementById("fragmentsWorkspace")?.classList.toggle("hidden", !showFragments);
+  document.getElementById("modalsWorkspace")?.classList.toggle("hidden", !showModals);
   document.getElementById("chaptersTabBtn")?.classList.toggle("active", showChapters);
   document.getElementById("questsTabBtn")?.classList.toggle("active", showQuests);
   document.getElementById("weaponsTabBtn")?.classList.toggle("active", showWeapons);
+  document.getElementById("creaturesTabBtn")?.classList.toggle("active", showCreatures);
+  document.getElementById("zoneGuardiansTabBtn")?.classList.toggle("active", showZoneGuardians);
+  document.getElementById("fragmentsTabBtn")?.classList.toggle("active", showFragments);
+  document.getElementById("modalsTabBtn")?.classList.toggle("active", showModals);
 
   if (showQuests && currentQuestUnit) {
     loadCurrentQuestUnit();
@@ -2456,6 +2524,22 @@ function switchAuthorWorkspace(workspace) {
 
   if (showWeapons && currentWeapon) {
     loadCurrentWeapon();
+  }
+
+  if (showCreatures && currentCreature) {
+    loadCurrentCreature();
+  }
+
+  if (showZoneGuardians && currentZoneGuardian) {
+    loadCurrentZoneGuardian();
+  }
+
+  if (showFragments && currentFragment) {
+    loadCurrentFragment();
+  }
+
+  if (showModals && currentModalText) {
+    loadCurrentModalText();
   }
 }
 
@@ -3225,6 +3309,1742 @@ async function publishWeaponText(textKey) {
   currentPublishedWeaponRows.set(textKey, payload);
   setWeaponStatus(textKey, "Testo pubblicato.", "ok");
   renderWeaponBlock();
+}
+
+function bindCreatureWorkspace() {
+  const creaturesTab = document.getElementById("creaturesTabBtn");
+  const elementFilter = document.getElementById("creatureElementFilter");
+  const search = document.getElementById("creatureSearch");
+  const reloadButton = document.getElementById("reloadCreatureBtn");
+
+  creaturesTab?.addEventListener("click", () => switchAuthorWorkspace("creatures"));
+  elementFilter?.addEventListener("change", renderCreaturesList);
+  search?.addEventListener("input", renderCreaturesList);
+  reloadButton?.addEventListener("click", () => loadCurrentCreature());
+
+  if (elementFilter) {
+    elementFilter.innerHTML = [
+      `<option value="all">Tutti gli elementi</option>`,
+      ...(creatureCatalog.elements || []).map((element) => `
+        <option value="${escapeHtml(element)}">${escapeHtml(element)}</option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("creatureCatalogMeta");
+
+  if (meta) {
+    meta.textContent = `${creatureCatalog.creatureCount || 0} creature`;
+  }
+
+  renderCreaturesList();
+}
+
+function getFilteredCreatures() {
+  const element =
+    document.getElementById("creatureElementFilter")?.value || "all";
+  const query = (
+    document.getElementById("creatureSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (creatureCatalog.creatures || []).filter((creature) => {
+    if (element !== "all" && creature.element !== element) return false;
+    if (!query) return true;
+
+    const text = [
+      creature.name,
+      creature.element,
+      creature.nature,
+      creature.category,
+      ...(creature.vehicles || []),
+      creature.provisionalText
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderCreaturesList() {
+  const container = document.getElementById("creaturesList");
+  if (!container) return;
+
+  const creatures = getFilteredCreatures();
+
+  if (!creatures.length) {
+    container.innerHTML = `<p class="empty">Nessuna creatura trovata.</p>`;
+    return;
+  }
+
+  let previousElement = "";
+
+  container.innerHTML = creatures.map((creature) => {
+    const heading = creature.element !== previousElement
+      ? `<h3 class="quest-group-heading">${escapeHtml(creature.element || "Senza elemento")}</h3>`
+      : "";
+
+    previousElement = creature.element;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn creature-unit-btn ${currentCreature?.textKey === creature.textKey ? "active" : ""}"
+        data-creature-text-key="${escapeHtml(creature.textKey)}"
+      >
+        <strong>${escapeHtml(creature.name)}</strong>
+        <small>${escapeHtml(creature.nature)} · ${escapeHtml(creature.category)} · ${escapeHtml(creature.element)}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-creature-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const creature = (creatureCatalog.creatures || []).find(
+        (item) => item.textKey === button.dataset.creatureTextKey
+      );
+
+      if (!creature) return;
+
+      currentCreature = creature;
+      renderCreaturesList();
+      loadCurrentCreature();
+    });
+  });
+}
+
+function creatureLocalDraftKey(textKey) {
+  return `author_creature_text_${textKey}`;
+}
+
+function creatureLocalPublishedKey(textKey) {
+  return `author_published_creature_text_${textKey}`;
+}
+
+async function loadCurrentCreature() {
+  if (!currentCreature) return;
+
+  const loadId = ++creatureLoadId;
+  const textKey = currentCreature.textKey;
+
+  document.getElementById("creatureTitle").textContent = currentCreature.name;
+  document.getElementById("creatureMeta").textContent =
+    `${currentCreature.element} · ${currentCreature.nature} · ${currentCreature.category}`;
+  document.getElementById("creatureBlockEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento creatura...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.creatureTexts)
+        .select("*")
+        .eq("text_key", textKey),
+      supabaseClient
+        .from(tableNames.publishedCreatureTexts)
+        .select("*")
+        .eq("text_key", textKey)
+    ]);
+
+    if (loadId !== creatureLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("creatureBlockEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento della creatura.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = [readLocalJson(creatureLocalDraftKey(textKey), null)].filter(Boolean);
+    published = [readLocalJson(creatureLocalPublishedKey(textKey), null)].filter(Boolean);
+  }
+
+  currentCreatureRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedCreatureRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderCreatureBlock();
+}
+
+function renderCreatureBlock() {
+  const container = document.getElementById("creatureBlockEditor");
+  if (!container || !currentCreature) return;
+
+  const draft = currentCreatureRows.get(currentCreature.textKey);
+  const published = currentPublishedCreatureRows.get(currentCreature.textKey);
+  const isPublished =
+    published && published.content === String(draft?.content || "").trim();
+  const allowPublish = canPublishQuestTexts();
+  const vehiclesText = (currentCreature.vehicles || []).join(", ") || "-";
+
+  container.innerHTML = `
+    <section class="card quest-field-card weapon-field-card creature-field-card">
+      <div class="card-header">
+        <div>
+          <p class="eyebrow">Blocco creatura</p>
+          <h3>${escapeHtml(currentCreature.name)}</h3>
+          <small class="status">
+            ${escapeHtml(currentCreature.creatureId)} · ${escapeHtml(currentCreature.element)}
+          </small>
+        </div>
+        <span class="quest-status-pill ${isPublished ? "published" : ""}">
+          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        </span>
+      </div>
+
+      <div class="weapon-detail-grid creature-detail-grid">
+        ${currentCreature.imageUrl ? `
+          <figure class="weapon-preview creature-preview">
+            <img src="${escapeHtml(currentCreature.imageUrl)}" alt="${escapeHtml(currentCreature.name)}" />
+          </figure>
+        ` : ""}
+
+        <div class="weapon-facts creature-facts">
+          <span>Elemento <strong>${escapeHtml(currentCreature.element || "-")}</strong></span>
+          <span>Natura <strong>${escapeHtml(currentCreature.nature || "-")}</strong></span>
+          <span>Categoria <strong>${escapeHtml(currentCreature.category || "-")}</strong></span>
+          <span>Veicolo <strong>${escapeHtml(vehiclesText)}</strong></span>
+        </div>
+      </div>
+
+      <div class="quest-field-grid">
+        <div class="quest-field-column">
+          <span class="quest-field-label">Motivazione provvisoria</span>
+          <p class="quest-provisional-text">${escapeHtml(currentCreature.provisionalText)}</p>
+        </div>
+
+        <div class="quest-field-column">
+          <label class="quest-field-label" for="creature-author-text">Testo autore</label>
+          <textarea
+            id="creature-author-text"
+            class="quest-author-text creature-author-text"
+            data-creature-author-text="${escapeHtml(currentCreature.textKey)}"
+            placeholder="Riscrivi qui la descrizione della creatura..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="quest-field-actions">
+        <button type="button" data-copy-creature-text="${escapeHtml(currentCreature.textKey)}">
+          Copia motivazione
+        </button>
+        <button type="button" data-save-creature-text="${escapeHtml(currentCreature.textKey)}">
+          Salva bozza
+        </button>
+        ${allowPublish ? `
+          <button
+            type="button"
+            class="quest-publish-btn"
+            data-publish-creature-text="${escapeHtml(currentCreature.textKey)}"
+          >
+            Pubblica nel gioco
+          </button>
+        ` : ""}
+        <span class="status" data-creature-status="${escapeHtml(currentCreature.textKey)}"></span>
+      </div>
+    </section>
+  `;
+
+  container.querySelector("[data-copy-creature-text]")?.addEventListener(
+    "click",
+    () => copyCreatureProvisional(currentCreature.textKey)
+  );
+  container.querySelector("[data-save-creature-text]")?.addEventListener(
+    "click",
+    () => saveCreatureText(currentCreature.textKey)
+  );
+  container.querySelector("[data-publish-creature-text]")?.addEventListener(
+    "click",
+    () => publishCreatureText(currentCreature.textKey)
+  );
+}
+
+function getCreatureByTextKey(textKey) {
+  return (creatureCatalog.creatures || []).find((creature) => {
+    return creature.textKey === textKey;
+  }) || null;
+}
+
+function getCreatureTextarea(textKey) {
+  return document.querySelector(`[data-creature-author-text="${textKey}"]`);
+}
+
+function setCreatureStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-creature-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyCreatureProvisional(textKey) {
+  const creature = getCreatureByTextKey(textKey);
+  const textarea = getCreatureTextarea(textKey);
+
+  if (!creature || !textarea) return;
+
+  textarea.value = creature.provisionalText;
+  textarea.focus();
+  setCreatureStatus(textKey, "Motivazione copiata. Salva la bozza.", "ok");
+}
+
+async function saveCreatureText(textKey, { quiet = false } = {}) {
+  const creature = getCreatureByTextKey(textKey);
+  const textarea = getCreatureTextarea(textKey);
+
+  if (!creature || !textarea) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentCreatureRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setCreatureStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: creatureCatalog.sourceFile || "creatures-data.js",
+    creature_id: creature.creatureId,
+    creature_name: creature.name,
+    element: creature.element,
+    nature: creature.nature,
+    category: creature.category,
+    vehicles: creature.vehicles || [],
+    provisional_text: creature.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setCreatureStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.creatureVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo creatura non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.creatureTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setCreatureStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(creatureLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentCreatureRows.set(textKey, payload);
+
+  if (!quiet) {
+    setCreatureStatus(textKey, "Bozza salvata.", "ok");
+    renderCreatureBlock();
+  }
+
+  return payload;
+}
+
+async function publishCreatureText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setCreatureStatus(textKey, "Solo revisore o admin può pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveCreatureText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setCreatureStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    creature_id: draft.creature_id,
+    creature_name: draft.creature_name,
+    element: draft.element,
+    nature: draft.nature,
+    category: draft.category,
+    vehicles: draft.vehicles || [],
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setCreatureStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedCreatureTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setCreatureStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(creatureLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedCreatureRows.set(textKey, payload);
+  setCreatureStatus(textKey, "Testo pubblicato.", "ok");
+  renderCreatureBlock();
+}
+
+function bindZoneGuardianWorkspace() {
+  const guardiansTab = document.getElementById("zoneGuardiansTabBtn");
+  const mapFilter = document.getElementById("zoneGuardianMapFilter");
+  const search = document.getElementById("zoneGuardianSearch");
+  const reloadButton = document.getElementById("reloadZoneGuardianBtn");
+
+  guardiansTab?.addEventListener("click", () => switchAuthorWorkspace("zoneGuardians"));
+  mapFilter?.addEventListener("change", renderZoneGuardiansList);
+  search?.addEventListener("input", renderZoneGuardiansList);
+  reloadButton?.addEventListener("click", () => loadCurrentZoneGuardian());
+
+  if (mapFilter) {
+    mapFilter.innerHTML = [
+      `<option value="all">Tutte le mappe</option>`,
+      ...(zoneGuardianCatalog.maps || []).map((mapKey) => `
+        <option value="${escapeHtml(mapKey)}">${escapeHtml(mapKey)}</option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("zoneGuardianCatalogMeta");
+
+  if (meta) {
+    meta.textContent = `${zoneGuardianCatalog.guardianCount || 0} guardiani`;
+  }
+
+  renderZoneGuardiansList();
+}
+
+function getFilteredZoneGuardians() {
+  const mapKey =
+    document.getElementById("zoneGuardianMapFilter")?.value || "all";
+  const query = (
+    document.getElementById("zoneGuardianSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (zoneGuardianCatalog.guardians || []).filter((guardian) => {
+    if (mapKey !== "all" && guardian.mapKey !== mapKey) return false;
+    if (!query) return true;
+
+    const text = [
+      guardian.mapKey,
+      guardian.zoneKey,
+      guardian.zoneLabel,
+      guardian.guardianKey,
+      guardian.guardianName,
+      guardian.guardianTitle,
+      guardian.guardianFullName,
+      guardian.provisionalText
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderZoneGuardiansList() {
+  const container = document.getElementById("zoneGuardiansList");
+  if (!container) return;
+
+  const guardians = getFilteredZoneGuardians();
+
+  if (!guardians.length) {
+    container.innerHTML = `<p class="empty">Nessun guardiano trovato.</p>`;
+    return;
+  }
+
+  let previousMap = "";
+
+  container.innerHTML = guardians.map((guardian) => {
+    const heading = guardian.mapKey !== previousMap
+      ? `<h3 class="quest-group-heading">${escapeHtml(guardian.mapKey || "Senza mappa")}</h3>`
+      : "";
+
+    previousMap = guardian.mapKey;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn zone-guardian-unit-btn ${currentZoneGuardian?.textKey === guardian.textKey ? "active" : ""}"
+        data-zone-guardian-text-key="${escapeHtml(guardian.textKey)}"
+      >
+        <strong>${escapeHtml(guardian.guardianFullName || guardian.guardianName)}</strong>
+        <small>${escapeHtml(guardian.zoneLabel)} - ${escapeHtml(guardian.guardianTitle || guardian.guardianKey)}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-zone-guardian-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const guardian = (zoneGuardianCatalog.guardians || []).find(
+        (item) => item.textKey === button.dataset.zoneGuardianTextKey
+      );
+
+      if (!guardian) return;
+
+      currentZoneGuardian = guardian;
+      renderZoneGuardiansList();
+      loadCurrentZoneGuardian();
+    });
+  });
+}
+
+function zoneGuardianLocalDraftKey(textKey) {
+  return `author_zone_guardian_text_${textKey}`;
+}
+
+function zoneGuardianLocalPublishedKey(textKey) {
+  return `author_published_zone_guardian_text_${textKey}`;
+}
+
+async function loadCurrentZoneGuardian() {
+  if (!currentZoneGuardian) return;
+
+  const loadId = ++zoneGuardianLoadId;
+  const textKey = currentZoneGuardian.textKey;
+
+  document.getElementById("zoneGuardianTitle").textContent =
+    currentZoneGuardian.guardianFullName || currentZoneGuardian.guardianName;
+  document.getElementById("zoneGuardianMeta").textContent =
+    `${currentZoneGuardian.zoneLabel} - ${currentZoneGuardian.mapKey}`;
+  document.getElementById("zoneGuardianBlockEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento guardiano...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.zoneGuardianTexts)
+        .select("*")
+        .eq("text_key", textKey),
+      supabaseClient
+        .from(tableNames.publishedZoneGuardianTexts)
+        .select("*")
+        .eq("text_key", textKey)
+    ]);
+
+    if (loadId !== zoneGuardianLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("zoneGuardianBlockEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento del guardiano.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = [readLocalJson(zoneGuardianLocalDraftKey(textKey), null)].filter(Boolean);
+    published = [readLocalJson(zoneGuardianLocalPublishedKey(textKey), null)].filter(Boolean);
+  }
+
+  currentZoneGuardianRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedZoneGuardianRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderZoneGuardianBlock();
+}
+
+function renderZoneGuardianBlock() {
+  const container = document.getElementById("zoneGuardianBlockEditor");
+  if (!container || !currentZoneGuardian) return;
+
+  const draft = currentZoneGuardianRows.get(currentZoneGuardian.textKey);
+  const published = currentPublishedZoneGuardianRows.get(currentZoneGuardian.textKey);
+  const isPublished =
+    published && published.content === String(draft?.content || "").trim();
+  const allowPublish = canPublishQuestTexts();
+
+  container.innerHTML = `
+    <section class="card quest-field-card weapon-field-card zone-guardian-field-card">
+      <div class="card-header">
+        <div>
+          <p class="eyebrow">Blocco guardiano zona</p>
+          <h3>${escapeHtml(currentZoneGuardian.guardianFullName || currentZoneGuardian.guardianName)}</h3>
+          <small class="status">
+            ${escapeHtml(currentZoneGuardian.zoneLabel)} - ${escapeHtml(currentZoneGuardian.zoneKey)}
+          </small>
+        </div>
+        <span class="quest-status-pill ${isPublished ? "published" : ""}">
+          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        </span>
+      </div>
+
+      <div class="weapon-detail-grid zone-guardian-detail-grid">
+        ${currentZoneGuardian.imageUrl ? `
+          <figure class="weapon-preview zone-guardian-preview">
+            <img src="${escapeHtml(currentZoneGuardian.imageUrl)}" alt="${escapeHtml(currentZoneGuardian.guardianName)}" />
+          </figure>
+        ` : ""}
+
+        <div class="weapon-facts zone-guardian-facts">
+          <span>Mappa <strong>${escapeHtml(currentZoneGuardian.mapKey || "-")}</strong></span>
+          <span>Zona <strong>${escapeHtml(currentZoneGuardian.zoneLabel || "-")}</strong></span>
+          <span>Guardiano <strong>${escapeHtml(currentZoneGuardian.guardianName || "-")}</strong></span>
+          <span>Titolo <strong>${escapeHtml(currentZoneGuardian.guardianTitle || "-")}</strong></span>
+        </div>
+      </div>
+
+      <div class="quest-field-grid">
+        <div class="quest-field-column">
+          <span class="quest-field-label">Testo provvisorio</span>
+          <p class="quest-provisional-text">${escapeHtml(currentZoneGuardian.provisionalText)}</p>
+        </div>
+
+        <div class="quest-field-column">
+          <label class="quest-field-label" for="zone-guardian-author-text">Testo autore</label>
+          <textarea
+            id="zone-guardian-author-text"
+            class="quest-author-text zone-guardian-author-text"
+            data-zone-guardian-author-text="${escapeHtml(currentZoneGuardian.textKey)}"
+            placeholder="Riscrivi qui la descrizione del guardiano della zona..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="quest-field-actions">
+        <button type="button" data-copy-zone-guardian-text="${escapeHtml(currentZoneGuardian.textKey)}">
+          Copia testo provvisorio
+        </button>
+        <button type="button" data-save-zone-guardian-text="${escapeHtml(currentZoneGuardian.textKey)}">
+          Salva bozza
+        </button>
+        ${allowPublish ? `
+          <button
+            type="button"
+            class="quest-publish-btn"
+            data-publish-zone-guardian-text="${escapeHtml(currentZoneGuardian.textKey)}"
+          >
+            Pubblica nel gioco
+          </button>
+        ` : ""}
+        <span class="status" data-zone-guardian-status="${escapeHtml(currentZoneGuardian.textKey)}"></span>
+      </div>
+    </section>
+  `;
+
+  container.querySelector("[data-copy-zone-guardian-text]")?.addEventListener(
+    "click",
+    () => copyZoneGuardianProvisional(currentZoneGuardian.textKey)
+  );
+  container.querySelector("[data-save-zone-guardian-text]")?.addEventListener(
+    "click",
+    () => saveZoneGuardianText(currentZoneGuardian.textKey)
+  );
+  container.querySelector("[data-publish-zone-guardian-text]")?.addEventListener(
+    "click",
+    () => publishZoneGuardianText(currentZoneGuardian.textKey)
+  );
+}
+
+function getZoneGuardianByTextKey(textKey) {
+  return (zoneGuardianCatalog.guardians || []).find((guardian) => {
+    return guardian.textKey === textKey;
+  }) || null;
+}
+
+function getZoneGuardianTextarea(textKey) {
+  return document.querySelector(`[data-zone-guardian-author-text="${textKey}"]`);
+}
+
+function setZoneGuardianStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-zone-guardian-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyZoneGuardianProvisional(textKey) {
+  const guardian = getZoneGuardianByTextKey(textKey);
+  const textarea = getZoneGuardianTextarea(textKey);
+
+  if (!guardian || !textarea) return;
+
+  textarea.value = guardian.provisionalText;
+  textarea.focus();
+  setZoneGuardianStatus(textKey, "Testo provvisorio copiato. Salva la bozza.", "ok");
+}
+
+async function saveZoneGuardianText(textKey, { quiet = false } = {}) {
+  const guardian = getZoneGuardianByTextKey(textKey);
+  const textarea = getZoneGuardianTextarea(textKey);
+
+  if (!guardian || !textarea) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentZoneGuardianRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setZoneGuardianStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: zoneGuardianCatalog.sourceFile || guardian.sourceFile || "maps-config.js",
+    map_key: guardian.mapKey,
+    zone_key: guardian.zoneKey,
+    zone_label: guardian.zoneLabel,
+    guardian_key: guardian.guardianKey,
+    guardian_name: guardian.guardianName,
+    guardian_title: guardian.guardianTitle,
+    guardian_full_name: guardian.guardianFullName,
+    image: guardian.image,
+    provisional_text: guardian.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setZoneGuardianStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.zoneGuardianVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo guardiano zona non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.zoneGuardianTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setZoneGuardianStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(zoneGuardianLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentZoneGuardianRows.set(textKey, payload);
+
+  if (!quiet) {
+    setZoneGuardianStatus(textKey, "Bozza salvata.", "ok");
+    renderZoneGuardianBlock();
+  }
+
+  return payload;
+}
+
+async function publishZoneGuardianText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setZoneGuardianStatus(textKey, "Solo revisore o admin puo pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveZoneGuardianText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setZoneGuardianStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    map_key: draft.map_key,
+    zone_key: draft.zone_key,
+    zone_label: draft.zone_label,
+    guardian_key: draft.guardian_key,
+    guardian_name: draft.guardian_name,
+    guardian_title: draft.guardian_title,
+    guardian_full_name: draft.guardian_full_name,
+    image: draft.image,
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setZoneGuardianStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedZoneGuardianTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setZoneGuardianStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(zoneGuardianLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedZoneGuardianRows.set(textKey, payload);
+  setZoneGuardianStatus(textKey, "Testo pubblicato.", "ok");
+  renderZoneGuardianBlock();
+}
+
+function bindFragmentWorkspace() {
+  const fragmentsTab = document.getElementById("fragmentsTabBtn");
+  const classFilter = document.getElementById("fragmentClassFilter");
+  const search = document.getElementById("fragmentSearch");
+  const reloadButton = document.getElementById("reloadFragmentBtn");
+
+  fragmentsTab?.addEventListener("click", () => switchAuthorWorkspace("fragments"));
+  classFilter?.addEventListener("change", renderFragmentsList);
+  search?.addEventListener("input", renderFragmentsList);
+  reloadButton?.addEventListener("click", () => loadCurrentFragment());
+
+  if (classFilter) {
+    classFilter.innerHTML = [
+      `<option value="all">Tutte le classi</option>`,
+      ...(fragmentCatalog.classes || []).map((fragmentClass) => `
+        <option value="${escapeHtml(fragmentClass.key)}">
+          ${escapeHtml(fragmentClass.label)} (${Number(fragmentClass.count || 0)})
+        </option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("fragmentCatalogMeta");
+
+  if (meta) {
+    meta.textContent = `${fragmentCatalog.fragmentCount || 0} echi`;
+  }
+
+  renderFragmentsList();
+}
+
+function getFilteredFragments() {
+  const fragmentClass =
+    document.getElementById("fragmentClassFilter")?.value || "all";
+  const query = (
+    document.getElementById("fragmentSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (fragmentCatalog.fragments || []).filter((fragment) => {
+    if (fragmentClass !== "all" && fragment.fragmentClass !== fragmentClass) return false;
+    if (!query) return true;
+
+    const text = [
+      fragment.fragmentId,
+      fragment.fragmentName,
+      fragment.originMonsterId,
+      fragment.originType,
+      fragment.fragmentClass,
+      fragment.fragmentClassLabel,
+      fragment.difficultyTier,
+      fragment.spiritualTier,
+      fragment.provisionalText
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderFragmentsList() {
+  const container = document.getElementById("fragmentsList");
+  if (!container) return;
+
+  const fragments = getFilteredFragments();
+
+  if (!fragments.length) {
+    container.innerHTML = `<p class="empty">Nessun eco trovato.</p>`;
+    return;
+  }
+
+  let previousClass = "";
+
+  container.innerHTML = fragments.map((fragment) => {
+    const heading = fragment.fragmentClass !== previousClass
+      ? `<h3 class="quest-group-heading">${escapeHtml(fragment.fragmentClassLabel || "Senza classe")}</h3>`
+      : "";
+
+    previousClass = fragment.fragmentClass;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn fragment-unit-btn ${currentFragment?.textKey === fragment.textKey ? "active" : ""}"
+        data-fragment-text-key="${escapeHtml(fragment.textKey)}"
+      >
+        <strong>${escapeHtml(fragment.fragmentName)}</strong>
+        <small>${escapeHtml(fragment.originMonsterId)} - ${escapeHtml(fragment.difficultyLabel)} - ${escapeHtml(fragment.spiritualLabel)}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-fragment-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const fragment = (fragmentCatalog.fragments || []).find(
+        (item) => item.textKey === button.dataset.fragmentTextKey
+      );
+
+      if (!fragment) return;
+
+      currentFragment = fragment;
+      renderFragmentsList();
+      loadCurrentFragment();
+    });
+  });
+}
+
+function fragmentLocalDraftKey(textKey) {
+  return `author_fragment_text_${textKey}`;
+}
+
+function fragmentLocalPublishedKey(textKey) {
+  return `author_published_fragment_text_${textKey}`;
+}
+
+async function loadCurrentFragment() {
+  if (!currentFragment) return;
+
+  const loadId = ++fragmentLoadId;
+  const textKey = currentFragment.textKey;
+
+  document.getElementById("fragmentTitle").textContent = currentFragment.fragmentName;
+  document.getElementById("fragmentMeta").textContent =
+    `${currentFragment.fragmentClassLabel} - origine ${currentFragment.originMonsterId}`;
+  document.getElementById("fragmentBlockEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento eco...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.fragmentTexts)
+        .select("*")
+        .eq("text_key", textKey),
+      supabaseClient
+        .from(tableNames.publishedFragmentTexts)
+        .select("*")
+        .eq("text_key", textKey)
+    ]);
+
+    if (loadId !== fragmentLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("fragmentBlockEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento dell'eco.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = [readLocalJson(fragmentLocalDraftKey(textKey), null)].filter(Boolean);
+    published = [readLocalJson(fragmentLocalPublishedKey(textKey), null)].filter(Boolean);
+  }
+
+  currentFragmentRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedFragmentRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderFragmentBlock();
+}
+
+function renderFragmentBlock() {
+  const container = document.getElementById("fragmentBlockEditor");
+  if (!container || !currentFragment) return;
+
+  const draft = currentFragmentRows.get(currentFragment.textKey);
+  const published = currentPublishedFragmentRows.get(currentFragment.textKey);
+  const isPublished =
+    published && published.content === String(draft?.content || "").trim();
+  const allowPublish = canPublishQuestTexts();
+  const rewards = currentFragment.rewards || {};
+
+  container.innerHTML = `
+    <section class="card quest-field-card weapon-field-card fragment-field-card">
+      <div class="card-header">
+        <div>
+          <p class="eyebrow">Blocco eco</p>
+          <h3>${escapeHtml(currentFragment.fragmentName)}</h3>
+          <small class="status">
+            ${escapeHtml(currentFragment.fragmentId)} - ${escapeHtml(currentFragment.fragmentClassLabel)}
+          </small>
+        </div>
+        <span class="quest-status-pill ${isPublished ? "published" : ""}">
+          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        </span>
+      </div>
+
+      <div class="weapon-detail-grid fragment-detail-grid">
+        ${currentFragment.imageUrl ? `
+          <figure class="weapon-preview fragment-preview">
+            <img src="${escapeHtml(currentFragment.imageUrl)}" alt="${escapeHtml(currentFragment.fragmentName)}" />
+          </figure>
+        ` : ""}
+
+        <div class="weapon-facts fragment-facts">
+          <span>Origine <strong>${escapeHtml(currentFragment.originMonsterId || "-")}</strong></span>
+          <span>Tipo origine <strong>${escapeHtml(currentFragment.originType || "-")}</strong></span>
+          <span>Difficolta <strong>${escapeHtml(currentFragment.difficultyLabel || "-")}</strong></span>
+          <span>Tier spirituale <strong>${escapeHtml(currentFragment.spiritualLabel || "-")}</strong></span>
+          <span>Ricompense <strong>${escapeHtml(`Anima ${rewards.anima || 0}, Purificazione ${rewards.purificazione || 0}`)}</strong></span>
+        </div>
+      </div>
+
+      <div class="quest-field-grid">
+        <div class="quest-field-column">
+          <span class="quest-field-label">Descrizione provvisoria</span>
+          <p class="quest-provisional-text">${escapeHtml(currentFragment.provisionalText)}</p>
+        </div>
+
+        <div class="quest-field-column">
+          <label class="quest-field-label" for="fragment-author-text">Testo autore</label>
+          <textarea
+            id="fragment-author-text"
+            class="quest-author-text fragment-author-text"
+            data-fragment-author-text="${escapeHtml(currentFragment.textKey)}"
+            placeholder="Riscrivi qui la descrizione dell'eco..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="quest-field-actions">
+        <button type="button" data-copy-fragment-text="${escapeHtml(currentFragment.textKey)}">
+          Copia descrizione
+        </button>
+        <button type="button" data-save-fragment-text="${escapeHtml(currentFragment.textKey)}">
+          Salva bozza
+        </button>
+        ${allowPublish ? `
+          <button
+            type="button"
+            class="quest-publish-btn"
+            data-publish-fragment-text="${escapeHtml(currentFragment.textKey)}"
+          >
+            Pubblica nel gioco
+          </button>
+        ` : ""}
+        <span class="status" data-fragment-status="${escapeHtml(currentFragment.textKey)}"></span>
+      </div>
+    </section>
+  `;
+
+  container.querySelector("[data-copy-fragment-text]")?.addEventListener(
+    "click",
+    () => copyFragmentProvisional(currentFragment.textKey)
+  );
+  container.querySelector("[data-save-fragment-text]")?.addEventListener(
+    "click",
+    () => saveFragmentText(currentFragment.textKey)
+  );
+  container.querySelector("[data-publish-fragment-text]")?.addEventListener(
+    "click",
+    () => publishFragmentText(currentFragment.textKey)
+  );
+}
+
+function getFragmentByTextKey(textKey) {
+  return (fragmentCatalog.fragments || []).find((fragment) => {
+    return fragment.textKey === textKey;
+  }) || null;
+}
+
+function getFragmentTextarea(textKey) {
+  return document.querySelector(`[data-fragment-author-text="${textKey}"]`);
+}
+
+function setFragmentStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-fragment-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyFragmentProvisional(textKey) {
+  const fragment = getFragmentByTextKey(textKey);
+  const textarea = getFragmentTextarea(textKey);
+
+  if (!fragment || !textarea) return;
+
+  textarea.value = fragment.provisionalText;
+  textarea.focus();
+  setFragmentStatus(textKey, "Descrizione copiata. Salva la bozza.", "ok");
+}
+
+async function saveFragmentText(textKey, { quiet = false } = {}) {
+  const fragment = getFragmentByTextKey(textKey);
+  const textarea = getFragmentTextarea(textKey);
+
+  if (!fragment || !textarea) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentFragmentRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setFragmentStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: fragmentCatalog.sourceFile || fragment.sourceFile || "fragments-config.js",
+    fragment_id: fragment.fragmentId,
+    fragment_name: fragment.fragmentName,
+    origin_monster_id: fragment.originMonsterId,
+    origin_type: fragment.originType,
+    fragment_class: fragment.fragmentClass,
+    difficulty_tier: fragment.difficultyTier,
+    spiritual_tier: fragment.spiritualTier,
+    image: fragment.image,
+    rewards: fragment.rewards || {},
+    provisional_text: fragment.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setFragmentStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.fragmentVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo eco non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.fragmentTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setFragmentStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(fragmentLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentFragmentRows.set(textKey, payload);
+
+  if (!quiet) {
+    setFragmentStatus(textKey, "Bozza salvata.", "ok");
+    renderFragmentBlock();
+  }
+
+  return payload;
+}
+
+async function publishFragmentText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setFragmentStatus(textKey, "Solo revisore o admin puo pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveFragmentText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setFragmentStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    fragment_id: draft.fragment_id,
+    fragment_name: draft.fragment_name,
+    origin_monster_id: draft.origin_monster_id,
+    origin_type: draft.origin_type,
+    fragment_class: draft.fragment_class,
+    difficulty_tier: draft.difficulty_tier,
+    spiritual_tier: draft.spiritual_tier,
+    image: draft.image,
+    rewards: draft.rewards || {},
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setFragmentStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedFragmentTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setFragmentStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(fragmentLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedFragmentRows.set(textKey, payload);
+  setFragmentStatus(textKey, "Testo pubblicato.", "ok");
+  renderFragmentBlock();
+}
+
+function bindModalTextWorkspace() {
+  const modalsTab = document.getElementById("modalsTabBtn");
+  const modalFilter = document.getElementById("modalTextModalFilter");
+  const search = document.getElementById("modalTextSearch");
+  const reloadButton = document.getElementById("reloadModalTextBtn");
+
+  modalsTab?.addEventListener("click", () => switchAuthorWorkspace("modals"));
+  modalFilter?.addEventListener("change", renderModalTextsList);
+  search?.addEventListener("input", renderModalTextsList);
+  reloadButton?.addEventListener("click", () => loadCurrentModalText());
+
+  if (modalFilter) {
+    modalFilter.innerHTML = [
+      `<option value="all">Tutte le modali</option>`,
+      ...(modalTextCatalog.modals || []).map((modal) => `
+        <option value="${escapeHtml(modal.id)}">
+          ${escapeHtml(modal.label)} (${Number(modal.textCount || 0)})
+        </option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("modalTextCatalogMeta");
+
+  if (meta) {
+    meta.textContent =
+      `${modalTextCatalog.modalCount || 0} modali - ${modalTextCatalog.textCount || 0} testi`;
+  }
+
+  renderModalTextsList();
+}
+
+function getFilteredModalTexts() {
+  const modalId =
+    document.getElementById("modalTextModalFilter")?.value || "all";
+  const query = (
+    document.getElementById("modalTextSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (modalTextCatalog.units || []).filter((unit) => {
+    if (modalId !== "all" && unit.modalId !== modalId) return false;
+    if (!query) return true;
+
+    const text = [
+      unit.modalLabel,
+      unit.category,
+      unit.sourceFile,
+      unit.fieldKey,
+      unit.fieldLabel,
+      unit.itemKey,
+      unit.itemLabel,
+      unit.metadata?.playerLabel,
+      unit.metadata?.attribute,
+      unit.metadata?.legacyKey,
+      Array.isArray(unit.metadata?.attributesAffected)
+        ? unit.metadata.attributesAffected.join(" ")
+        : "",
+      unit.textType,
+      unit.provisionalText
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderModalTextsList() {
+  const container = document.getElementById("modalTextsList");
+  if (!container) return;
+
+  const units = getFilteredModalTexts();
+
+  if (!units.length) {
+    container.innerHTML = `<p class="empty">Nessun testo modale trovato.</p>`;
+    return;
+  }
+
+  let previousModal = "";
+
+  container.innerHTML = units.map((unit) => {
+    const heading = unit.modalId !== previousModal
+      ? `<h3 class="quest-group-heading">${escapeHtml(unit.modalLabel || "Modale")}</h3>`
+      : "";
+
+    previousModal = unit.modalId;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn modal-text-unit-btn ${currentModalText?.textKey === unit.textKey ? "active" : ""}"
+        data-modal-text-key="${escapeHtml(unit.textKey)}"
+      >
+        <strong>${escapeHtml(unit.fieldLabel)}</strong>
+        <small>${escapeHtml(unit.itemLabel || unit.textType)} - ${escapeHtml(unit.sourceFile)}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-modal-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const unit = (modalTextCatalog.units || []).find(
+        (item) => item.textKey === button.dataset.modalTextKey
+      );
+
+      if (!unit) return;
+
+      currentModalText = unit;
+      renderModalTextsList();
+      loadCurrentModalText();
+    });
+  });
+}
+
+function modalTextLocalDraftKey(textKey) {
+  return `author_modal_text_${textKey}`;
+}
+
+function modalTextLocalPublishedKey(textKey) {
+  return `author_published_modal_text_${textKey}`;
+}
+
+async function loadCurrentModalText() {
+  if (!currentModalText) return;
+
+  const loadId = ++modalTextLoadId;
+  const textKey = currentModalText.textKey;
+
+  document.getElementById("modalTextTitle").textContent = currentModalText.fieldLabel;
+  document.getElementById("modalTextMeta").textContent =
+    `${currentModalText.modalLabel} - ${currentModalText.textType}`;
+  document.getElementById("modalTextBlockEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento testo modale...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.modalTexts)
+        .select("*")
+        .eq("text_key", textKey),
+      supabaseClient
+        .from(tableNames.publishedModalTexts)
+        .select("*")
+        .eq("text_key", textKey)
+    ]);
+
+    if (loadId !== modalTextLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("modalTextBlockEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento del testo modale.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = [readLocalJson(modalTextLocalDraftKey(textKey), null)].filter(Boolean);
+    published = [readLocalJson(modalTextLocalPublishedKey(textKey), null)].filter(Boolean);
+  }
+
+  currentModalTextRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedModalTextRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderModalTextBlock();
+}
+
+function formatModalMetadataCost(cost = {}) {
+  const entries = Object.entries(cost || {});
+
+  if (!entries.length) return "-";
+
+  return entries
+    .map(([key, value]) => `${Number(value || 0)} ${key}`)
+    .join(", ");
+}
+
+function formatModalDuration(milliseconds = 0) {
+  const totalSeconds = Math.max(0, Math.ceil(Number(milliseconds || 0) / 1000));
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+}
+
+function getModalItemLabel(unit) {
+  if (unit.textType === "food_description") return "Pietanza";
+  if (unit.textType === "soldier_description") return "Unità";
+  if (unit.textType === "card_description") return "Carta";
+  if (unit.textType === "environment_effect_description") return "Effetto";
+
+  return "Elemento";
+}
+
+function getModalTextFacts(unit) {
+  const metadata = unit.metadata || {};
+  const facts = [["Modale", unit.modalLabel || "-"]];
+
+  if (unit.itemLabel || unit.itemKey) {
+    facts.push([getModalItemLabel(unit), unit.itemLabel || unit.itemKey]);
+  }
+
+  if (unit.textType === "food_description") {
+    const incremento = metadata.incremento || {};
+
+    facts.push(
+      ["Costo", metadata.cost || "-"],
+      [
+        "Effetti",
+        `Fame +${incremento.fame || 0}, Salute +${incremento.salute || 0}, Stamina +${incremento.stamina || 0}, Forza +${incremento.forza || 0}`
+      ]
+    );
+  } else if (unit.textType === "soldier_description") {
+    facts.push(
+      ["Livello", metadata.level || "-"],
+      ["Potenza", metadata.power || "-"],
+      ["Monete", metadata.coinCost || "-"],
+      ["Materiali", formatModalMetadataCost(metadata.materialCost)],
+      ["Durata", formatModalDuration(metadata.durationMs)]
+    );
+  } else if (unit.textType === "card_description") {
+    facts.push(
+      ["Personaggio", metadata.playerLabel || metadata.playerKey || "-"],
+      ["Attributo", metadata.attribute || "-"],
+      ["Usi", metadata.usesLeft || "-"],
+      ["Purificazione", `${Number(metadata.purifyPct || 0) * 100}%`]
+    );
+  } else if (unit.textType === "environment_effect_description") {
+    const attributes = Array.isArray(metadata.attributesAffected)
+      ? metadata.attributesAffected.join(", ")
+      : "";
+
+    facts.push(
+      ["Riduzione", `${Number(metadata.percentage || 0)}%`],
+      ["Attributi", attributes || "-"],
+      ["Modalita", metadata.visualMode || "-"],
+      ["Overlay", metadata.overlayImageUrl ? "presente" : "-"]
+    );
+  } else {
+    facts.push(
+      ["Categoria", unit.category || "-"],
+      ["Tipo testo", unit.textType || "-"],
+      ["File", unit.sourceFile || "-"]
+    );
+  }
+
+  return facts;
+}
+
+function renderModalTextBlock() {
+  const container = document.getElementById("modalTextBlockEditor");
+  if (!container || !currentModalText) return;
+
+  const draft = currentModalTextRows.get(currentModalText.textKey);
+  const published = currentPublishedModalTextRows.get(currentModalText.textKey);
+  const isPublished =
+    published && published.content === String(draft?.content || "").trim();
+  const allowPublish = canPublishQuestTexts();
+  const hasImagePreview = Boolean(currentModalText.imageUrl);
+  const factsHtml = getModalTextFacts(currentModalText).map(([label, value]) => `
+    <span>${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>
+  `).join("");
+
+  container.innerHTML = `
+    <section class="card quest-field-card weapon-field-card modal-text-field-card">
+      <div class="card-header">
+        <div>
+          <p class="eyebrow">Blocco modale</p>
+          <h3>${escapeHtml(currentModalText.fieldLabel)}</h3>
+          <small class="status">
+            ${escapeHtml(currentModalText.modalLabel)} - ${escapeHtml(currentModalText.fieldKey)}
+          </small>
+        </div>
+        <span class="quest-status-pill ${isPublished ? "published" : ""}">
+          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        </span>
+      </div>
+
+      ${hasImagePreview ? `
+        <div class="weapon-detail-grid modal-text-detail-grid">
+          <figure class="weapon-preview modal-text-preview">
+            <img src="${escapeHtml(currentModalText.imageUrl)}" alt="${escapeHtml(currentModalText.itemLabel || currentModalText.fieldLabel)}" />
+          </figure>
+
+          <div class="weapon-facts modal-text-facts">
+            ${factsHtml}
+          </div>
+        </div>
+      ` : `
+        <div class="weapon-facts modal-text-facts">
+          ${factsHtml}
+        </div>
+      `}
+
+      <div class="quest-field-grid">
+        <div class="quest-field-column">
+          <span class="quest-field-label">Testo provvisorio</span>
+          <p class="quest-provisional-text">${escapeHtml(currentModalText.provisionalText)}</p>
+        </div>
+
+        <div class="quest-field-column">
+          <label class="quest-field-label" for="modal-text-author-text">Testo autore</label>
+          <textarea
+            id="modal-text-author-text"
+            class="quest-author-text modal-text-author-text"
+            data-modal-text-author-text="${escapeHtml(currentModalText.textKey)}"
+            placeholder="Riscrivi qui il testo della modale..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      </div>
+
+      <div class="quest-field-actions">
+        <button type="button" data-copy-modal-text="${escapeHtml(currentModalText.textKey)}">
+          Copia testo
+        </button>
+        <button type="button" data-save-modal-text="${escapeHtml(currentModalText.textKey)}">
+          Salva bozza
+        </button>
+        ${allowPublish ? `
+          <button
+            type="button"
+            class="quest-publish-btn"
+            data-publish-modal-text="${escapeHtml(currentModalText.textKey)}"
+          >
+            Pubblica nel gioco
+          </button>
+        ` : ""}
+        <span class="status" data-modal-text-status="${escapeHtml(currentModalText.textKey)}"></span>
+      </div>
+    </section>
+  `;
+
+  container.querySelector("[data-copy-modal-text]")?.addEventListener(
+    "click",
+    () => copyModalTextProvisional(currentModalText.textKey)
+  );
+  container.querySelector("[data-save-modal-text]")?.addEventListener(
+    "click",
+    () => saveModalText(currentModalText.textKey)
+  );
+  container.querySelector("[data-publish-modal-text]")?.addEventListener(
+    "click",
+    () => publishModalText(currentModalText.textKey)
+  );
+}
+
+function getModalTextByTextKey(textKey) {
+  return (modalTextCatalog.units || []).find((unit) => {
+    return unit.textKey === textKey;
+  }) || null;
+}
+
+function getModalTextTextarea(textKey) {
+  return document.querySelector(`[data-modal-text-author-text="${textKey}"]`);
+}
+
+function setModalTextStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-modal-text-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyModalTextProvisional(textKey) {
+  const unit = getModalTextByTextKey(textKey);
+  const textarea = getModalTextTextarea(textKey);
+
+  if (!unit || !textarea) return;
+
+  textarea.value = unit.provisionalText;
+  textarea.focus();
+  setModalTextStatus(textKey, "Testo copiato. Salva la bozza.", "ok");
+}
+
+async function saveModalText(textKey, { quiet = false } = {}) {
+  const unit = getModalTextByTextKey(textKey);
+  const textarea = getModalTextTextarea(textKey);
+
+  if (!unit || !textarea) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentModalTextRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setModalTextStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    source_file: unit.sourceFile,
+    modal_id: unit.modalId,
+    modal_label: unit.modalLabel,
+    category: unit.category,
+    field_key: unit.fieldKey,
+    field_label: unit.fieldLabel,
+    text_type: unit.textType,
+    item_key: unit.itemKey || null,
+    item_label: unit.itemLabel || null,
+    image: unit.image || null,
+    metadata: unit.metadata || {},
+    provisional_text: unit.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setModalTextStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.modalVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo modale non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.modalTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setModalTextStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(modalTextLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentModalTextRows.set(textKey, payload);
+
+  if (!quiet) {
+    setModalTextStatus(textKey, "Bozza salvata.", "ok");
+    renderModalTextBlock();
+  }
+
+  return payload;
+}
+
+async function publishModalText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setModalTextStatus(textKey, "Solo revisore o admin puo pubblicare.", "error");
+    return;
+  }
+
+  const draft = await saveModalText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setModalTextStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    source_file: draft.source_file,
+    modal_id: draft.modal_id,
+    modal_label: draft.modal_label,
+    category: draft.category,
+    field_key: draft.field_key,
+    field_label: draft.field_label,
+    text_type: draft.text_type,
+    item_key: draft.item_key || null,
+    item_label: draft.item_label || null,
+    image: draft.image || null,
+    metadata: draft.metadata || {},
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setModalTextStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedModalTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setModalTextStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(modalTextLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedModalTextRows.set(textKey, payload);
+  setModalTextStatus(textKey, "Testo pubblicato.", "ok");
+  renderModalTextBlock();
 }
 
 function readLocalJson(key, fallback) {

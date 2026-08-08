@@ -67,3 +67,68 @@ Per rigenerare dal percorso predefinito:
 ```powershell
 node scripts/generate-weapon-catalog.mjs
 ```
+
+## Descrizioni creature
+
+- `author-creatures-catalog.js`: catalogo generato da `creatures-data.js`.
+- `author_creature_texts`: un blocco bozza per ogni creatura.
+- `author_creature_text_versions`: cronologia delle riscritture.
+- `author_published_creature_texts`: descrizioni approvate, leggibili dal gioco.
+- `scripts/generate-creatures-catalog.mjs`: rigenera il catalogo quando cambia `creatures-data.js`.
+
+Per rigenerare dal percorso predefinito:
+
+```powershell
+node scripts/generate-creatures-catalog.mjs
+```
+
+## Descrizioni guardiani zone
+
+- `author-zone-guardians-catalog.js`: catalogo generato da `maps-config.js`, sezione `CONQUERABLE_ZONE_GUARDIANS`.
+- `author_zone_guardian_texts`: un blocco bozza per ogni guardiano territoriale.
+- `author_zone_guardian_text_versions`: cronologia delle riscritture.
+- `author_published_zone_guardian_texts`: descrizioni approvate, leggibili dal gioco.
+- `scripts/generate-zone-guardians-catalog.mjs`: rigenera il catalogo quando cambia `maps-config.js`.
+
+Per rigenerare dal percorso predefinito:
+
+```powershell
+node scripts/generate-zone-guardians-catalog.mjs
+```
+
+## Descrizioni echi
+
+- `author-fragments-catalog.js`: catalogo generato da `dashboard/js/config/fragments-config.js`, sezione `BEL_FRAGMENTS_CONFIG`.
+- `author_fragment_texts`: un blocco bozza per ogni eco/frammento.
+- `author_fragment_text_versions`: cronologia delle riscritture.
+- `author_published_fragment_texts`: descrizioni approvate, leggibili dal gioco.
+- `scripts/generate-fragments-catalog.mjs`: rigenera il catalogo quando cambia `fragments-config.js`.
+
+Per rigenerare dal percorso predefinito:
+
+```powershell
+node scripts/generate-fragments-catalog.mjs
+```
+
+## Testi modali
+
+- `author-modal-texts-catalog.js`: catalogo generale dei testi editoriali delle modali.
+- `author_modal_texts`: un blocco bozza per ogni testo modale o pietanza.
+- `author_modal_text_versions`: cronologia delle riscritture.
+- `author_published_modal_texts`: testi approvati, leggibili dal gioco.
+- `scripts/generate-modal-texts-catalog.mjs`: rigenera il catalogo dai file modale registrati nello script.
+
+Sorgenti collegate:
+
+- `dashboard/market-food-modal.html`: Banco del Cibo.
+- `app/cibo.html`: nomi, descrizioni, immagini, costo ed effetti delle pietanze del Banco del Cibo.
+- `dashboard/barracks-modal.html`: testi della Caserma del Regno e blocchi descrizione per ogni soldato addestrabile.
+- `dashboard/cards-modal.html`: testi della modale Carte Speciali e blocchi descrizione per ogni carta dei personaggi.
+- `dashboard/environment-effects-modal.html`: testi della modale Effetti Ambientali.
+- `dashboard/js/services/world-environment-service.js`: descrizioni, immagini, percentuali e attributi degli effetti ambientali.
+
+Per rigenerare dal percorso predefinito:
+
+```powershell
+node scripts/generate-modal-texts-catalog.mjs
+```

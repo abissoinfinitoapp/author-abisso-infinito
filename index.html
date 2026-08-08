@@ -35,6 +35,10 @@
           <button id="chaptersTabBtn" type="button" class="workspace-tab active">Capitoli</button>
           <button id="questsTabBtn" type="button" class="workspace-tab">Testi quest</button>
           <button id="weaponsTabBtn" type="button" class="workspace-tab">Armi</button>
+          <button id="creaturesTabBtn" type="button" class="workspace-tab">Creature</button>
+          <button id="zoneGuardiansTabBtn" type="button" class="workspace-tab">Guardiani zone</button>
+          <button id="fragmentsTabBtn" type="button" class="workspace-tab">Echi</button>
+          <button id="modalsTabBtn" type="button" class="workspace-tab">Modali</button>
         </nav>
       </div>
 
@@ -235,6 +239,183 @@
         </div>
       </section>
     </main>
+
+    <main id="creaturesWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Creature</h2>
+
+        <div class="filter-box">
+          <label for="creatureElementFilter">Elemento</label>
+          <select id="creatureElementFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="creatureSearch">Cerca creatura</label>
+          <input id="creatureSearch" type="search" placeholder="Nome, elemento, categoria o descrizione..." />
+        </div>
+
+        <p id="creatureCatalogMeta" class="status"></p>
+        <div id="creaturesList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Creatura selezionata</p>
+            <h2 id="creatureTitle">Seleziona una creatura</h2>
+            <p id="creatureMeta" class="status"></p>
+          </div>
+          <button id="reloadCreatureBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Ogni creatura ha un unico blocco editoriale: la motivazione provvisoria
+            estratta dal catalogo e il testo autore da salvare o pubblicare.
+          </p>
+        </div>
+
+        <div id="creatureBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona una creatura dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main id="zoneGuardiansWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Guardiani zone</h2>
+
+        <div class="filter-box">
+          <label for="zoneGuardianMapFilter">Mappa</label>
+          <select id="zoneGuardianMapFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="zoneGuardianSearch">Cerca guardiano</label>
+          <input id="zoneGuardianSearch" type="search" placeholder="Nome, zona o descrizione..." />
+        </div>
+
+        <p id="zoneGuardianCatalogMeta" class="status"></p>
+        <div id="zoneGuardiansList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Guardiano selezionato</p>
+            <h2 id="zoneGuardianTitle">Seleziona un guardiano</h2>
+            <p id="zoneGuardianMeta" class="status"></p>
+          </div>
+          <button id="reloadZoneGuardianBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Ogni guardiano territoriale ha un unico blocco editoriale: il testo
+            provvisorio derivato dalla configurazione delle zone e il testo autore
+            da salvare o pubblicare.
+          </p>
+        </div>
+
+        <div id="zoneGuardianBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona un guardiano dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main id="fragmentsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Echi</h2>
+
+        <div class="filter-box">
+          <label for="fragmentClassFilter">Classe eco</label>
+          <select id="fragmentClassFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="fragmentSearch">Cerca eco</label>
+          <input id="fragmentSearch" type="search" placeholder="Nome, origine, classe o descrizione..." />
+        </div>
+
+        <p id="fragmentCatalogMeta" class="status"></p>
+        <div id="fragmentsList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Eco selezionato</p>
+            <h2 id="fragmentTitle">Seleziona un eco</h2>
+            <p id="fragmentMeta" class="status"></p>
+          </div>
+          <button id="reloadFragmentBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Ogni eco di Bel ha un unico blocco editoriale: descrizione provvisoria
+            estratta da fragments-config e testo autore da salvare o pubblicare.
+          </p>
+        </div>
+
+        <div id="fragmentBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona un eco dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main id="modalsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Modali</h2>
+
+        <div class="filter-box">
+          <label for="modalTextModalFilter">Modale</label>
+          <select id="modalTextModalFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="modalTextSearch">Cerca testo</label>
+          <input id="modalTextSearch" type="search" placeholder="Modale, campo o testo..." />
+        </div>
+
+        <p id="modalTextCatalogMeta" class="status"></p>
+        <div id="modalTextsList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Testo modale selezionato</p>
+            <h2 id="modalTextTitle">Seleziona un testo</h2>
+            <p id="modalTextMeta" class="status"></p>
+          </div>
+          <button id="reloadModalTextBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Questa sezione raccoglie i testi editoriali delle modali. La lista
+            verra estesa aggiungendo nuove sorgenti al generatore.
+          </p>
+        </div>
+
+        <div id="modalTextBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona un testo modale dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
 <script src="config.js"></script>
@@ -244,6 +425,10 @@
 <script src="author-player-backgrounds-config.js"></script>
 <script src="quest-text-catalog.js"></script>
 <script src="author-weapons-catalog.js?v=20260725-1"></script>
-<script src="app.js"></script>
+<script src="author-creatures-catalog.js?v=20260808-1"></script>
+<script src="author-zone-guardians-catalog.js?v=20260808-1"></script>
+<script src="author-fragments-catalog.js?v=20260808-1"></script>
+<script src="author-modal-texts-catalog.js?v=20260808-6"></script>
+<script src="app.js?v=20260808-4"></script>
 </body>
 </html>

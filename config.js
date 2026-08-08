@@ -16,6 +16,18 @@ window.AUTHOR_CONFIG = {
     publishedQuestTexts: "author_published_quest_texts",
     weaponTexts: "author_weapon_texts",
     weaponVersions: "author_weapon_text_versions",
-    publishedWeaponTexts: "author_published_weapon_texts"
+    publishedWeaponTexts: "author_published_weapon_texts",
+    creatureTexts: "author_creature_texts",
+    creatureVersions: "author_creature_text_versions",
+    publishedCreatureTexts: "author_published_creature_texts",
+    zoneGuardianTexts: "author_zone_guardian_texts",
+    zoneGuardianVersions: "author_zone_guardian_text_versions",
+    publishedZoneGuardianTexts: "author_published_zone_guardian_texts",
+    fragmentTexts: "author_fragment_texts",
+    fragmentVersions: "author_fragment_text_versions",
+    publishedFragmentTexts: "author_published_fragment_texts",
+    modalTexts: "author_modal_texts",
+    modalVersions: "author_modal_text_versions",
+    publishedModalTexts: "author_published_modal_texts"
   }
 };

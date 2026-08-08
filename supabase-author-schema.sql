@@ -138,6 +138,234 @@ create table if not exists public.author_published_weapon_texts (
 create index if not exists author_published_weapon_texts_character_weapon_idx
   on public.author_published_weapon_texts (character_key, weapon_id);
 
+create table if not exists public.author_creature_texts (
+  text_key text primary key,
+  source_file text not null,
+  creature_id text not null,
+  creature_name text not null,
+  element text,
+  nature text,
+  category text,
+  vehicles text[] not null default '{}'::text[],
+  provisional_text text not null default '',
+  content text not null default '',
+  status text not null default 'draft'
+    check (status in ('draft', 'review', 'approved')),
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists author_creature_texts_creature_idx
+  on public.author_creature_texts (creature_id);
+
+create table if not exists public.author_creature_text_versions (
+  id uuid primary key default gen_random_uuid(),
+  text_key text not null,
+  content text not null default '',
+  edited_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists author_creature_text_versions_key_created_idx
+  on public.author_creature_text_versions (text_key, created_at desc);
+
+create table if not exists public.author_published_creature_texts (
+  text_key text primary key,
+  source_file text not null,
+  creature_id text not null,
+  creature_name text not null,
+  element text,
+  nature text,
+  category text,
+  vehicles text[] not null default '{}'::text[],
+  content text not null,
+  published_by text,
+  published_at timestamptz not null default now()
+);
+
+create index if not exists author_published_creature_texts_creature_idx
+  on public.author_published_creature_texts (creature_id);
+
+create table if not exists public.author_zone_guardian_texts (
+  text_key text primary key,
+  source_file text not null,
+  map_key text not null,
+  zone_key text not null,
+  zone_label text not null,
+  guardian_key text not null,
+  guardian_name text not null,
+  guardian_title text,
+  guardian_full_name text,
+  image text,
+  provisional_text text not null default '',
+  content text not null default '',
+  status text not null default 'draft'
+    check (status in ('draft', 'review', 'approved')),
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists author_zone_guardian_texts_zone_idx
+  on public.author_zone_guardian_texts (map_key, zone_key);
+
+create table if not exists public.author_zone_guardian_text_versions (
+  id uuid primary key default gen_random_uuid(),
+  text_key text not null,
+  content text not null default '',
+  edited_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists author_zone_guardian_text_versions_key_created_idx
+  on public.author_zone_guardian_text_versions (text_key, created_at desc);
+
+create table if not exists public.author_published_zone_guardian_texts (
+  text_key text primary key,
+  source_file text not null,
+  map_key text not null,
+  zone_key text not null,
+  zone_label text not null,
+  guardian_key text not null,
+  guardian_name text not null,
+  guardian_title text,
+  guardian_full_name text,
+  image text,
+  content text not null,
+  published_by text,
+  published_at timestamptz not null default now()
+);
+
+create index if not exists author_published_zone_guardian_texts_zone_idx
+  on public.author_published_zone_guardian_texts (map_key, zone_key);
+
+create table if not exists public.author_fragment_texts (
+  text_key text primary key,
+  source_file text not null,
+  fragment_id text not null,
+  fragment_name text not null,
+  origin_monster_id text,
+  origin_type text,
+  fragment_class text,
+  difficulty_tier text,
+  spiritual_tier text,
+  image text,
+  rewards jsonb not null default '{}'::jsonb,
+  provisional_text text not null default '',
+  content text not null default '',
+  status text not null default 'draft'
+    check (status in ('draft', 'review', 'approved')),
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists author_fragment_texts_fragment_idx
+  on public.author_fragment_texts (fragment_id);
+
+create index if not exists author_fragment_texts_class_idx
+  on public.author_fragment_texts (fragment_class);
+
+create table if not exists public.author_fragment_text_versions (
+  id uuid primary key default gen_random_uuid(),
+  text_key text not null,
+  content text not null default '',
+  edited_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists author_fragment_text_versions_key_created_idx
+  on public.author_fragment_text_versions (text_key, created_at desc);
+
+create table if not exists public.author_published_fragment_texts (
+  text_key text primary key,
+  source_file text not null,
+  fragment_id text not null,
+  fragment_name text not null,
+  origin_monster_id text,
+  origin_type text,
+  fragment_class text,
+  difficulty_tier text,
+  spiritual_tier text,
+  image text,
+  rewards jsonb not null default '{}'::jsonb,
+  content text not null,
+  published_by text,
+  published_at timestamptz not null default now()
+);
+
+create index if not exists author_published_fragment_texts_fragment_idx
+  on public.author_published_fragment_texts (fragment_id);
+
+create index if not exists author_published_fragment_texts_class_idx
+  on public.author_published_fragment_texts (fragment_class);
+
+create table if not exists public.author_modal_texts (
+  text_key text primary key,
+  source_file text not null,
+  modal_id text not null,
+  modal_label text not null,
+  category text,
+  field_key text not null,
+  field_label text not null,
+  text_type text,
+  item_key text,
+  item_label text,
+  image text,
+  metadata jsonb not null default '{}'::jsonb,
+  provisional_text text not null default '',
+  content text not null default '',
+  status text not null default 'draft'
+    check (status in ('draft', 'review', 'approved')),
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists author_modal_texts_modal_idx
+  on public.author_modal_texts (modal_id);
+
+create index if not exists author_modal_texts_field_idx
+  on public.author_modal_texts (modal_id, field_key);
+
+create index if not exists author_modal_texts_item_idx
+  on public.author_modal_texts (modal_id, item_key);
+
+create table if not exists public.author_modal_text_versions (
+  id uuid primary key default gen_random_uuid(),
+  text_key text not null,
+  content text not null default '',
+  edited_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists author_modal_text_versions_key_created_idx
+  on public.author_modal_text_versions (text_key, created_at desc);
+
+create table if not exists public.author_published_modal_texts (
+  text_key text primary key,
+  source_file text not null,
+  modal_id text not null,
+  modal_label text not null,
+  category text,
+  field_key text not null,
+  field_label text not null,
+  text_type text,
+  item_key text,
+  item_label text,
+  image text,
+  metadata jsonb not null default '{}'::jsonb,
+  content text not null,
+  published_by text,
+  published_at timestamptz not null default now()
+);
+
+create index if not exists author_published_modal_texts_modal_idx
+  on public.author_published_modal_texts (modal_id);
+
+create index if not exists author_published_modal_texts_field_idx
+  on public.author_published_modal_texts (modal_id, field_key);
+
+create index if not exists author_published_modal_texts_item_idx
+  on public.author_published_modal_texts (modal_id, item_key);
+
 create or replace function public.is_author_allowed()
 returns boolean
 language sql
@@ -179,6 +407,18 @@ alter table public.author_published_quest_texts enable row level security;
 alter table public.author_weapon_texts enable row level security;
 alter table public.author_weapon_text_versions enable row level security;
 alter table public.author_published_weapon_texts enable row level security;
+alter table public.author_creature_texts enable row level security;
+alter table public.author_creature_text_versions enable row level security;
+alter table public.author_published_creature_texts enable row level security;
+alter table public.author_zone_guardian_texts enable row level security;
+alter table public.author_zone_guardian_text_versions enable row level security;
+alter table public.author_published_zone_guardian_texts enable row level security;
+alter table public.author_fragment_texts enable row level security;
+alter table public.author_fragment_text_versions enable row level security;
+alter table public.author_published_fragment_texts enable row level security;
+alter table public.author_modal_texts enable row level security;
+alter table public.author_modal_text_versions enable row level security;
+alter table public.author_published_modal_texts enable row level security;
 
 drop policy if exists "author_allowed_users_select_self" on public.author_allowed_users;
 create policy "author_allowed_users_select_self"
@@ -393,12 +633,284 @@ for delete
 to authenticated
 using (public.is_author_admin());
 
+drop policy if exists "author_creature_texts_select_allowed" on public.author_creature_texts;
+create policy "author_creature_texts_select_allowed"
+on public.author_creature_texts
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_creature_texts_insert_allowed" on public.author_creature_texts;
+create policy "author_creature_texts_insert_allowed"
+on public.author_creature_texts
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_creature_texts_update_allowed" on public.author_creature_texts;
+create policy "author_creature_texts_update_allowed"
+on public.author_creature_texts
+for update
+to authenticated
+using (public.is_author_allowed())
+with check (public.is_author_allowed());
+
+drop policy if exists "author_creature_versions_select_allowed" on public.author_creature_text_versions;
+create policy "author_creature_versions_select_allowed"
+on public.author_creature_text_versions
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_creature_versions_insert_allowed" on public.author_creature_text_versions;
+create policy "author_creature_versions_insert_allowed"
+on public.author_creature_text_versions
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "published_creature_texts_public_read" on public.author_published_creature_texts;
+create policy "published_creature_texts_public_read"
+on public.author_published_creature_texts
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "published_creature_texts_admin_insert" on public.author_published_creature_texts;
+create policy "published_creature_texts_admin_insert"
+on public.author_published_creature_texts
+for insert
+to authenticated
+with check (public.is_author_admin());
+
+drop policy if exists "published_creature_texts_admin_update" on public.author_published_creature_texts;
+create policy "published_creature_texts_admin_update"
+on public.author_published_creature_texts
+for update
+to authenticated
+using (public.is_author_admin())
+with check (public.is_author_admin());
+
+drop policy if exists "published_creature_texts_admin_delete" on public.author_published_creature_texts;
+create policy "published_creature_texts_admin_delete"
+on public.author_published_creature_texts
+for delete
+to authenticated
+using (public.is_author_admin());
+
+drop policy if exists "author_zone_guardian_texts_select_allowed" on public.author_zone_guardian_texts;
+create policy "author_zone_guardian_texts_select_allowed"
+on public.author_zone_guardian_texts
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_zone_guardian_texts_insert_allowed" on public.author_zone_guardian_texts;
+create policy "author_zone_guardian_texts_insert_allowed"
+on public.author_zone_guardian_texts
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_zone_guardian_texts_update_allowed" on public.author_zone_guardian_texts;
+create policy "author_zone_guardian_texts_update_allowed"
+on public.author_zone_guardian_texts
+for update
+to authenticated
+using (public.is_author_allowed())
+with check (public.is_author_allowed());
+
+drop policy if exists "author_zone_guardian_versions_select_allowed" on public.author_zone_guardian_text_versions;
+create policy "author_zone_guardian_versions_select_allowed"
+on public.author_zone_guardian_text_versions
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_zone_guardian_versions_insert_allowed" on public.author_zone_guardian_text_versions;
+create policy "author_zone_guardian_versions_insert_allowed"
+on public.author_zone_guardian_text_versions
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "published_zone_guardian_texts_public_read" on public.author_published_zone_guardian_texts;
+create policy "published_zone_guardian_texts_public_read"
+on public.author_published_zone_guardian_texts
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "published_zone_guardian_texts_admin_insert" on public.author_published_zone_guardian_texts;
+create policy "published_zone_guardian_texts_admin_insert"
+on public.author_published_zone_guardian_texts
+for insert
+to authenticated
+with check (public.is_author_admin());
+
+drop policy if exists "published_zone_guardian_texts_admin_update" on public.author_published_zone_guardian_texts;
+create policy "published_zone_guardian_texts_admin_update"
+on public.author_published_zone_guardian_texts
+for update
+to authenticated
+using (public.is_author_admin())
+with check (public.is_author_admin());
+
+drop policy if exists "published_zone_guardian_texts_admin_delete" on public.author_published_zone_guardian_texts;
+create policy "published_zone_guardian_texts_admin_delete"
+on public.author_published_zone_guardian_texts
+for delete
+to authenticated
+using (public.is_author_admin());
+
+drop policy if exists "author_fragment_texts_select_allowed" on public.author_fragment_texts;
+create policy "author_fragment_texts_select_allowed"
+on public.author_fragment_texts
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_fragment_texts_insert_allowed" on public.author_fragment_texts;
+create policy "author_fragment_texts_insert_allowed"
+on public.author_fragment_texts
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_fragment_texts_update_allowed" on public.author_fragment_texts;
+create policy "author_fragment_texts_update_allowed"
+on public.author_fragment_texts
+for update
+to authenticated
+using (public.is_author_allowed())
+with check (public.is_author_allowed());
+
+drop policy if exists "author_fragment_versions_select_allowed" on public.author_fragment_text_versions;
+create policy "author_fragment_versions_select_allowed"
+on public.author_fragment_text_versions
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_fragment_versions_insert_allowed" on public.author_fragment_text_versions;
+create policy "author_fragment_versions_insert_allowed"
+on public.author_fragment_text_versions
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "published_fragment_texts_public_read" on public.author_published_fragment_texts;
+create policy "published_fragment_texts_public_read"
+on public.author_published_fragment_texts
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "published_fragment_texts_admin_insert" on public.author_published_fragment_texts;
+create policy "published_fragment_texts_admin_insert"
+on public.author_published_fragment_texts
+for insert
+to authenticated
+with check (public.is_author_admin());
+
+drop policy if exists "published_fragment_texts_admin_update" on public.author_published_fragment_texts;
+create policy "published_fragment_texts_admin_update"
+on public.author_published_fragment_texts
+for update
+to authenticated
+using (public.is_author_admin())
+with check (public.is_author_admin());
+
+drop policy if exists "published_fragment_texts_admin_delete" on public.author_published_fragment_texts;
+create policy "published_fragment_texts_admin_delete"
+on public.author_published_fragment_texts
+for delete
+to authenticated
+using (public.is_author_admin());
+
+drop policy if exists "author_modal_texts_select_allowed" on public.author_modal_texts;
+create policy "author_modal_texts_select_allowed"
+on public.author_modal_texts
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_modal_texts_insert_allowed" on public.author_modal_texts;
+create policy "author_modal_texts_insert_allowed"
+on public.author_modal_texts
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_modal_texts_update_allowed" on public.author_modal_texts;
+create policy "author_modal_texts_update_allowed"
+on public.author_modal_texts
+for update
+to authenticated
+using (public.is_author_allowed())
+with check (public.is_author_allowed());
+
+drop policy if exists "author_modal_versions_select_allowed" on public.author_modal_text_versions;
+create policy "author_modal_versions_select_allowed"
+on public.author_modal_text_versions
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_modal_versions_insert_allowed" on public.author_modal_text_versions;
+create policy "author_modal_versions_insert_allowed"
+on public.author_modal_text_versions
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "published_modal_texts_public_read" on public.author_published_modal_texts;
+create policy "published_modal_texts_public_read"
+on public.author_published_modal_texts
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "published_modal_texts_admin_insert" on public.author_published_modal_texts;
+create policy "published_modal_texts_admin_insert"
+on public.author_published_modal_texts
+for insert
+to authenticated
+with check (public.is_author_admin());
+
+drop policy if exists "published_modal_texts_admin_update" on public.author_published_modal_texts;
+create policy "published_modal_texts_admin_update"
+on public.author_published_modal_texts
+for update
+to authenticated
+using (public.is_author_admin())
+with check (public.is_author_admin());
+
+drop policy if exists "published_modal_texts_admin_delete" on public.author_published_modal_texts;
+create policy "published_modal_texts_admin_delete"
+on public.author_published_modal_texts
+for delete
+to authenticated
+using (public.is_author_admin());
+
 revoke all privileges on table public.author_quest_texts from anon, authenticated;
 revoke all privileges on table public.author_quest_text_versions from anon, authenticated;
 revoke all privileges on table public.author_published_quest_texts from anon, authenticated;
 revoke all privileges on table public.author_weapon_texts from anon, authenticated;
 revoke all privileges on table public.author_weapon_text_versions from anon, authenticated;
 revoke all privileges on table public.author_published_weapon_texts from anon, authenticated;
+revoke all privileges on table public.author_creature_texts from anon, authenticated;
+revoke all privileges on table public.author_creature_text_versions from anon, authenticated;
+revoke all privileges on table public.author_published_creature_texts from anon, authenticated;
+revoke all privileges on table public.author_zone_guardian_texts from anon, authenticated;
+revoke all privileges on table public.author_zone_guardian_text_versions from anon, authenticated;
+revoke all privileges on table public.author_published_zone_guardian_texts from anon, authenticated;
+revoke all privileges on table public.author_fragment_texts from anon, authenticated;
+revoke all privileges on table public.author_fragment_text_versions from anon, authenticated;
+revoke all privileges on table public.author_published_fragment_texts from anon, authenticated;
+revoke all privileges on table public.author_modal_texts from anon, authenticated;
+revoke all privileges on table public.author_modal_text_versions from anon, authenticated;
+revoke all privileges on table public.author_published_modal_texts from anon, authenticated;
 
 grant select, insert, update on table public.author_quest_texts to authenticated;
 grant select, insert on table public.author_quest_text_versions to authenticated;
@@ -408,6 +920,22 @@ grant select, insert, update on table public.author_weapon_texts to authenticate
 grant select, insert on table public.author_weapon_text_versions to authenticated;
 grant select on table public.author_published_weapon_texts to anon, authenticated;
 grant insert, update, delete on table public.author_published_weapon_texts to authenticated;
+grant select, insert, update on table public.author_creature_texts to authenticated;
+grant select, insert on table public.author_creature_text_versions to authenticated;
+grant select on table public.author_published_creature_texts to anon, authenticated;
+grant insert, update, delete on table public.author_published_creature_texts to authenticated;
+grant select, insert, update on table public.author_zone_guardian_texts to authenticated;
+grant select, insert on table public.author_zone_guardian_text_versions to authenticated;
+grant select on table public.author_published_zone_guardian_texts to anon, authenticated;
+grant insert, update, delete on table public.author_published_zone_guardian_texts to authenticated;
+grant select, insert, update on table public.author_fragment_texts to authenticated;
+grant select, insert on table public.author_fragment_text_versions to authenticated;
+grant select on table public.author_published_fragment_texts to anon, authenticated;
+grant insert, update, delete on table public.author_published_fragment_texts to authenticated;
+grant select, insert, update on table public.author_modal_texts to authenticated;
+grant select, insert on table public.author_modal_text_versions to authenticated;
+grant select on table public.author_published_modal_texts to anon, authenticated;
+grant insert, update, delete on table public.author_published_modal_texts to authenticated;
 
 revoke execute on function public.is_author_allowed() from public, anon;
 revoke execute on function public.is_author_admin() from public, anon;

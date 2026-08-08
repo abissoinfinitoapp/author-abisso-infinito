@@ -2375,6 +2375,99 @@ potere_fuoco: {
   ]
 },
 
+veggente: {
+  title: "Veggente",
+  intro: "Il Veggente non combatte soltanto nel presente. Ogni suo gesto sembra anticipare una scelta non ancora compiuta, ogni sguardo pesa come una profezia. Dove altri mostri aggrediscono il corpo, lui prova a piegare il destino dello scontro prima che il guerriero capisca quale strada stia prendendo.",
+
+  sections: [
+    {
+      type: "text",
+      title: "Origine della creatura",
+      text: "Il Veggente è una creatura nata dal contatto tra magia oscura e presagi corrotti. Un tempo forse custodiva visioni utili al regno, ma l'Abisso ha trasformato il dono della lettura in una forma di controllo. Ora non osserva il futuro per comprenderlo: lo usa per intrappolare chi lo affronta."
+    },
+    {
+      type: "requirements",
+      title: "Identità del mostro",
+      checks: [
+        { label: "Categoria", value: "Mostro Minore" },
+        { label: "Difficoltà", value: "Difficile" },
+        { label: "Livello", value: "3" },
+        { label: "Potenza Totale", value: "1400" },
+        { label: "Salute", value: "80" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Distribuzione del Potere",
+      checks: [
+        { label: "Forza", value: "70" },
+        { label: "Astuzia", value: "360" },
+        { label: "Ingegno", value: "260" },
+        { label: "Magia", value: "420" },
+        { label: "Destrezza", value: "290" }
+      ]
+    },
+    {
+      type: "requirements",
+      title: "Accesso ai mostri",
+      checks: [
+        { label: "Per Mostri Minori", value: "Serve almeno 1 scrigno aperto" },
+        { label: "Per Mostri Maggiori", value: "Servono almeno 4 scrigni aperti" }
+      ]
+    },
+    {
+      type: "warning",
+      title: "Sigillo d'accesso",
+      text: "Il Veggente appartiene ai Mostri Minori. Per affrontarlo devi aver già aperto almeno uno scrigno durante la partita. La sua forza non è brutale, ma la combinazione di magia, astuzia e lettura dello scontro lo rende pericoloso per chi entra senza lucidità."
+    },
+    {
+      type: "text",
+      title: "Stile di combattimento",
+      text: "Il Veggente combatte leggendo il ritmo dell'avversario. Usa magia e astuzia per anticipare mosse, deviare intenzioni e costringere il giocatore a scegliere sotto pressione. Non domina con la forza fisica: vince quando riesce a far sembrare ogni scelta già prevista."
+    },
+    {
+      type: "text",
+      title: "La minaccia del presagio",
+      text: "Affrontarlo significa combattere contro il dubbio. Il Veggente trasforma esitazioni e paure in vantaggi concreti, come se ogni errore fosse già stato scritto prima dell'inizio dello scontro. Serve mantenere il controllo, anche quando la creatura sembra sapere tutto in anticipo."
+    },
+    {
+      type: "steps",
+      title: "Come affrontarlo",
+      items: [
+        "Seleziona il giocatore che combatterà.",
+        "Verifica di aver aperto almeno 1 scrigno, requisito dei mostri minori.",
+        "Scegli da 1 a 5 attributi da utilizzare nello scontro.",
+        "Inserisci i risultati dei dadi per ogni attributo scelto.",
+        "Confronta la tua potenza con quella del Veggente per determinare l'esito."
+      ]
+    },
+    {
+      type: "warning",
+      title: "Perché è pericoloso",
+      text: "Con una potenza totale di 1400, il Veggente è meno massiccio di altri mostri, ma molto insidioso. Magia e astuzia sono i suoi punti forti, mentre la destrezza gli permette di rendere lo scontro rapido e difficile da stabilizzare."
+    },
+    {
+      type: "reward",
+      title: "Ricompense",
+      text: "Sconfiggere il Veggente garantisce 12900 monete, oltre a una crescita di +150 magia e +52 destrezza. È una vittoria utile per chi vuole rafforzare sia il controllo arcano sia la capacità di reagire in combattimento."
+    },
+    {
+      type: "requirements",
+      title: "Premio del vincitore",
+      checks: [
+        { label: "Monete", value: "12900" },
+        { label: "Magia", value: "+150" },
+        { label: "Destrezza", value: "+52" }
+      ]
+    },
+    {
+      type: "text",
+      title: "Consiglio del veterano",
+      text: "Non inseguire il Veggente dentro i suoi presagi. Contro di lui serve una strategia semplice, stabile e sostenuta da buona magia. Più lo scontro diventa confuso, più la creatura trova spazio per piegare il destino a proprio favore."
+    }
+  ]
+},
+
 mostro_terra: {
   title: "Mostro di Terra",
   intro: "Là dove il suolo si spezza e le rocce sembrano respirare, si erge il Mostro di Terra. Non corre, non fugge e non conosce esitazione. È una massa viva di pietra, radici e forza sepolta, una creatura che avanza come una frana e schiaccia tutto ciò che non riesce a reggerne il peso.",

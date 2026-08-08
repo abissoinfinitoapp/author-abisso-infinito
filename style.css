@@ -917,6 +917,26 @@ button.danger {
   display: block;
 }
 
+.creature-preview img {
+  object-fit: contain;
+  padding: 8px;
+}
+
+.zone-guardian-preview img {
+  object-fit: contain;
+  padding: 8px;
+}
+
+.fragment-preview img {
+  object-fit: contain;
+  padding: 8px;
+}
+
+.modal-text-preview img {
+  object-fit: contain;
+  padding: 8px;
+}
+
 .weapon-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
