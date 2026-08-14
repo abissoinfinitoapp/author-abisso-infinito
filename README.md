@@ -122,8 +122,20 @@ Sorgenti collegate:
 
 - `dashboard/market-food-modal.html`: Banco del Cibo.
 - `app/cibo.html`: nomi, descrizioni, immagini, costo ed effetti delle pietanze del Banco del Cibo.
+- `dashboard/chef-gustav-modal.html`: testi della modale Chef Gustav.
+- `app/cibo.html`: menu, descrizioni, fame, costo e immagini collegate dei servizi di Chef Gustav.
+- `dashboard/messenger-modal.html`: testi della modale Messaggero del Patto.
+- `app/movimenti.html`: missioni, descrizioni, bersagli e ricompense del Messaggero del Patto.
+- `dashboard/js/config/map-content-library.js`: descrizione e consiglio rapido del nodo Messaggero del Patto.
+- `dashboard/saloon-modal.html`: testi della modale Saloon del Regno.
+- `docs/saloon_full_system_migration.sql`: offerte, descrizioni, immagini, costo ed effetti del Saloon.
+- `public.game_saloon_offer_catalog`: snapshot delle offerte Saloon attive in Supabase, incluse Gentlemen e Mandragora.
+- `dashboard/commercial-bank-modal.html`: testi, operazioni e regole della modale Banca del Regno.
+- `dashboard/potion-market-modal.html`: testi della modale Emporio Alchemico.
+- `public.game_potion_catalog` + `public.game_item_catalog`: snapshot delle pozioni attive, con descrizioni, immagini, prezzi, scorte ed effetti.
 - `dashboard/barracks-modal.html`: testi della Caserma del Regno e blocchi descrizione per ogni soldato addestrabile.
-- `dashboard/cards-modal.html`: testi della modale Carte Speciali e blocchi descrizione per ogni carta dei personaggi.
+- `dashboard/cards-modal.html`: testi della modale Carte Speciali.
+- `app/defaultData.json`: blocchi descrizione per ogni carta dei personaggi.
 - `dashboard/environment-effects-modal.html`: testi della modale Effetti Ambientali.
 - `dashboard/js/services/world-environment-service.js`: descrizioni, immagini, percentuali e attributi degli effetti ambientali.
 

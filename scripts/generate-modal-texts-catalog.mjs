@@ -1,8 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
+import vm from "node:vm";
 
 const GAME_ROOT = "C:/Users/Utente/Desktop/abissoinfinito app refactor";
 const outputPath = path.resolve("author-modal-texts-catalog.js");
+const customEventObjectLibrarySource = {
+  modalId: "custom_event_objects",
+  modalLabel: "Libreria oggetti evento",
+  category: "Eventi custom",
+  sourcePath: path.resolve(
+    GAME_ROOT,
+    "dashboard/js/config/dynamic-object-templates-config.js"
+  )
+};
 
 const modalSources = [
   {
@@ -46,6 +56,718 @@ const modalSources = [
         fieldLabel: "Messaggio errore caricamento",
         textType: "empty",
         pattern: /gridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?Impossibile caricare il Banco del Cibo\.)\s*<\/div>/i
+      }
+    ]
+  },
+  {
+    modalId: "chef_gustav",
+    modalLabel: "Chef Gustav",
+    category: "Locanda",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/chef-gustav-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "loading_text",
+        fieldLabel: "Testo caricamento",
+        textType: "status",
+        pattern: /<div\s+id="loadingText"[\s\S]*?>([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<section class="panel header">[\s\S]*?<h1>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "player_label",
+        fieldLabel: "Etichetta giocatore",
+        textType: "label",
+        pattern: /<div class="eyebrow">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "default_status",
+        fieldLabel: "Stato iniziale ordine",
+        textType: "status",
+        pattern: /"([^"]*Scegli un men[^"]*Chef Gustav[^"]*)"/i
+      },
+      {
+        fieldKey: "load_error_empty",
+        fieldLabel: "Messaggio errore caricamento",
+        textType: "empty",
+        pattern: /menuGridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?Impossibile caricare Chef Gustav\.)\s*<\/div>/i
+      }
+    ]
+  },
+  {
+    modalId: "messenger_pact",
+    modalLabel: "Messaggero del Patto",
+    category: "Destino",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/messenger-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "hero_eyebrow",
+        fieldLabel: "Eyebrow hero",
+        textType: "label",
+        pattern: /<div class="eyebrow">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "hero_title",
+        fieldLabel: "Titolo hero",
+        textType: "heading",
+        pattern: /<h1>\s*([\s\S]*?)\s*<\/h1>/i
+      },
+      {
+        fieldKey: "hero_description",
+        fieldLabel: "Descrizione hero",
+        textType: "description",
+        pattern: /<section class="panel hero">[\s\S]*?<h1>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /<div\s+id="status"[\s\S]*?>\s*([\s\S]*?Controllo del Patto[\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "choice_title",
+        fieldLabel: "Titolo scelte",
+        textType: "heading",
+        pattern: /<article class="choice-card">[\s\S]*?<h2>\s*([\s\S]*?)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "choice_placeholder",
+        fieldLabel: "Placeholder scelte",
+        textType: "description",
+        pattern: /<div id="choicePlaceholder">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "collect_label",
+        fieldLabel: "Etichetta riscuoti",
+        textType: "label",
+        pattern: /<strong>\s*(Riscuoti)\s*<\/strong>/i
+      },
+      {
+        fieldKey: "invert_label",
+        fieldLabel: "Etichetta ribalta evento",
+        textType: "label",
+        pattern: /<strong>\s*(Ribalta evento)\s*<\/strong>/i
+      },
+      {
+        fieldKey: "no_material_reward",
+        fieldLabel: "Messaggio nessun premio materiale",
+        textType: "empty",
+        pattern: /<div class="effect-line">\s*(Nessun premio materiale\.)\s*<\/div>/i
+      },
+      {
+        fieldKey: "history_title",
+        fieldLabel: "Titolo cronologia",
+        textType: "heading",
+        pattern: /<section class="panel">\s*<h2>\s*([\s\S]*?Ultimi Patti[\s\S]*?)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /<div\s+id="history"[\s\S]*?>\s*([\s\S]*?Nessun Patto concluso\.)\s*<\/div>/i
+      }
+    ]
+  },
+  {
+    modalId: "saloon",
+    modalLabel: "Saloon del Regno",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/saloon-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "hero_kicker",
+        fieldLabel: "Eyebrow hero",
+        textType: "label",
+        pattern: /<div class="saloon-kicker">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1>\s*([\s\S]*?)\s*<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="saloon-subtitle">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "initial_status",
+        fieldLabel: "Stato iniziale",
+        textType: "status",
+        pattern: /<div\s+id="statusLine"[\s\S]*?>\s*([\s\S]*?Preparazione del Saloon[\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "services_title",
+        fieldLabel: "Titolo servizi",
+        textType: "heading",
+        pattern: /<h2>[\s\S]*?(Servizi e consumazioni)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "services_description",
+        fieldLabel: "Descrizione servizi",
+        textType: "description",
+        pattern: /<h2>[\s\S]*?Servizi e consumazioni[\s\S]*?<\/h2>\s*<p>\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "location_pending",
+        fieldLabel: "Stato posizione in verifica",
+        textType: "status",
+        pattern: /<span id="locationBadge"[\s\S]*?>\s*([\s\S]*?Posizione in verifica[\s\S]*?)\s*<\/span>/i
+      },
+      {
+        fieldKey: "jewels_title",
+        fieldLabel: "Titolo gioielli",
+        textType: "heading",
+        pattern: /<h2>[\s\S]*?(Gioielli prestigiosi)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "jewels_description",
+        fieldLabel: "Descrizione gioielli",
+        textType: "description",
+        pattern: /<h2>[\s\S]*?Gioielli prestigiosi[\s\S]*?<\/h2>\s*<p>\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "lottery_title",
+        fieldLabel: "Titolo lotteria",
+        textType: "heading",
+        pattern: /<h2>[\s\S]*?(Banco della Lotteria)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "lottery_description",
+        fieldLabel: "Descrizione lotteria",
+        textType: "description",
+        pattern: /<h2>[\s\S]*?Banco della Lotteria[\s\S]*?<\/h2>\s*<p>\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "ticket_badge_initial",
+        fieldLabel: "Badge biglietto iniziale",
+        textType: "label",
+        pattern: /<span id="ticketBadge"[\s\S]*?>\s*([\s\S]*?Biglietto:[\s\S]*?)\s*<\/span>/i
+      },
+      {
+        fieldKey: "history_title",
+        fieldLabel: "Titolo cronologia",
+        textType: "heading",
+        pattern: /<aside class="history-box">\s*<h3>\s*([\s\S]*?)\s*<\/h3>/i
+      },
+      {
+        fieldKey: "no_lottery_title",
+        fieldLabel: "Titolo nessuna estrazione",
+        textType: "heading",
+        pattern: /<h3>\s*(Nessuna estrazione aperta)\s*<\/h3>/i
+      },
+      {
+        fieldKey: "no_lottery_description",
+        fieldLabel: "Descrizione nessuna estrazione",
+        textType: "empty",
+        pattern: /<h3>\s*Nessuna estrazione aperta\s*<\/h3>\s*<p>\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /<div class="history-row">\s*([\s\S]*?Nessuna attivit[\s\S]*?Saloon\.)\s*<\/div>/i
+      },
+      {
+        fieldKey: "loading_offers_status",
+        fieldLabel: "Stato caricamento offerte",
+        textType: "status",
+        pattern: /setStatus\("([^"]*Caricamento delle offerte del Saloon[^"]*)"\)/i
+      },
+      {
+        fieldKey: "ready_status",
+        fieldLabel: "Stato pronto",
+        textType: "status",
+        pattern: /\?\s*"([^"]*Il Saloon [^"]* pronto a ricevere ordini[^"]*)"/i
+      },
+      {
+        fieldKey: "operation_status",
+        fieldLabel: "Stato operazione",
+        textType: "status",
+        pattern: /setStatus\("([^"]*Il Saloon sta registrando[^"]*)"\)/i
+      },
+      {
+        fieldKey: "load_error_status",
+        fieldLabel: "Messaggio errore caricamento",
+        textType: "empty",
+        pattern: /error\?\.message\s*\|\|\s*"([^"]*Impossibile caricare il Saloon[^"]*)"/i
+      }
+    ]
+  },
+  {
+    modalId: "commercial_bank",
+    modalLabel: "Banca del Regno",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/commercial-bank-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "hero_eyebrow",
+        fieldLabel: "Eyebrow hero",
+        textType: "label",
+        pattern: /<div class="eyebrow">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1>\s*([\s\S]*?)\s*<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="hero-copy">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "loading_text",
+        fieldLabel: "Testo caricamento",
+        textType: "status",
+        pattern: /<div id="loading" class="loading">\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "summary_money_label",
+        fieldLabel: "Etichetta riepilogo denaro",
+        textType: "label",
+        pattern: /<div class="summary-label">\s*([^<]*?Denaro disponibile)\s*<\/div>/i
+      },
+      {
+        fieldKey: "summary_free_gold_label",
+        fieldLabel: "Etichetta riepilogo oro libero",
+        textType: "label",
+        pattern: /<div class="summary-label">\s*([^<]*?Oro libero)\s*<\/div>/i
+      },
+      {
+        fieldKey: "summary_deposited_gold_label",
+        fieldLabel: "Etichetta riepilogo oro depositato",
+        textType: "label",
+        pattern: /<div class="summary-label">\s*([^<]*?Oro depositato)\s*<\/div>/i
+      },
+      {
+        fieldKey: "summary_max_loan_label",
+        fieldLabel: "Etichetta riepilogo credito massimo",
+        textType: "label",
+        pattern: /<div class="summary-label">\s*([^<]*?Credito massimo)\s*<\/div>/i
+      },
+      {
+        fieldKey: "deposit_title",
+        fieldLabel: "Titolo deposito",
+        textType: "heading",
+        pattern: /<h2>\s*[\s\S]*?(Deposito e garanzia)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "deposit_description",
+        fieldLabel: "Descrizione deposito",
+        textType: "description",
+        pattern: /<h2>\s*[\s\S]*?Deposito e garanzia[\s\S]*?<\/h2>\s*<p class="panel-copy">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "deposit_input_label",
+        fieldLabel: "Etichetta input deposito",
+        textType: "label",
+        pattern: /<label for="depositAmount">\s*([\s\S]*?)\s*<\/label>/i
+      },
+      {
+        fieldKey: "deposit_input_placeholder",
+        fieldLabel: "Placeholder deposito",
+        textType: "label",
+        pattern: /<input id="depositAmount"[\s\S]*?placeholder="([^"]+)"/i
+      },
+      {
+        fieldKey: "deposit_button",
+        fieldLabel: "Pulsante deposito",
+        textType: "button",
+        pattern: /<button id="depositBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "withdraw_button",
+        fieldLabel: "Pulsante ritiro oro",
+        textType: "button",
+        pattern: /<button id="withdrawBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "gold_dust_label",
+        fieldLabel: "Etichetta polvere d'oro",
+        textType: "label",
+        pattern: /<span>\s*(Polvere d[\s\S]*?oro maturata)\s*<\/span>/i
+      },
+      {
+        fieldKey: "yield_label",
+        fieldLabel: "Etichetta rendimento",
+        textType: "label",
+        pattern: /<span>\s*(Rendimento per ciclo)\s*<\/span>/i
+      },
+      {
+        fieldKey: "loan_guarantee_label",
+        fieldLabel: "Etichetta garanzia prestito",
+        textType: "label",
+        pattern: /<span>\s*(Garanzia prestito)\s*<\/span>/i
+      },
+      {
+        fieldKey: "loan_title",
+        fieldLabel: "Titolo prestito",
+        textType: "heading",
+        pattern: /<h2>\s*[\s\S]*?(Prestito)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "loan_description",
+        fieldLabel: "Descrizione prestito",
+        textType: "description",
+        pattern: /<h2>\s*[\s\S]*?Prestito[\s\S]*?<\/h2>\s*<p class="panel-copy">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "loan_input_label",
+        fieldLabel: "Etichetta input prestito",
+        textType: "label",
+        pattern: /<label for="loanAmount">\s*([\s\S]*?)\s*<\/label>/i
+      },
+      {
+        fieldKey: "loan_input_placeholder",
+        fieldLabel: "Placeholder prestito",
+        textType: "label",
+        pattern: /<input id="loanAmount"[\s\S]*?placeholder="([^"]+)"/i
+      },
+      {
+        fieldKey: "loan_button",
+        fieldLabel: "Pulsante richiesta prestito",
+        textType: "button",
+        pattern: /<button id="loanBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "close_loan_button",
+        fieldLabel: "Pulsante estinzione prestito",
+        textType: "button",
+        pattern: /<button id="closeLoanBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "loan_status_label",
+        fieldLabel: "Etichetta stato prestito",
+        textType: "label",
+        pattern: /<div class="data-row"><span>\s*(Stato)\s*<\/span><strong id="loanStatus">/i
+      },
+      {
+        fieldKey: "loan_remaining_label",
+        fieldLabel: "Etichetta debito residuo",
+        textType: "label",
+        pattern: /<span>\s*(Debito residuo)\s*<\/span>/i
+      },
+      {
+        fieldKey: "loan_installment_label",
+        fieldLabel: "Etichetta rata automatica",
+        textType: "label",
+        pattern: /<span>\s*(Rata automatica)\s*<\/span>/i
+      },
+      {
+        fieldKey: "loan_cycles_label",
+        fieldLabel: "Etichetta rate rimaste",
+        textType: "label",
+        pattern: /<span>\s*(Rate rimaste)\s*<\/span>/i
+      },
+      {
+        fieldKey: "insurance_title",
+        fieldLabel: "Titolo assicurazione",
+        textType: "heading",
+        pattern: /<h2>\s*[\s\S]*?(Assicurazione del deposito)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "insurance_description",
+        fieldLabel: "Descrizione assicurazione",
+        textType: "description",
+        pattern: /<h2>\s*[\s\S]*?Assicurazione del deposito[\s\S]*?<\/h2>\s*<p class="panel-copy">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "enable_insurance_button",
+        fieldLabel: "Pulsante attiva assicurazione",
+        textType: "button",
+        pattern: /<button id="enableInsuranceBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "disable_insurance_button",
+        fieldLabel: "Pulsante disattiva assicurazione",
+        textType: "button",
+        pattern: /<button id="disableInsuranceBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "insurance_paid_cycle_label",
+        fieldLabel: "Etichetta ultimo ciclo pagato",
+        textType: "label",
+        pattern: /<span>\s*(Ultimo ciclo pagato)\s*<\/span>/i
+      },
+      {
+        fieldKey: "insurance_paid_total_label",
+        fieldLabel: "Etichetta totale versato",
+        textType: "label",
+        pattern: /<span>\s*(Totale versato)\s*<\/span>/i
+      },
+      {
+        fieldKey: "insurance_missed_label",
+        fieldLabel: "Etichetta pagamenti mancati",
+        textType: "label",
+        pattern: /<span>\s*(Pagamenti mancati)\s*<\/span>/i
+      },
+      {
+        fieldKey: "history_title",
+        fieldLabel: "Titolo ultime operazioni",
+        textType: "heading",
+        pattern: /<h2>\s*[\s\S]*?(Ultime operazioni)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "rules_title",
+        fieldLabel: "Titolo regole sportello",
+        textType: "heading",
+        pattern: /<h2>\s*(Regole dello sportello)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "rule_loan",
+        fieldLabel: "Regola prestito",
+        textType: "description",
+        pattern: /<div class="rule-card"><strong>Prestito<\/strong>([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "rule_repayment",
+        fieldLabel: "Regola rimborso",
+        textType: "description",
+        pattern: /<div class="rule-card"><strong>Rimborso<\/strong>([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "rule_insolvency",
+        fieldLabel: "Regola insolvenza",
+        textType: "description",
+        pattern: /<div class="rule-card"><strong>Insolvenza<\/strong>([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "bank_locked_status",
+        fieldLabel: "Stato banca sotto assalto",
+        textType: "status",
+        pattern: /state\.bankEventLocked[\s\S]*?\?\s*\(\s*"([^"]*La Banca del Regno[^"]*)"/i
+      },
+      {
+        fieldKey: "loan_active_status",
+        fieldLabel: "Stato prestito attivo",
+        textType: "status",
+        pattern: /<span class="loan-badge active">\s*([\s\S]*?Attivo[\s\S]*?)\s*<\/span>/i
+      },
+      {
+        fieldKey: "loan_empty_status",
+        fieldLabel: "Stato nessun prestito",
+        textType: "status",
+        pattern: /<span class="loan-badge">\s*([\s\S]*?Nessun prestito[\s\S]*?)\s*<\/span>/i
+      },
+      {
+        fieldKey: "insurance_active_paid_status",
+        fieldLabel: "Stato assicurazione attiva",
+        textType: "status",
+        pattern: /\?\s*"([^"]*Attiva e pagata[^"]*)"/i
+      },
+      {
+        fieldKey: "insurance_pending_status",
+        fieldLabel: "Stato assicurazione in attesa",
+        textType: "status",
+        pattern: /:\s*"([^"]*Attiva, in attesa del prossimo ciclo[^"]*)"/i
+      },
+      {
+        fieldKey: "insurance_inactive_status",
+        fieldLabel: "Stato assicurazione non attiva",
+        textType: "status",
+        pattern: /<span class="insurance-badge">\s*([\s\S]*?Non attiva[\s\S]*?)\s*<\/span>/i
+      },
+      {
+        fieldKey: "load_invalid_error",
+        fieldLabel: "Errore dati banca non validi",
+        textType: "empty",
+        pattern: /throw new Error\(\s*"([^"]*La banca non ha restituito dati validi[^"]*)"\s*\)/i
+      },
+      {
+        fieldKey: "load_error",
+        fieldLabel: "Errore apertura banca",
+        textType: "empty",
+        pattern: /error\?\.message\s*\|\|\s*"([^"]*Impossibile aprire la banca[^"]*)"/i
+      },
+      {
+        fieldKey: "unavailable_error",
+        fieldLabel: "Errore banca non disponibile",
+        textType: "empty",
+        pattern: /error\?\.message\s*\|\|\s*"([^"]*Banca non disponibile[^"]*)"/i
+      },
+      {
+        fieldKey: "deposit_invalid_error",
+        fieldLabel: "Errore deposito non valido",
+        textType: "empty",
+        pattern: /showFeedback\("([^"]*quantit[^"]*oro valida[^"]*)"/i
+      },
+      {
+        fieldKey: "loan_invalid_error",
+        fieldLabel: "Errore prestito non valido",
+        textType: "empty",
+        pattern: /showFeedback\("([^"]*Inserisci un prestito valido[^"]*)"/i
+      }
+    ]
+  },
+  {
+    modalId: "potion_market",
+    modalLabel: "Emporio Alchemico",
+    category: "Mercati",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/potion-market-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1>\s*([\s\S]*?)\s*<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "refresh_button",
+        fieldLabel: "Pulsante aggiorna emporio",
+        textType: "button",
+        pattern: /<button id="potionRefreshBtn"[\s\S]*?>\s*([\s\S]*?)\s*<\/button>/i
+      },
+      {
+        fieldKey: "initial_status",
+        fieldLabel: "Stato iniziale",
+        textType: "status",
+        pattern: /<div id="potionStatus"[\s\S]*?>\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "market_title",
+        fieldLabel: "Titolo pozioni mercato",
+        textType: "heading",
+        pattern: /<h2>\s*(Pozioni del mercato)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "market_description",
+        fieldLabel: "Descrizione pozioni mercato",
+        textType: "description",
+        pattern: /<h2>\s*Pozioni del mercato\s*<\/h2>\s*<p class="subtitle">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "alchemy_title",
+        fieldLabel: "Titolo preparazioni Alchimista",
+        textType: "heading",
+        pattern: /<h2>\s*(Preparazioni dell[\s\S]*?Alchimista)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "alchemy_description",
+        fieldLabel: "Descrizione preparazioni Alchimista",
+        textType: "description",
+        pattern: /<h2>\s*Preparazioni dell[\s\S]*?Alchimista\s*<\/h2>\s*<p class="subtitle">\s*([\s\S]*?)\s*<\/p>/i
+      },
+      {
+        fieldKey: "history_title",
+        fieldLabel: "Titolo ultime operazioni",
+        textType: "heading",
+        pattern: /<h2>\s*(Ultime operazioni)\s*<\/h2>/i
+      },
+      {
+        fieldKey: "load_status",
+        fieldLabel: "Stato caricamento dati",
+        textType: "status",
+        pattern: /setStatus\("([^"]*Lettura di scorte[^"]*)"\)/i
+      },
+      {
+        fieldKey: "ready_status",
+        fieldLabel: "Stato emporio sincronizzato",
+        textType: "status",
+        pattern: /setStatus\("([^"]*Emporio sincronizzato con Supabase[^"]*)"/i
+      },
+      {
+        fieldKey: "empty_market",
+        fieldLabel: "Messaggio nessuna pozione mercato",
+        textType: "empty",
+        pattern: /marketGridEl\.innerHTML\s*=\s*`<div class="empty-state"[\s\S]*?>\s*([\s\S]*?Nessuna pozione disponibile\.)\s*<\/div>`/i
+      },
+      {
+        fieldKey: "empty_alchemy",
+        fieldLabel: "Messaggio nessuna preparazione",
+        textType: "empty",
+        pattern: /alchemyGridEl\.innerHTML\s*=\s*`<div class="empty-state"[\s\S]*?>\s*([\s\S]*?Nessuna preparazione disponibile\.)\s*<\/div>`/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /historyEl\.innerHTML\s*=\s*`<div class="empty-state">\s*([\s\S]*?Nessuna operazione registrata\.)\s*<\/div>`/i
+      },
+      {
+        fieldKey: "buy_portable_confirmation",
+        fieldLabel: "Conferma acquisto trasportabile",
+        textType: "description",
+        pattern: /`(La pozione verr[\s\S]*?Inventario generale\.)`/i
+      },
+      {
+        fieldKey: "alchemy_auto_note",
+        fieldLabel: "Nota effetto automatico",
+        textType: "description",
+        pattern: /`(L[\s\S]*?effetto viene applicato automaticamente alla scadenza\.)`/i
+      },
+      {
+        fieldKey: "use_portable_button",
+        fieldLabel: "Pulsante acquista e trasporta",
+        textType: "button",
+        pattern: /\?\s*"([^"]*Acquista e trasporta[^"]*)"/i
+      },
+      {
+        fieldKey: "consume_button",
+        fieldLabel: "Pulsante acquista e consuma",
+        textType: "button",
+        pattern: /:\s*"([^"]*Acquista e consuma[^"]*)"/i
+      },
+      {
+        fieldKey: "order_alchemy_button",
+        fieldLabel: "Pulsante avvia preparazione",
+        textType: "button",
+        pattern: /<button[\s\S]*data-potion-action="order_alchemy"[\s\S]*?>\s*([\s\S]*?Avvia preparazione)\s*<\/button>/i
+      },
+      {
+        fieldKey: "load_error",
+        fieldLabel: "Errore caricamento emporio",
+        textType: "empty",
+        pattern: /setStatus\(error\?\.message\s*\|\|\s*"([^"]*Impossibile caricare[^"]*Emporio[^"]*)"/i
       }
     ]
   },
@@ -187,6 +909,442 @@ const foodSources = [
   }
 ];
 
+const chefMenuSources = [
+  {
+    modalId: "chef_gustav",
+    modalLabel: "Chef Gustav",
+    category: "Locanda",
+    sourcePath: path.resolve(GAME_ROOT, "app/cibo.html"),
+    sourceFile: "cibo.html"
+  }
+];
+
+const messengerPactSources = [
+  {
+    modalId: "messenger_pact",
+    modalLabel: "Messaggero del Patto",
+    category: "Destino",
+    sourcePath: path.resolve(GAME_ROOT, "app/movimenti.html"),
+    sourceFile: "movimenti.html"
+  }
+];
+
+const messengerMapContentSources = [
+  {
+    modalId: "messenger_pact",
+    modalLabel: "Messaggero del Patto",
+    category: "Destino",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/js/config/map-content-library.js"),
+    sourceFile: "map-content-library.js"
+  }
+];
+
+const saloonOfferSources = [
+  {
+    modalId: "saloon",
+    modalLabel: "Saloon del Regno",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "docs/saloon_full_system_migration.sql"),
+    sourceFile: "saloon_full_system_migration.sql"
+  }
+];
+
+const saloonProductionOfferSnapshot = [
+  {
+    offerKey: "companion_lady",
+    title: "Dama di compagnia",
+    description: "Riposo, mondanità e relazioni influenti. Recupera parzialmente il guerriero, aumenta il prestigio e accresce la corruzione.",
+    image: "img/dama-compagnia.png",
+    category: "entertainment",
+    actionType: "service",
+    price: 5000,
+    effectJson: {
+      health_gain: 10,
+      hunger_gain: 0,
+      usage_group: "companion_service",
+      stamina_gain: 10,
+      ebbrezza_gain: 0,
+      prestige_gain: 10,
+      corruption_gain: 3,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 1,
+    sortOrder: 10,
+    catalogVersion: 2
+  },
+  {
+    offerKey: "gentlemen",
+    title: "Gentlemen",
+    description: "Riposo, mondanità e relazioni influenti. Recupera parzialmente il guerriero, aumenta il prestigio e accresce la corruzione.",
+    image: "img/gentlemen.png",
+    category: "entertainment",
+    actionType: "service",
+    price: 5000,
+    effectJson: {
+      health_gain: 10,
+      hunger_gain: 0,
+      usage_group: "companion_service",
+      stamina_gain: 10,
+      ebbrezza_gain: 0,
+      prestige_gain: 10,
+      corruption_gain: 3,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 1,
+    sortOrder: 15,
+    catalogVersion: 2
+  },
+  {
+    offerKey: "inebriating_wine",
+    title: "Vino inebriante",
+    description: "Un bicchiere che restituisce poca stamina, alimenta la fama mondana e prepara future conseguenze dell’ebbrezza.",
+    image: "img/vino-inebriante.png",
+    category: "entertainment",
+    actionType: "drink",
+    price: 500,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 2,
+      stamina_gain: 10,
+      wine_glasses: 1,
+      ebbrezza_gain: 1,
+      prestige_gain: 2,
+      corruption_gain: 1,
+      intoxication_gain: 1,
+      altered_state_source: "alcohol"
+    },
+    maxPerTurn: 0,
+    sortOrder: 20,
+    catalogVersion: 2
+  },
+  {
+    offerKey: "mandragora",
+    title: "Mandragora",
+    description: "Una preparazione euforica che triplica gli effetti del Vino inebriante e alimenta uno stato alterato.",
+    image: "img/mandragora.png",
+    category: "entertainment",
+    actionType: "drink",
+    price: 1500,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 6,
+      stamina_gain: 30,
+      ebbrezza_gain: 3,
+      prestige_gain: 6,
+      corruption_gain: 3,
+      intoxication_gain: 3,
+      altered_state_turns: 1,
+      altered_state_source: "mandragora"
+    },
+    maxPerTurn: 0,
+    sortOrder: 25,
+    catalogVersion: 2
+  },
+  {
+    offerKey: "prestige_jewel_10",
+    title: "Monile raffinato",
+    description: "Un ornamento di buona fattura che rende il nome del guerriero più riconoscibile.",
+    image: "img/monile-raffinato.png",
+    category: "jewel",
+    actionType: "prestige",
+    price: 10000,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 0,
+      stamina_gain: 0,
+      prestige_gain: 10,
+      corruption_gain: 1,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 0,
+    sortOrder: 30,
+    catalogVersion: 1
+  },
+  {
+    offerKey: "prestige_jewel_25",
+    title: "Anello nobiliare",
+    description: "Un anello costoso che apre porte e rende più autorevole ogni pretesa territoriale.",
+    image: "img/anello-nobiliare.png",
+    category: "jewel",
+    actionType: "prestige",
+    price: 25000,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 0,
+      stamina_gain: 0,
+      prestige_gain: 25,
+      corruption_gain: 3,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 0,
+    sortOrder: 40,
+    catalogVersion: 1
+  },
+  {
+    offerKey: "prestige_jewel_50",
+    title: "Collana dell’alta corte",
+    description: "Un gioiello appariscente capace di trasformare ricchezza in influenza politica.",
+    image: "img/collana-alta-corte.png",
+    category: "jewel",
+    actionType: "prestige",
+    price: 50000,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 0,
+      stamina_gain: 0,
+      prestige_gain: 50,
+      corruption_gain: 6,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 0,
+    sortOrder: 50,
+    catalogVersion: 1
+  },
+  {
+    offerKey: "prestige_jewel_100",
+    title: "Gioiello del Sovrano",
+    description: "Un simbolo di opulenza assoluta. Conferisce enorme prestigio, ma lega profondamente il guerriero alla corruzione del potere.",
+    image: "img/gioiello-sovrano.png",
+    category: "jewel",
+    actionType: "prestige",
+    price: 100000,
+    effectJson: {
+      health_gain: 0,
+      hunger_gain: 0,
+      stamina_gain: 0,
+      prestige_gain: 100,
+      corruption_gain: 12,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 0,
+    sortOrder: 60,
+    catalogVersion: 1
+  },
+  {
+    offerKey: "lottery_ticket",
+    title: "Biglietto della Lotteria",
+    description: "Un biglietto conservabile. Può esserne posseduto soltanto uno e viene consumato quando il giocatore conferma la partecipazione a una lotteria.",
+    image: "img/biglietto-lotteria.png",
+    category: "lottery",
+    actionType: "inventory_item",
+    price: 500,
+    effectJson: {
+      item_key: "lottery_ticket",
+      quantity: 1,
+      health_gain: 0,
+      hunger_gain: 0,
+      stamina_gain: 0,
+      prestige_gain: 0,
+      corruption_gain: 0,
+      intoxication_gain: 0
+    },
+    maxPerTurn: 0,
+    sortOrder: 70,
+    catalogVersion: 1
+  }
+];
+
+const potionCatalogSnapshot = [
+  {
+    potionKey: "mini_pozione_cura",
+    name: "Mini Pozione di Cura",
+    description: "Una fiala leggera da conservare per le ferite meno profonde.",
+    image: "img/piccola_pozione_di_cura.webp",
+    useMode: "portable",
+    transportable: true,
+    carryCost: 1,
+    maxStack: 3,
+    sortOrder: 10,
+    legacyIndex: 0,
+    basePrice: 500,
+    healthGain: 20,
+    staminaGain: 10,
+    stockMax: 10,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 3,
+    marketAvailable: true,
+    alchemyOrderable: false,
+    progression: []
+  },
+  {
+    potionKey: "pozione_cura_piccola",
+    name: "Pozione di Cura Piccola",
+    description: "Un distillato affidabile per recuperare salute e vigore durante il viaggio.",
+    image: "img/pozione_cura_completa.webp",
+    useMode: "portable",
+    transportable: true,
+    carryCost: 1,
+    maxStack: 2,
+    sortOrder: 20,
+    legacyIndex: 1,
+    basePrice: 700,
+    healthGain: 40,
+    staminaGain: 20,
+    stockMax: 8,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 2,
+    marketAvailable: true,
+    alchemyOrderable: false,
+    progression: []
+  },
+  {
+    potionKey: "pozione_minore",
+    name: "Pozione Minore",
+    description: "Una riserva alchemica più concentrata, adatta ai combattimenti prolungati.",
+    image: "img/pozione_riserva_minore.webp",
+    useMode: "portable",
+    transportable: true,
+    carryCost: 1,
+    maxStack: 2,
+    sortOrder: 30,
+    legacyIndex: 2,
+    basePrice: 1000,
+    healthGain: 50,
+    staminaGain: 25,
+    stockMax: 6,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 2,
+    marketAvailable: true,
+    alchemyOrderable: false,
+    progression: []
+  },
+  {
+    potionKey: "pozione_media",
+    name: "Pozione Media",
+    description: "Una fiala potente ma ingombrante nella disponibilità personale.",
+    image: "img/pozione_riserva.webp",
+    useMode: "portable",
+    transportable: true,
+    carryCost: 1,
+    maxStack: 1,
+    sortOrder: 40,
+    legacyIndex: 3,
+    basePrice: 1500,
+    healthGain: 80,
+    staminaGain: 40,
+    stockMax: 5,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 1,
+    marketAvailable: true,
+    alchemyOrderable: false,
+    progression: []
+  },
+  {
+    potionKey: "pozione_leggendaria",
+    name: "Pozione Leggendaria",
+    description: "La cura più potente dell’Emporio. Deve essere consumata davanti al venditore.",
+    image: "img/pozione_riserva_leggendaria.webp",
+    useMode: "instant_at_vendor",
+    transportable: false,
+    carryCost: 0,
+    maxStack: 0,
+    sortOrder: 50,
+    legacyIndex: 4,
+    basePrice: 2000,
+    healthGain: 150,
+    staminaGain: 75,
+    stockMax: 3,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 1,
+    marketAvailable: true,
+    alchemyOrderable: false,
+    progression: []
+  },
+  {
+    potionKey: "pozione_rigenerante",
+    name: "Pozione Rigenerante",
+    description: "Distillato dell’Alchimista che riduce progressivamente la corruzione.",
+    image: "img/pozione_rigenerante.png",
+    useMode: "delayed_auto_apply",
+    transportable: false,
+    carryCost: 0,
+    maxStack: 0,
+    sortOrder: 60,
+    legacyIndex: 5,
+    basePrice: 0,
+    healthGain: 0,
+    staminaGain: 0,
+    stockMax: 0,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 0,
+    marketAvailable: false,
+    alchemyOrderable: true,
+    progression: [
+      { cost: 20000, tier: 1, effect: { type: "corruption_reduce_percent", reduction_percent: 15 }, wait_minutes: 30 },
+      { cost: 40000, tier: 2, effect: { type: "corruption_reduce_percent", reduction_percent: 25 }, wait_minutes: 25 },
+      { cost: 60000, tier: 3, effect: { type: "corruption_reduce_percent", reduction_percent: 35 }, wait_minutes: 20 },
+      { cost: 80000, tier: 4, effect: { type: "corruption_reduce_percent", reduction_percent: 45 }, wait_minutes: 15 },
+      { cost: 100000, tier: 5, effect: { type: "corruption_reduce_percent", reduction_percent: 60 }, wait_minutes: 10 }
+    ]
+  },
+  {
+    potionKey: "fiala_vigore_infinito",
+    name: "Fiala del Vigore Infinito",
+    description: "Preparato alchemico che restituisce 200 punti stamina alla maturazione.",
+    image: "img/fiala_infinito.webp",
+    useMode: "delayed_auto_apply",
+    transportable: false,
+    carryCost: 0,
+    maxStack: 0,
+    sortOrder: 70,
+    legacyIndex: 7,
+    basePrice: 0,
+    healthGain: 0,
+    staminaGain: 200,
+    stockMax: 0,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 0,
+    marketAvailable: false,
+    alchemyOrderable: true,
+    progression: [
+      { cost: 1500, tier: 1, effect: { type: "stamina_gain", stamina_gain: 200 }, wait_minutes: 15 },
+      { cost: 3000, tier: 2, effect: { type: "stamina_gain", stamina_gain: 200 }, wait_minutes: 12 },
+      { cost: 4500, tier: 3, effect: { type: "stamina_gain", stamina_gain: 200 }, wait_minutes: 10 },
+      { cost: 6000, tier: 4, effect: { type: "stamina_gain", stamina_gain: 200 }, wait_minutes: 7 },
+      { cost: 7000, tier: 5, effect: { type: "stamina_gain", stamina_gain: 200 }, wait_minutes: 5 }
+    ]
+  },
+  {
+    potionKey: "elisir_luce_astrale",
+    name: "Elisir di Luce Astrale",
+    description: "Elisir rarissimo che porta la salute al massimo al termine della preparazione.",
+    image: "img/elisir_luce_astrale.webp",
+    useMode: "delayed_auto_apply",
+    transportable: false,
+    carryCost: 0,
+    maxStack: 0,
+    sortOrder: 80,
+    legacyIndex: 6,
+    basePrice: 0,
+    healthGain: 0,
+    staminaGain: 0,
+    stockMax: 0,
+    restockEveryTurns: 20,
+    scarcityThresholdPercent: 25,
+    scarcityMarkupPercent: 30,
+    personalLimitPerCycle: 0,
+    marketAvailable: false,
+    alchemyOrderable: true,
+    progression: [
+      { cost: 25000, tier: 1, effect: { type: "health_full" }, wait_minutes: 60 }
+    ]
+  }
+];
+
 const barracksUnitSources = [
   {
     modalId: "barracks",
@@ -202,8 +1360,8 @@ const specialCardSources = [
     modalId: "cards",
     modalLabel: "Carte Speciali",
     category: "Destino",
-    sourcePath: path.resolve(GAME_ROOT, "dashboard/cards-modal.html"),
-    sourceFile: "cards-modal.html"
+    sourcePath: path.resolve(GAME_ROOT, "app/defaultData.json"),
+    sourceFile: "defaultData.json"
   }
 ];
 
@@ -283,11 +1441,123 @@ function normalizeImageUrl(imagePath) {
   return `https://assets.abissoinfinito.it/${cleanPath.replace(/^\/+/, "")}`;
 }
 
+function loadDynamicObjectLibraryEntries(sourcePath) {
+  const source = fs.readFileSync(sourcePath, "utf8");
+  const context = {
+    window: {},
+    console: {
+      log() {},
+      warn() {},
+      error() {}
+    }
+  };
+
+  vm.createContext(context);
+  vm.runInContext(source, context, { filename: sourcePath });
+
+  const config = context.window.AbissoDynamicObjectTemplatesConfig;
+  if (!config?.getDynamicObjectLibraryEntries) {
+    throw new Error("Config libreria oggetti evento non disponibile.");
+  }
+
+  return config.getDynamicObjectLibraryEntries();
+}
+
 function extractBalancedObject(source, declarationName) {
   const declarationIndex = source.indexOf(`const ${declarationName} =`);
   if (declarationIndex < 0) return "";
 
   const objectStart = source.indexOf("{", declarationIndex);
+  if (objectStart < 0) return "";
+
+  let depth = 0;
+  let quote = "";
+  let escaped = false;
+
+  for (let index = objectStart; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === quote) {
+        quote = "";
+      }
+
+      continue;
+    }
+
+    if (char === "\"" || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "{") {
+      depth += 1;
+    } else if (char === "}") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return source.slice(objectStart, index + 1);
+      }
+    }
+  }
+
+  return "";
+}
+
+function extractBalancedArray(source, declarationName) {
+  const declarationIndex = source.indexOf(`const ${declarationName} =`);
+  if (declarationIndex < 0) return "";
+
+  const arrayStart = source.indexOf("[", declarationIndex);
+  if (arrayStart < 0) return "";
+
+  let depth = 0;
+  let quote = "";
+  let escaped = false;
+
+  for (let index = arrayStart; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === quote) {
+        quote = "";
+      }
+
+      continue;
+    }
+
+    if (char === "\"" || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "[") {
+      depth += 1;
+    } else if (char === "]") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return source.slice(arrayStart, index + 1);
+      }
+    }
+  }
+
+  return "";
+}
+
+function extractObjectByKey(source, objectKey) {
+  const keyIndex = source.indexOf(`${objectKey}:`);
+  if (keyIndex < 0) return "";
+
+  const objectStart = source.indexOf("{", keyIndex);
   if (objectStart < 0) return "";
 
   let depth = 0;
@@ -419,6 +1689,83 @@ function parseFoodCatalog(source) {
   });
 }
 
+function parseChefMenuCatalog(source) {
+  const objectSource = extractBalancedObject(source, "CHEF_MENU_CATALOG");
+  if (!objectSource) return [];
+
+  const menuCatalog = Function(`"use strict"; return (${objectSource});`)();
+  const images = extractFoodImages(source);
+  const imageFallbacks = {
+    zuppa_borgo: "zuppa_rustica",
+    tagliere_mercante: "merenda_mercante",
+    stufato_cavaliere: "pranzo_cavaliere",
+    banchetto_elyndar: "cena_viandante"
+  };
+  const serviceMsMatch = source.match(/const\s+CHEF_SERVICE_MS\s*=\s*([^;]+);/);
+  const serviceDurationMs = serviceMsMatch
+    ? Number(Function(`"use strict"; return (${serviceMsMatch[1]});`)())
+    : 30 * 60 * 1000;
+
+  return Object.entries(menuCatalog).map(([menuKey, menu]) => {
+    const imageKey = images.has(menuKey)
+      ? menuKey
+      : imageFallbacks[menuKey] || "";
+    const image = imageKey
+      ? images.get(imageKey) || `img/${imageKey}.webp`
+      : "";
+
+    return {
+      menuKey,
+      menuName: cleanText(menu.nome || menuKey),
+      description: cleanText(menu.descrizione || ""),
+      image,
+      imageUrl: normalizeImageUrl(image),
+      hungerGain: Number(menu.fame || 0),
+      cost: Number(menu.costo || 0),
+      serviceDurationMs
+    };
+  });
+}
+
+function parseMessengerPactMissions(source) {
+  const arraySource = extractBalancedArray(source, "messengerEvents");
+  if (!arraySource) return [];
+
+  const events = Function(`"use strict"; return (${arraySource});`)();
+
+  return events.map((event) => ({
+    eventKey: cleanText(event.id || ""),
+    title: cleanText(event.title || event.id || "Missione del Messaggero"),
+    description: cleanText(event.description || ""),
+    target: Number(event.target || 0),
+    collectEffects: Array.isArray(event.collectEffects)
+      ? event.collectEffects.map((effect) => ({
+          stat: cleanText(effect.stat || ""),
+          label: cleanText(effect.label || effect.stat || ""),
+          percent: Number(effect.percent || 0)
+        }))
+      : []
+  }));
+}
+
+function parseMessengerMapContent(source) {
+  const objectSource = extractObjectByKey(source, "messaggero_del_patto");
+  if (!objectSource) return null;
+
+  const content = Function(`"use strict"; return (${objectSource});`)();
+
+  return {
+    key: cleanText(content.key || "messaggero_del_patto"),
+    title: cleanText(content.title || "Messaggero del Patto"),
+    image: cleanText(content.image || ""),
+    imageUrl: normalizeImageUrl(content.image || ""),
+    mapIcon: cleanText(content.mapIcon || ""),
+    description: cleanText(content.description || ""),
+    quickTip: cleanText(content.quickTip || ""),
+    rulesKey: cleanText(content.rulesKey || "")
+  };
+}
+
 function parseBarracksUnits(source) {
   const defsSource = extractBalancedObject(source, "UNIT_DEFS");
   if (!defsSource) return [];
@@ -458,6 +1805,45 @@ function parseBarracksUnits(source) {
 }
 
 function parseSpecialCardsCatalog(source) {
+  try {
+    const data = JSON.parse(source);
+    const players = data?.gamePlayers || {};
+    const cards = [];
+
+    for (const [playerKey, player] of Object.entries(players)) {
+      const playerLabel = cleanText(
+        player.nome ||
+        player.name ||
+        playerKey.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
+      );
+
+      for (const [index, card] of (player.specialCards || []).entries()) {
+        const attribute = cleanText(card.attributo || "");
+        const title = cleanText(card.descrizione || "Carta Speciale");
+        const feature = cleanText(card.caratteristica || "");
+        const image = cleanText(card.image || "");
+
+        cards.push({
+          playerKey,
+          playerLabel,
+          cardIndex: index,
+          cardKey: `${playerKey}:${attribute || index}`,
+          title,
+          feature,
+          attribute,
+          usesLeft: Number(card.usesLeft || 0),
+          purifyPct: Number(card.purifyPct || 0),
+          image,
+          imageUrl: normalizeImageUrl(image)
+        });
+      }
+    }
+
+    return cards;
+  } catch (_error) {
+    // Not a JSON player catalog; fall back to the legacy inline modal parser.
+  }
+
   const playersSource = extractBalancedObject(source, "playersIndex");
   const cardsSource = extractBalancedObject(source, "specialCardsByPlayer");
 
@@ -521,6 +1907,246 @@ function parseEnvironmentEffectsCatalog(source) {
     enterDurationMs: Number(effect.enterDurationMs || 0),
     exitDurationMs: Number(effect.exitDurationMs || 0)
   }));
+}
+
+function splitTopLevelList(source) {
+  const parts = [];
+  let start = 0;
+  let depth = 0;
+  let quote = "";
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (quote) {
+      if (char === quote) {
+        if (quote === "'" && source[index + 1] === "'") {
+          index += 1;
+        } else {
+          quote = "";
+        }
+      }
+
+      continue;
+    }
+
+    if (char === "'" || char === "\"") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "(" || char === "[" || char === "{") {
+      depth += 1;
+    } else if (char === ")" || char === "]" || char === "}") {
+      depth -= 1;
+    } else if (char === "," && depth === 0) {
+      parts.push(source.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+
+  const last = source.slice(start).trim();
+  if (last) parts.push(last);
+
+  return parts;
+}
+
+function parseSqlScalar(value) {
+  const text = String(value || "").trim();
+
+  if (/^'.*'$/s.test(text)) {
+    return cleanText(text.slice(1, -1).replaceAll("''", "'"));
+  }
+
+  if (/^(true|false)$/i.test(text)) {
+    return text.toLowerCase() === "true";
+  }
+
+  if (/^-?\d+(\.\d+)?$/.test(text)) {
+    return Number(text);
+  }
+
+  return cleanText(text);
+}
+
+function extractSqlFunctionArgs(value, functionName) {
+  const lowerValue = String(value || "").toLowerCase();
+  const functionIndex = lowerValue.indexOf(functionName.toLowerCase());
+  if (functionIndex < 0) return "";
+
+  const start = String(value).indexOf("(", functionIndex);
+  if (start < 0) return "";
+
+  let depth = 0;
+  let quote = "";
+
+  for (let index = start; index < value.length; index += 1) {
+    const char = value[index];
+
+    if (quote) {
+      if (char === quote) {
+        if (quote === "'" && value[index + 1] === "'") {
+          index += 1;
+        } else {
+          quote = "";
+        }
+      }
+
+      continue;
+    }
+
+    if (char === "'" || char === "\"") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "(") {
+      depth += 1;
+    } else if (char === ")") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return value.slice(start + 1, index);
+      }
+    }
+  }
+
+  return "";
+}
+
+function parseJsonbBuildObject(value) {
+  const args = extractSqlFunctionArgs(value, "jsonb_build_object");
+  if (!args) return {};
+
+  const parts = splitTopLevelList(args);
+  const result = {};
+
+  for (let index = 0; index < parts.length - 1; index += 2) {
+    const key = parseSqlScalar(parts[index]);
+    result[key] = parseSqlScalar(parts[index + 1]);
+  }
+
+  return result;
+}
+
+function extractSqlValueGroups(source, tableName) {
+  const groups = [];
+  const lowerSource = source.toLowerCase();
+  const lowerTable = tableName.toLowerCase();
+  let searchFrom = 0;
+
+  while (searchFrom < source.length) {
+    const insertIndex = lowerSource.indexOf(`insert into ${lowerTable}`, searchFrom);
+    if (insertIndex < 0) break;
+
+    const valuesIndex = lowerSource.indexOf("values", insertIndex);
+    if (valuesIndex < 0) break;
+
+    const conflictIndex = lowerSource.indexOf("on conflict", valuesIndex);
+    const blockEnd = conflictIndex < 0 ? source.length : conflictIndex;
+    const block = source.slice(valuesIndex + "values".length, blockEnd);
+
+    let depth = 0;
+    let quote = "";
+    let groupStart = -1;
+
+    for (let index = 0; index < block.length; index += 1) {
+      const char = block[index];
+
+      if (quote) {
+        if (char === quote) {
+          if (quote === "'" && block[index + 1] === "'") {
+            index += 1;
+          } else {
+            quote = "";
+          }
+        }
+
+        continue;
+      }
+
+      if (char === "'" || char === "\"") {
+        quote = char;
+        continue;
+      }
+
+      if (char === "(") {
+        if (depth === 0) groupStart = index + 1;
+        depth += 1;
+      } else if (char === ")") {
+        depth -= 1;
+
+        if (depth === 0 && groupStart >= 0) {
+          groups.push(block.slice(groupStart, index).trim());
+          groupStart = -1;
+        }
+      }
+    }
+
+    searchFrom = blockEnd + 1;
+  }
+
+  return groups;
+}
+
+function parseSaloonOfferCatalog(source) {
+  const groups = extractSqlValueGroups(source, "public.game_saloon_offer_catalog");
+  const offersByKey = new Map();
+
+  for (const group of groups) {
+    const values = splitTopLevelList(group);
+    if (values.length < 13) continue;
+
+    const offerKey = cleanText(parseSqlScalar(values[0]));
+    if (!offerKey) continue;
+
+    const isActive = parseSqlScalar(values[9]);
+    if (isActive === false) continue;
+
+    offersByKey.set(offerKey, {
+      offerKey,
+      title: cleanText(parseSqlScalar(values[1])),
+      description: cleanText(parseSqlScalar(values[2])),
+      image: cleanText(parseSqlScalar(values[3])),
+      imageUrl: normalizeImageUrl(parseSqlScalar(values[3])),
+      category: cleanText(parseSqlScalar(values[4])),
+      actionType: cleanText(parseSqlScalar(values[5])),
+      price: Number(parseSqlScalar(values[6]) || 0),
+      effectJson: parseJsonbBuildObject(values[7]),
+      maxPerTurn: Number(parseSqlScalar(values[8]) || 0),
+      sortOrder: Number(parseSqlScalar(values[10]) || 0),
+      catalogVersion: Number(parseSqlScalar(values[11]) || 0)
+    });
+  }
+
+  for (const offer of saloonProductionOfferSnapshot) {
+    const offerKey = cleanText(offer.offerKey);
+
+    if (!offerKey) continue;
+
+    offersByKey.set(offerKey, {
+      offerKey,
+      title: cleanText(offer.title),
+      description: cleanText(offer.description),
+      image: cleanText(offer.image),
+      imageUrl: normalizeImageUrl(offer.image),
+      category: cleanText(offer.category),
+      actionType: cleanText(offer.actionType),
+      price: Number(offer.price || 0),
+      effectJson: offer.effectJson || {},
+      maxPerTurn: Number(offer.maxPerTurn || 0),
+      sortOrder: Number(offer.sortOrder || 0),
+      catalogVersion: Number(offer.catalogVersion || 0),
+      sourceFile: offer.sourceFile || "game_saloon_offer_catalog",
+      sourcePath:
+        offer.sourcePath ||
+        "supabase://cbhxijmfmigfsnqtisyw/public.game_saloon_offer_catalog"
+    });
+  }
+
+  return [...offersByKey.values()].sort((a, b) => {
+    return a.sortOrder - b.sortOrder || a.title.localeCompare(b.title, "it-IT");
+  });
 }
 
 function formatPlainCost(cost = {}) {
@@ -595,6 +2221,191 @@ for (const sourceConfig of foodSources) {
       provisionalText: food.description
     });
   }
+}
+
+for (const sourceConfig of chefMenuSources) {
+  const source = fs.readFileSync(sourceConfig.sourcePath, "utf8");
+  const menus = parseChefMenuCatalog(source);
+
+  for (const menu of menus) {
+    units.push({
+      textKey: `modal:${sourceConfig.modalId}:chef_menu:${menu.menuKey}:description`,
+      modalId: sourceConfig.modalId,
+      modalLabel: sourceConfig.modalLabel,
+      category: sourceConfig.category,
+      sourceFile: sourceConfig.sourceFile,
+      sourcePath: sourceConfig.sourcePath,
+      fieldKey: `chef_menu:${menu.menuKey}:description`,
+      fieldLabel: `Descrizione menu Chef: ${menu.menuName}`,
+      textType: "chef_menu_description",
+      itemKey: menu.menuKey,
+      itemLabel: menu.menuName,
+      image: menu.image,
+      imageUrl: menu.imageUrl,
+      metadata: {
+        cost: menu.cost,
+        hungerGain: menu.hungerGain,
+        serviceDurationMs: menu.serviceDurationMs
+      },
+      provisionalText: menu.description
+    });
+  }
+}
+
+for (const sourceConfig of messengerPactSources) {
+  const source = fs.readFileSync(sourceConfig.sourcePath, "utf8");
+  const missions = parseMessengerPactMissions(source);
+
+  for (const mission of missions) {
+    units.push({
+      textKey: `modal:${sourceConfig.modalId}:messenger_mission:${mission.eventKey}:description`,
+      modalId: sourceConfig.modalId,
+      modalLabel: sourceConfig.modalLabel,
+      category: sourceConfig.category,
+      sourceFile: sourceConfig.sourceFile,
+      sourcePath: sourceConfig.sourcePath,
+      fieldKey: `messenger_mission:${mission.eventKey}:description`,
+      fieldLabel: `Descrizione missione Messaggero: ${mission.title}`,
+      textType: "messenger_pact_mission_description",
+      itemKey: mission.eventKey,
+      itemLabel: mission.title,
+      image: "img/messaggero.jpg",
+      imageUrl: normalizeImageUrl("img/messaggero.jpg"),
+      metadata: {
+        target: mission.target,
+        collectEffects: mission.collectEffects
+      },
+      provisionalText: mission.description
+    });
+  }
+}
+
+for (const sourceConfig of messengerMapContentSources) {
+  const source = fs.readFileSync(sourceConfig.sourcePath, "utf8");
+  const content = parseMessengerMapContent(source);
+
+  if (!content) continue;
+
+  units.push(
+    {
+      textKey: `modal:${sourceConfig.modalId}:map_node:${content.key}:description`,
+      modalId: sourceConfig.modalId,
+      modalLabel: sourceConfig.modalLabel,
+      category: sourceConfig.category,
+      sourceFile: sourceConfig.sourceFile,
+      sourcePath: sourceConfig.sourcePath,
+      fieldKey: `map_node:${content.key}:description`,
+      fieldLabel: `Descrizione nodo mappa: ${content.title}`,
+      textType: "messenger_pact_node_description",
+      itemKey: content.key,
+      itemLabel: content.title,
+      image: content.image,
+      imageUrl: content.imageUrl,
+      metadata: {
+        rulesKey: content.rulesKey,
+        mapIcon: content.mapIcon
+      },
+      provisionalText: content.description
+    },
+    {
+      textKey: `modal:${sourceConfig.modalId}:map_node:${content.key}:quick_tip`,
+      modalId: sourceConfig.modalId,
+      modalLabel: sourceConfig.modalLabel,
+      category: sourceConfig.category,
+      sourceFile: sourceConfig.sourceFile,
+      sourcePath: sourceConfig.sourcePath,
+      fieldKey: `map_node:${content.key}:quick_tip`,
+      fieldLabel: `Consiglio rapido nodo: ${content.title}`,
+      textType: "messenger_pact_node_quick_tip",
+      itemKey: content.key,
+      itemLabel: content.title,
+      image: content.image,
+      imageUrl: content.imageUrl,
+      metadata: {
+        rulesKey: content.rulesKey,
+        mapIcon: content.mapIcon
+      },
+      provisionalText: content.quickTip
+    }
+  );
+}
+
+for (const sourceConfig of saloonOfferSources) {
+  const source = fs.readFileSync(sourceConfig.sourcePath, "utf8");
+  const offers = parseSaloonOfferCatalog(source);
+
+  for (const offer of offers) {
+    units.push({
+      textKey: `modal:${sourceConfig.modalId}:saloon_offer:${offer.offerKey}:description`,
+      modalId: sourceConfig.modalId,
+      modalLabel: sourceConfig.modalLabel,
+      category: sourceConfig.category,
+      sourceFile: offer.sourceFile || sourceConfig.sourceFile,
+      sourcePath: offer.sourcePath || sourceConfig.sourcePath,
+      fieldKey: `saloon_offer:${offer.offerKey}:description`,
+      fieldLabel: `Descrizione offerta Saloon: ${offer.title}`,
+      textType: "saloon_offer_description",
+      itemKey: offer.offerKey,
+      itemLabel: offer.title,
+      image: offer.image,
+      imageUrl: offer.imageUrl,
+      metadata: {
+        category: offer.category,
+        actionType: offer.actionType,
+        price: offer.price,
+        effectJson: offer.effectJson,
+        maxPerTurn: offer.maxPerTurn,
+        sortOrder: offer.sortOrder,
+        catalogVersion: offer.catalogVersion
+      },
+      provisionalText: offer.description
+    });
+  }
+}
+
+for (const potion of potionCatalogSnapshot) {
+  const potionKey = cleanText(potion.potionKey);
+  const potionName = cleanText(potion.name || potionKey);
+  const image = cleanText(potion.image || "");
+
+  if (!potionKey || !potionName) continue;
+
+  units.push({
+    textKey: `modal:potion_market:potion:${potionKey}:description`,
+    modalId: "potion_market",
+    modalLabel: "Emporio Alchemico",
+    category: "Mercati",
+    sourceFile: "game_potion_catalog",
+    sourcePath:
+      "supabase://cbhxijmfmigfsnqtisyw/public.game_potion_catalog+public.game_item_catalog",
+    fieldKey: `potion:${potionKey}:description`,
+    fieldLabel: `Descrizione pozione: ${potionName}`,
+    textType: "potion_description",
+    itemKey: potionKey,
+    itemLabel: potionName,
+    image,
+    imageUrl: normalizeImageUrl(image),
+    metadata: {
+      useMode: cleanText(potion.useMode),
+      transportable: Boolean(potion.transportable),
+      carryCost: Number(potion.carryCost || 0),
+      maxStack: Number(potion.maxStack || 0),
+      legacyIndex: Number(potion.legacyIndex || 0),
+      sortOrder: Number(potion.sortOrder || 0),
+      basePrice: Number(potion.basePrice || 0),
+      healthGain: Number(potion.healthGain || 0),
+      staminaGain: Number(potion.staminaGain || 0),
+      stockMax: Number(potion.stockMax || 0),
+      restockEveryTurns: Number(potion.restockEveryTurns || 0),
+      scarcityThresholdPercent: Number(potion.scarcityThresholdPercent || 0),
+      scarcityMarkupPercent: Number(potion.scarcityMarkupPercent || 0),
+      personalLimitPerCycle: Number(potion.personalLimitPerCycle || 0),
+      marketAvailable: Boolean(potion.marketAvailable),
+      alchemyOrderable: Boolean(potion.alchemyOrderable),
+      progression: Array.isArray(potion.progression) ? potion.progression : []
+    },
+    provisionalText: cleanText(potion.description)
+  });
 }
 
 for (const sourceConfig of barracksUnitSources) {
@@ -693,7 +2504,78 @@ for (const sourceConfig of environmentEffectSources) {
   }
 }
 
-const modals = modalSources.map((modal) => ({
+const dynamicObjectLibraryEntries = loadDynamicObjectLibraryEntries(
+  customEventObjectLibrarySource.sourcePath
+);
+
+for (const entry of dynamicObjectLibraryEntries) {
+  const entryKey = cleanText(entry.entryKey || entry.templateKey || entry.bundleKey);
+  const title = cleanText(entry.title || entryKey);
+  const entryType = cleanText(entry.entryType || "template");
+  const image = cleanText(entry.imageUrl || entry.objectDefinition?.imageUrl || "");
+  const objectDefinition = entry.objectDefinition || {};
+  const useConfig = objectDefinition.useConfig || {};
+  const commerceConfig = objectDefinition.commerceConfig || {};
+
+  if (!entryKey || !title) continue;
+
+  units.push({
+    textKey: `modal:${customEventObjectLibrarySource.modalId}:${entryType}:${entryKey}:description`,
+    modalId: customEventObjectLibrarySource.modalId,
+    modalLabel: customEventObjectLibrarySource.modalLabel,
+    category: customEventObjectLibrarySource.category,
+    sourceFile: path.basename(customEventObjectLibrarySource.sourcePath),
+    sourcePath: customEventObjectLibrarySource.sourcePath,
+    fieldKey: `${entryType}:${entryKey}:description`,
+    fieldLabel:
+      entryType === "bundle"
+        ? `Descrizione pacchetto oggetti: ${title}`
+        : `Descrizione oggetto: ${title}`,
+    textType:
+      entryType === "bundle"
+        ? "dynamic_object_bundle_description"
+        : "dynamic_object_template_description",
+    itemKey: entryKey,
+    itemLabel: title,
+    image,
+    imageUrl: normalizeImageUrl(image),
+    metadata: {
+      entryType,
+      accessType: cleanText(entry.accessType),
+      category: cleanText(entry.category),
+      libraryVisibility: cleanText(entry.libraryVisibility),
+      sortOrder: Number(entry.sortOrder || 0),
+      templateVersion: Number(entry.templateVersion || entry.bundleVersion || 0),
+      tags: Array.isArray(entry.tags) ? entry.tags.map(cleanText).filter(Boolean) : [],
+      memberCount: Array.isArray(entry.members) ? entry.members.length : 0,
+      members: Array.isArray(entry.members)
+        ? entry.members.map((member) => ({
+            memberKey: cleanText(member.memberKey),
+            templateKey: cleanText(member.templateKey),
+            role: cleanText(member.role)
+          }))
+        : [],
+      placementMode: cleanText(objectDefinition.placementMode),
+      quantity: Number(objectDefinition.quantity || 0),
+      stackable: Boolean(objectDefinition.stackable),
+      maxQuantity: Number(objectDefinition.maxQuantity || 0),
+      claimMode: cleanText(objectDefinition.claimMode),
+      useEnabled: Boolean(useConfig.enabled),
+      useMode: cleanText(useConfig.mode),
+      consumeOnUse: Boolean(useConfig.consumeOnUse),
+      commerceEnabled: Boolean(commerceConfig.enabled),
+      price: Number(commerceConfig.price || 0)
+    },
+    provisionalText: cleanText(entry.description || entry.shortDescription)
+  });
+}
+
+const modalDefinitions = [
+  ...modalSources,
+  customEventObjectLibrarySource
+];
+
+const modals = modalDefinitions.map((modal) => ({
   id: modal.modalId,
   label: modal.modalLabel,
   category: modal.category,

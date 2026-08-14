@@ -39,6 +39,7 @@
           <button id="zoneGuardiansTabBtn" type="button" class="workspace-tab">Guardiani zone</button>
           <button id="fragmentsTabBtn" type="button" class="workspace-tab">Echi</button>
           <button id="modalsTabBtn" type="button" class="workspace-tab">Modali</button>
+          <button id="customEventObjectsTabBtn" type="button" class="workspace-tab">Oggetti evento</button>
         </nav>
       </div>
 
@@ -416,6 +417,51 @@
         </div>
       </section>
     </main>
+
+    <main id="customEventObjectsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Oggetti evento</h2>
+
+        <div class="filter-box">
+          <label for="customEventObjectCategoryFilter">Categoria</label>
+          <select id="customEventObjectCategoryFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="customEventObjectSearch">Cerca oggetto</label>
+          <input id="customEventObjectSearch" type="search" placeholder="Nome, categoria, uso o descrizione..." />
+        </div>
+
+        <p id="customEventObjectCatalogMeta" class="status"></p>
+        <div id="customEventObjectsList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Oggetto evento selezionato</p>
+            <h2 id="customEventObjectTitle">Seleziona un oggetto</h2>
+            <p id="customEventObjectMeta" class="status"></p>
+          </div>
+          <button id="reloadCustomEventObjectBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Questa sezione raccoglie gli oggetti e i pacchetti disponibili nella
+            libreria della custom event modal. Ogni voce ha un unico blocco
+            descrizione da riscrivere, salvare o pubblicare.
+          </p>
+        </div>
+
+        <div id="customEventObjectBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona un oggetto evento dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
 <script src="config.js"></script>
@@ -428,7 +474,7 @@
 <script src="author-creatures-catalog.js?v=20260808-1"></script>
 <script src="author-zone-guardians-catalog.js?v=20260808-1"></script>
 <script src="author-fragments-catalog.js?v=20260808-1"></script>
-<script src="author-modal-texts-catalog.js?v=20260808-6"></script>
-<script src="app.js?v=20260808-4"></script>
+<script src="author-modal-texts-catalog.js?v=20260814-7"></script>
+<script src="app.js?v=20260814-7"></script>
 </body>
 </html>

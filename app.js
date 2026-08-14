@@ -185,10 +185,15 @@ const modalTextCatalog = window.AuthorModalTextsCatalog || {
   units: [],
   modals: []
 };
-let currentModalText = modalTextCatalog.units?.[0] || null;
+const customEventObjectModalId = "custom_event_objects";
+let currentModalText =
+  getRegularModalTextUnits()[0] || modalTextCatalog.units?.[0] || null;
+let currentCustomEventObjectText = getCustomEventObjectTextUnits()[0] || null;
 let currentModalTextRows = new Map();
 let currentPublishedModalTextRows = new Map();
 let modalTextLoadId = 0;
+let activeModalTextContext = "modals";
+let activeModalTextKey = currentModalText?.textKey || "";
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
@@ -201,6 +206,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindZoneGuardianWorkspace();
   bindFragmentWorkspace();
   bindModalTextWorkspace();
+  bindCustomEventObjectWorkspace();
 
   useSupabase = shouldUseSupabase();
 
@@ -2502,6 +2508,7 @@ function switchAuthorWorkspace(workspace) {
   const showZoneGuardians = workspace === "zoneGuardians";
   const showFragments = workspace === "fragments";
   const showModals = workspace === "modals";
+  const showCustomEventObjects = workspace === "customEventObjects";
 
   document.getElementById("chaptersWorkspace")?.classList.toggle("hidden", !showChapters);
   document.getElementById("questsWorkspace")?.classList.toggle("hidden", !showQuests);
@@ -2510,6 +2517,7 @@ function switchAuthorWorkspace(workspace) {
   document.getElementById("zoneGuardiansWorkspace")?.classList.toggle("hidden", !showZoneGuardians);
   document.getElementById("fragmentsWorkspace")?.classList.toggle("hidden", !showFragments);
   document.getElementById("modalsWorkspace")?.classList.toggle("hidden", !showModals);
+  document.getElementById("customEventObjectsWorkspace")?.classList.toggle("hidden", !showCustomEventObjects);
   document.getElementById("chaptersTabBtn")?.classList.toggle("active", showChapters);
   document.getElementById("questsTabBtn")?.classList.toggle("active", showQuests);
   document.getElementById("weaponsTabBtn")?.classList.toggle("active", showWeapons);
@@ -2517,6 +2525,7 @@ function switchAuthorWorkspace(workspace) {
   document.getElementById("zoneGuardiansTabBtn")?.classList.toggle("active", showZoneGuardians);
   document.getElementById("fragmentsTabBtn")?.classList.toggle("active", showFragments);
   document.getElementById("modalsTabBtn")?.classList.toggle("active", showModals);
+  document.getElementById("customEventObjectsTabBtn")?.classList.toggle("active", showCustomEventObjects);
 
   if (showQuests && currentQuestUnit) {
     loadCurrentQuestUnit();
@@ -2540,6 +2549,13 @@ function switchAuthorWorkspace(workspace) {
 
   if (showModals && currentModalText) {
     loadCurrentModalText();
+  }
+
+  if (showCustomEventObjects && currentCustomEventObjectText) {
+    loadCurrentModalText({
+      context: "customEventObjects",
+      unit: currentCustomEventObjectText
+    });
   }
 }
 
@@ -4538,6 +4554,54 @@ async function publishFragmentText(textKey) {
   renderFragmentBlock();
 }
 
+function getRegularModalTextUnits() {
+  return (modalTextCatalog.units || []).filter((unit) => {
+    return unit.modalId !== customEventObjectModalId;
+  });
+}
+
+function getCustomEventObjectTextUnits() {
+  return (modalTextCatalog.units || []).filter((unit) => {
+    return unit.modalId === customEventObjectModalId;
+  });
+}
+
+function getRegularModalDefinitions() {
+  return (modalTextCatalog.modals || []).filter((modal) => {
+    return modal.id !== customEventObjectModalId;
+  });
+}
+
+function getModalTextWorkspaceUi(context = "modals") {
+  if (context === "customEventObjects") {
+    return {
+      titleId: "customEventObjectTitle",
+      metaId: "customEventObjectMeta",
+      editorId: "customEventObjectBlockEditor",
+      loadingText: "Caricamento oggetto evento...",
+      errorText: "Errore nel caricamento dell'oggetto evento.",
+      blockEyebrow: "Blocco oggetto evento",
+      placeholder: "Riscrivi qui la descrizione dell'oggetto..."
+    };
+  }
+
+  return {
+    titleId: "modalTextTitle",
+    metaId: "modalTextMeta",
+    editorId: "modalTextBlockEditor",
+    loadingText: "Caricamento testo modale...",
+    errorText: "Errore nel caricamento del testo modale.",
+    blockEyebrow: "Blocco modale",
+    placeholder: "Riscrivi qui il testo della modale..."
+  };
+}
+
+function renderActiveModalTextBlock() {
+  const unit = getModalTextByTextKey(activeModalTextKey);
+  if (!unit) return;
+  renderModalTextBlock(activeModalTextContext, unit);
+}
+
 function bindModalTextWorkspace() {
   const modalsTab = document.getElementById("modalsTabBtn");
   const modalFilter = document.getElementById("modalTextModalFilter");
@@ -4552,7 +4616,7 @@ function bindModalTextWorkspace() {
   if (modalFilter) {
     modalFilter.innerHTML = [
       `<option value="all">Tutte le modali</option>`,
-      ...(modalTextCatalog.modals || []).map((modal) => `
+      ...getRegularModalDefinitions().map((modal) => `
         <option value="${escapeHtml(modal.id)}">
           ${escapeHtml(modal.label)} (${Number(modal.textCount || 0)})
         </option>
@@ -4563,8 +4627,10 @@ function bindModalTextWorkspace() {
   const meta = document.getElementById("modalTextCatalogMeta");
 
   if (meta) {
+    const units = getRegularModalTextUnits();
+    const modals = getRegularModalDefinitions();
     meta.textContent =
-      `${modalTextCatalog.modalCount || 0} modali - ${modalTextCatalog.textCount || 0} testi`;
+      `${modals.length} modali - ${units.length} testi`;
   }
 
   renderModalTextsList();
@@ -4594,6 +4660,28 @@ function getFilteredModalTexts() {
       unit.metadata?.legacyKey,
       Array.isArray(unit.metadata?.attributesAffected)
         ? unit.metadata.attributesAffected.join(" ")
+        : "",
+      Array.isArray(unit.metadata?.collectEffects)
+        ? unit.metadata.collectEffects.map((effect) => `${effect.label} ${effect.stat}`).join(" ")
+        : "",
+      unit.metadata?.hungerGain,
+      unit.metadata?.target,
+      unit.metadata?.rulesKey,
+      unit.metadata?.category,
+      unit.metadata?.actionType,
+      unit.metadata?.price,
+      unit.metadata?.maxPerTurn,
+      unit.metadata?.effectJson
+        ? Object.entries(unit.metadata.effectJson).map(([key, value]) => `${key} ${value}`).join(" ")
+        : "",
+      unit.metadata?.useMode,
+      unit.metadata?.basePrice,
+      unit.metadata?.healthGain,
+      unit.metadata?.staminaGain,
+      unit.metadata?.marketAvailable,
+      unit.metadata?.alchemyOrderable,
+      Array.isArray(unit.metadata?.progression)
+        ? unit.metadata.progression.map((step) => `${step.tier} ${step.cost} ${step.wait_minutes} ${step.effect?.type}`).join(" ")
         : "",
       unit.textType,
       unit.provisionalText
@@ -4638,7 +4726,7 @@ function renderModalTextsList() {
 
   container.querySelectorAll("[data-modal-text-key]").forEach((button) => {
     button.addEventListener("click", () => {
-      const unit = (modalTextCatalog.units || []).find(
+      const unit = getRegularModalTextUnits().find(
         (item) => item.textKey === button.dataset.modalTextKey
       );
 
@@ -4651,6 +4739,138 @@ function renderModalTextsList() {
   });
 }
 
+function bindCustomEventObjectWorkspace() {
+  const tab = document.getElementById("customEventObjectsTabBtn");
+  const categoryFilter = document.getElementById("customEventObjectCategoryFilter");
+  const search = document.getElementById("customEventObjectSearch");
+  const reloadButton = document.getElementById("reloadCustomEventObjectBtn");
+
+  tab?.addEventListener("click", () => switchAuthorWorkspace("customEventObjects"));
+  categoryFilter?.addEventListener("change", renderCustomEventObjectsList);
+  search?.addEventListener("input", renderCustomEventObjectsList);
+  reloadButton?.addEventListener("click", () => {
+    if (!currentCustomEventObjectText) return;
+    loadCurrentModalText({
+      context: "customEventObjects",
+      unit: currentCustomEventObjectText
+    });
+  });
+
+  const units = getCustomEventObjectTextUnits();
+
+  if (categoryFilter) {
+    const categories = [...new Set(units.map((unit) => unit.metadata?.category || unit.category))]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "it-IT", { sensitivity: "base" }));
+
+    categoryFilter.innerHTML = [
+      `<option value="all">Tutte le categorie</option>`,
+      ...categories.map((category) => `
+        <option value="${escapeHtml(category)}">${escapeHtml(category)}</option>
+      `)
+    ].join("");
+  }
+
+  const meta = document.getElementById("customEventObjectCatalogMeta");
+
+  if (meta) {
+    const templates = units.filter((unit) => unit.textType === "dynamic_object_template_description").length;
+    const bundles = units.filter((unit) => unit.textType === "dynamic_object_bundle_description").length;
+    meta.textContent = `${templates} oggetti - ${bundles} pacchetti`;
+  }
+
+  renderCustomEventObjectsList();
+}
+
+function getFilteredCustomEventObjectTexts() {
+  const category =
+    document.getElementById("customEventObjectCategoryFilter")?.value || "all";
+  const query = (
+    document.getElementById("customEventObjectSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return getCustomEventObjectTextUnits().filter((unit) => {
+    const unitCategory = unit.metadata?.category || unit.category || "";
+    if (category !== "all" && unitCategory !== category) return false;
+    if (!query) return true;
+
+    const metadata = unit.metadata || {};
+    const members = Array.isArray(metadata.members)
+      ? metadata.members.map((member) => `${member.templateKey} ${member.role}`).join(" ")
+      : "";
+    const text = [
+      unit.fieldLabel,
+      unit.itemKey,
+      unit.itemLabel,
+      unit.provisionalText,
+      unitCategory,
+      metadata.entryType,
+      metadata.accessType,
+      metadata.placementMode,
+      metadata.claimMode,
+      metadata.useMode,
+      Array.isArray(metadata.tags) ? metadata.tags.join(" ") : "",
+      members
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderCustomEventObjectsList() {
+  const container = document.getElementById("customEventObjectsList");
+  if (!container) return;
+
+  const units = getFilteredCustomEventObjectTexts();
+
+  if (!units.length) {
+    container.innerHTML = `<p class="empty">Nessun oggetto evento trovato.</p>`;
+    return;
+  }
+
+  let previousGroup = "";
+
+  container.innerHTML = units.map((unit) => {
+    const group = unit.textType === "dynamic_object_bundle_description"
+      ? "Pacchetti oggetto"
+      : "Oggetti singoli";
+    const heading = group !== previousGroup
+      ? `<h3 class="quest-group-heading">${escapeHtml(group)}</h3>`
+      : "";
+
+    previousGroup = group;
+
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn modal-text-unit-btn ${currentCustomEventObjectText?.textKey === unit.textKey ? "active" : ""}"
+        data-custom-event-object-key="${escapeHtml(unit.textKey)}"
+      >
+        <strong>${escapeHtml(unit.itemLabel || unit.fieldLabel)}</strong>
+        <small>${escapeHtml(unit.metadata?.category || unit.category || "Evento custom")} - ${escapeHtml(unit.textType === "dynamic_object_bundle_description" ? "Pacchetto" : "Oggetto")}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-custom-event-object-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const unit = getCustomEventObjectTextUnits().find(
+        (item) => item.textKey === button.dataset.customEventObjectKey
+      );
+
+      if (!unit) return;
+
+      currentCustomEventObjectText = unit;
+      renderCustomEventObjectsList();
+      loadCurrentModalText({
+        context: "customEventObjects",
+        unit: currentCustomEventObjectText
+      });
+    });
+  });
+}
+
 function modalTextLocalDraftKey(textKey) {
   return `author_modal_text_${textKey}`;
 }
@@ -4659,17 +4879,26 @@ function modalTextLocalPublishedKey(textKey) {
   return `author_published_modal_text_${textKey}`;
 }
 
-async function loadCurrentModalText() {
-  if (!currentModalText) return;
+async function loadCurrentModalText(options = {}) {
+  const context = options.context || "modals";
+  const unit =
+    options.unit ||
+    (context === "customEventObjects" ? currentCustomEventObjectText : currentModalText);
+
+  if (!unit) return;
 
   const loadId = ++modalTextLoadId;
-  const textKey = currentModalText.textKey;
+  const textKey = unit.textKey;
+  const ui = getModalTextWorkspaceUi(context);
 
-  document.getElementById("modalTextTitle").textContent = currentModalText.fieldLabel;
-  document.getElementById("modalTextMeta").textContent =
-    `${currentModalText.modalLabel} - ${currentModalText.textType}`;
-  document.getElementById("modalTextBlockEditor").innerHTML =
-    `<div class="card"><p class="empty">Caricamento testo modale...</p></div>`;
+  activeModalTextContext = context;
+  activeModalTextKey = textKey;
+
+  document.getElementById(ui.titleId).textContent = unit.fieldLabel;
+  document.getElementById(ui.metaId).textContent =
+    `${unit.modalLabel} - ${unit.textType}`;
+  document.getElementById(ui.editorId).innerHTML =
+    `<div class="card"><p class="empty">${escapeHtml(ui.loadingText)}</p></div>`;
 
   let drafts = [];
   let published = [];
@@ -4690,8 +4919,8 @@ async function loadCurrentModalText() {
 
     if (draftResult.error || publishedResult.error) {
       console.error(draftResult.error || publishedResult.error);
-      document.getElementById("modalTextBlockEditor").innerHTML =
-        `<div class="card"><p class="empty error">Errore nel caricamento del testo modale.</p></div>`;
+      document.getElementById(ui.editorId).innerHTML =
+        `<div class="card"><p class="empty error">${escapeHtml(ui.errorText)}</p></div>`;
       return;
     }
 
@@ -4707,7 +4936,7 @@ async function loadCurrentModalText() {
     published.map((row) => [row.text_key, row])
   );
 
-  renderModalTextBlock();
+  renderModalTextBlock(context, unit);
 }
 
 function formatModalMetadataCost(cost = {}) {
@@ -4728,11 +4957,77 @@ function formatModalDuration(milliseconds = 0) {
   return `${minutes}:${seconds}`;
 }
 
+function formatModalEffectJson(effectJson = {}) {
+  const labels = {
+    health_gain: "Salute",
+    stamina_gain: "Stamina",
+    hunger_gain: "Fame",
+    prestige_gain: "Prestigio",
+    corruption_gain: "Corruzione",
+    intoxication_gain: "Ebbrezza",
+    ebbrezza_gain: "Ebbrezza",
+    quantity: "Quantita",
+    wine_glasses: "Calici vino",
+    altered_state_turns: "Turni alterati",
+    altered_state_source: "Fonte stato alterato",
+    usage_group: "Gruppo uso"
+  };
+  const parts = [];
+
+  for (const [key, value] of Object.entries(effectJson || {})) {
+    if (key === "item_key" && value) {
+      parts.push(`Oggetto: ${value}`);
+      continue;
+    }
+
+    const numericValue = Number(value || 0);
+
+    const label = labels[key] || key;
+
+    if (typeof value === "string" && value.trim()) {
+      parts.push(`${label}: ${value}`);
+    } else if (!Number.isNaN(numericValue) && (numericValue !== 0 || key === "quantity")) {
+      const sign = numericValue > 0 && key !== "quantity" ? "+" : "";
+      parts.push(`${label} ${sign}${numericValue}`);
+    }
+  }
+
+  return parts.join(", ") || "-";
+}
+
+function formatModalPotionProgression(progression = []) {
+  if (!Array.isArray(progression) || !progression.length) return "-";
+
+  return progression
+    .map((step = {}) => {
+      const effect = step.effect || {};
+      const effectLabel =
+        effect.type === "corruption_reduce_percent"
+          ? `Corruzione -${Number(effect.reduction_percent || 0)}%`
+          : effect.type === "stamina_gain"
+            ? `Stamina +${Number(effect.stamina_gain || 0)}`
+            : effect.type === "health_full"
+              ? "Salute al massimo"
+              : effect.type || "effetto speciale";
+
+      return `T${Number(step.tier || 0)}: ${Number(step.cost || 0)} monete, ${Number(step.wait_minutes || 0)} min, ${effectLabel}`;
+    })
+    .join(" | ");
+}
+
 function getModalItemLabel(unit) {
   if (unit.textType === "food_description") return "Pietanza";
   if (unit.textType === "soldier_description") return "Unità";
   if (unit.textType === "card_description") return "Carta";
   if (unit.textType === "environment_effect_description") return "Effetto";
+  if (unit.textType === "chef_menu_description") return "Menu Chef";
+  if (unit.textType === "messenger_pact_mission_description") return "Missione";
+  if (unit.textType === "messenger_pact_node_description") return "Nodo";
+  if (unit.textType === "messenger_pact_node_quick_tip") return "Nodo";
+  if (unit.textType === "saloon_offer_description") return "Offerta";
+  if (unit.textType === "potion_description") return "Pozione";
+  if (unit.textType === "dynamic_object_template_description") return "Oggetto";
+  if (unit.textType === "dynamic_object_bundle_description") return "Pacchetto";
 
   return "Elemento";
 }
@@ -4754,6 +5049,90 @@ function getModalTextFacts(unit) {
         "Effetti",
         `Fame +${incremento.fame || 0}, Salute +${incremento.salute || 0}, Stamina +${incremento.stamina || 0}, Forza +${incremento.forza || 0}`
       ]
+    );
+  } else if (unit.textType === "chef_menu_description") {
+    facts.push(
+      ["Costo", metadata.cost || "-"],
+      ["Fame", `+${Number(metadata.hungerGain || 0)}`],
+      ["Durata", formatModalDuration(metadata.serviceDurationMs)]
+    );
+  } else if (unit.textType === "messenger_pact_mission_description") {
+    const effects = Array.isArray(metadata.collectEffects)
+      ? metadata.collectEffects
+          .map((effect) => {
+            const label = effect.label || effect.stat || "";
+            const percent = Number(effect.percent || 0);
+            return `${label} ${percent}%`;
+          })
+          .join(", ")
+      : "";
+
+    facts.push(
+      ["Bersaglio 2d6", metadata.target || "-"],
+      ["Premi", effects || "-"]
+    );
+  } else if (
+    unit.textType === "messenger_pact_node_description" ||
+    unit.textType === "messenger_pact_node_quick_tip"
+  ) {
+    facts.push(
+      ["Chiave regole", metadata.rulesKey || "-"],
+      ["Icona mappa", metadata.mapIcon || "-"]
+    );
+  } else if (unit.textType === "saloon_offer_description") {
+    facts.push(
+      ["Categoria", metadata.category || "-"],
+      ["Azione", metadata.actionType || "-"],
+      ["Costo", metadata.price || "-"],
+      ["Limite turno", metadata.maxPerTurn || "-"],
+      ["Effetti", formatModalEffectJson(metadata.effectJson)]
+    );
+  } else if (unit.textType === "potion_description") {
+    facts.push(
+      ["Uso", metadata.useMode || "-"],
+      ["Mercato", metadata.marketAvailable ? "si" : "-"],
+      ["Alchimista", metadata.alchemyOrderable ? "si" : "-"],
+      ["Prezzo base", metadata.basePrice || "-"],
+      [
+        "Recupero",
+        `Salute +${Number(metadata.healthGain || 0)}, Stamina +${Number(metadata.staminaGain || 0)}`
+      ],
+      ["Scorte", metadata.stockMax || "-"],
+      ["Quota", metadata.personalLimitPerCycle || "-"],
+      [
+        "Trasporto",
+        metadata.transportable
+          ? `stack ${metadata.maxStack || 0}, spazio ${metadata.carryCost || 0}`
+          : "-"
+      ],
+      ["Progressione", formatModalPotionProgression(metadata.progression)]
+    );
+  } else if (unit.textType === "dynamic_object_template_description") {
+    facts.push(
+      ["Categoria", metadata.category || "-"],
+      ["Visibilita", metadata.libraryVisibility || "-"],
+      ["Raccolta", metadata.claimMode || "-"],
+      ["Uso", metadata.useEnabled ? metadata.useMode || "attivo" : "passivo"],
+      [
+        "Quantita",
+        metadata.stackable
+          ? `${Number(metadata.quantity || 0)} / max ${Number(metadata.maxQuantity || 0)}`
+          : `${Number(metadata.quantity || 0)}`
+      ],
+      ["Prezzo", metadata.commerceEnabled ? `${Number(metadata.price || 0)} monete` : "-"]
+    );
+  } else if (unit.textType === "dynamic_object_bundle_description") {
+    const members = Array.isArray(metadata.members)
+      ? metadata.members
+          .map((member) => member.templateKey || member.memberKey)
+          .filter(Boolean)
+          .join(", ")
+      : "";
+
+    facts.push(
+      ["Categoria", metadata.category || "-"],
+      ["Oggetti inclusi", `${Number(metadata.memberCount || 0)}`],
+      ["Membri", members || "-"]
     );
   } else if (unit.textType === "soldier_description") {
     facts.push(
@@ -4792,17 +5171,19 @@ function getModalTextFacts(unit) {
   return facts;
 }
 
-function renderModalTextBlock() {
-  const container = document.getElementById("modalTextBlockEditor");
-  if (!container || !currentModalText) return;
+function renderModalTextBlock(context = "modals", unit = null) {
+  const activeUnit = unit || getModalTextByTextKey(activeModalTextKey) || currentModalText;
+  const ui = getModalTextWorkspaceUi(context);
+  const container = document.getElementById(ui.editorId);
+  if (!container || !activeUnit) return;
 
-  const draft = currentModalTextRows.get(currentModalText.textKey);
-  const published = currentPublishedModalTextRows.get(currentModalText.textKey);
+  const draft = currentModalTextRows.get(activeUnit.textKey);
+  const published = currentPublishedModalTextRows.get(activeUnit.textKey);
   const isPublished =
     published && published.content === String(draft?.content || "").trim();
   const allowPublish = canPublishQuestTexts();
-  const hasImagePreview = Boolean(currentModalText.imageUrl);
-  const factsHtml = getModalTextFacts(currentModalText).map(([label, value]) => `
+  const hasImagePreview = Boolean(activeUnit.imageUrl);
+  const factsHtml = getModalTextFacts(activeUnit).map(([label, value]) => `
     <span>${escapeHtml(label)} <strong>${escapeHtml(value)}</strong></span>
   `).join("");
 
@@ -4810,10 +5191,10 @@ function renderModalTextBlock() {
     <section class="card quest-field-card weapon-field-card modal-text-field-card">
       <div class="card-header">
         <div>
-          <p class="eyebrow">Blocco modale</p>
-          <h3>${escapeHtml(currentModalText.fieldLabel)}</h3>
+          <p class="eyebrow">${escapeHtml(ui.blockEyebrow)}</p>
+          <h3>${escapeHtml(activeUnit.fieldLabel)}</h3>
           <small class="status">
-            ${escapeHtml(currentModalText.modalLabel)} - ${escapeHtml(currentModalText.fieldKey)}
+            ${escapeHtml(activeUnit.modalLabel)} - ${escapeHtml(activeUnit.fieldKey)}
           </small>
         </div>
         <span class="quest-status-pill ${isPublished ? "published" : ""}">
@@ -4824,7 +5205,7 @@ function renderModalTextBlock() {
       ${hasImagePreview ? `
         <div class="weapon-detail-grid modal-text-detail-grid">
           <figure class="weapon-preview modal-text-preview">
-            <img src="${escapeHtml(currentModalText.imageUrl)}" alt="${escapeHtml(currentModalText.itemLabel || currentModalText.fieldLabel)}" />
+            <img src="${escapeHtml(activeUnit.imageUrl)}" alt="${escapeHtml(activeUnit.itemLabel || activeUnit.fieldLabel)}" />
           </figure>
 
           <div class="weapon-facts modal-text-facts">
@@ -4840,7 +5221,7 @@ function renderModalTextBlock() {
       <div class="quest-field-grid">
         <div class="quest-field-column">
           <span class="quest-field-label">Testo provvisorio</span>
-          <p class="quest-provisional-text">${escapeHtml(currentModalText.provisionalText)}</p>
+          <p class="quest-provisional-text">${escapeHtml(activeUnit.provisionalText)}</p>
         </div>
 
         <div class="quest-field-column">
@@ -4848,44 +5229,44 @@ function renderModalTextBlock() {
           <textarea
             id="modal-text-author-text"
             class="quest-author-text modal-text-author-text"
-            data-modal-text-author-text="${escapeHtml(currentModalText.textKey)}"
-            placeholder="Riscrivi qui il testo della modale..."
+            data-modal-text-author-text="${escapeHtml(activeUnit.textKey)}"
+            placeholder="${escapeHtml(ui.placeholder)}"
           >${escapeHtml(draft?.content || "")}</textarea>
         </div>
       </div>
 
       <div class="quest-field-actions">
-        <button type="button" data-copy-modal-text="${escapeHtml(currentModalText.textKey)}">
+        <button type="button" data-copy-modal-text="${escapeHtml(activeUnit.textKey)}">
           Copia testo
         </button>
-        <button type="button" data-save-modal-text="${escapeHtml(currentModalText.textKey)}">
+        <button type="button" data-save-modal-text="${escapeHtml(activeUnit.textKey)}">
           Salva bozza
         </button>
         ${allowPublish ? `
           <button
             type="button"
             class="quest-publish-btn"
-            data-publish-modal-text="${escapeHtml(currentModalText.textKey)}"
+            data-publish-modal-text="${escapeHtml(activeUnit.textKey)}"
           >
             Pubblica nel gioco
           </button>
         ` : ""}
-        <span class="status" data-modal-text-status="${escapeHtml(currentModalText.textKey)}"></span>
+        <span class="status" data-modal-text-status="${escapeHtml(activeUnit.textKey)}"></span>
       </div>
     </section>
   `;
 
   container.querySelector("[data-copy-modal-text]")?.addEventListener(
     "click",
-    () => copyModalTextProvisional(currentModalText.textKey)
+    () => copyModalTextProvisional(activeUnit.textKey)
   );
   container.querySelector("[data-save-modal-text]")?.addEventListener(
     "click",
-    () => saveModalText(currentModalText.textKey)
+    () => saveModalText(activeUnit.textKey)
   );
   container.querySelector("[data-publish-modal-text]")?.addEventListener(
     "click",
-    () => publishModalText(currentModalText.textKey)
+    () => publishModalText(activeUnit.textKey)
   );
 }
 
@@ -4988,7 +5369,7 @@ async function saveModalText(textKey, { quiet = false } = {}) {
 
   if (!quiet) {
     setModalTextStatus(textKey, "Bozza salvata.", "ok");
-    renderModalTextBlock();
+    renderActiveModalTextBlock();
   }
 
   return payload;
@@ -5044,7 +5425,7 @@ async function publishModalText(textKey) {
 
   currentPublishedModalTextRows.set(textKey, payload);
   setModalTextStatus(textKey, "Testo pubblicato.", "ok");
-  renderModalTextBlock();
+  renderActiveModalTextBlock();
 }
 
 function readLocalJson(key, fallback) {
