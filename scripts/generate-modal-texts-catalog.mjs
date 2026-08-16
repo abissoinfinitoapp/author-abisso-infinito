@@ -1443,11 +1443,25 @@ function extractText(source, extractor) {
 
 function normalizeImageUrl(imagePath) {
   const cleanPath = cleanText(imagePath);
+  const assetBaseUrl = "https://assets.abissoinfinito.it";
+  const legacyBaseUrls = [
+    "https://wjlmxnvrelazvbhrpegb.supabase.co/storage/v1/object/public/abisso-assets",
+    "https://cbhxijmfmigfsnqtisyw.supabase.co/storage/v1/object/public/abisso-assets"
+  ];
 
   if (!cleanPath) return "";
+
+  for (const legacyBaseUrl of legacyBaseUrls) {
+    if (cleanPath.startsWith(legacyBaseUrl)) {
+      return `${assetBaseUrl}/${cleanPath
+        .slice(legacyBaseUrl.length)
+        .replace(/^\/+/, "")}`;
+    }
+  }
+
   if (/^https?:\/\//i.test(cleanPath)) return cleanPath;
 
-  return `https://assets.abissoinfinito.it/${cleanPath.replace(/^\/+/, "")}`;
+  return `${assetBaseUrl}/${cleanPath.replace(/^\/+/, "")}`;
 }
 
 function loadDynamicObjectLibraryEntries(sourcePath) {
@@ -2485,7 +2499,7 @@ for (const sourceConfig of specialCardSources) {
       textType: "card_description",
       itemKey: card.cardKey,
       itemLabel: card.title,
-      image: card.image,
+      image: card.imageUrl,
       imageUrl: card.imageUrl,
       metadata: {
         playerKey: card.playerKey,
