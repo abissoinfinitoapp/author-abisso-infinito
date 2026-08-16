@@ -4774,9 +4774,10 @@ function bindCustomEventObjectWorkspace() {
   const meta = document.getElementById("customEventObjectCatalogMeta");
 
   if (meta) {
+    const officialItems = units.filter((unit) => unit.textType === "interaction_item_description").length;
     const templates = units.filter((unit) => unit.textType === "dynamic_object_template_description").length;
     const bundles = units.filter((unit) => unit.textType === "dynamic_object_bundle_description").length;
-    meta.textContent = `${templates} oggetti - ${bundles} pacchetti`;
+    meta.textContent = `${officialItems} ufficiali - ${templates} template - ${bundles} pacchetti`;
   }
 
   renderCustomEventObjectsList();
@@ -4831,9 +4832,11 @@ function renderCustomEventObjectsList() {
   let previousGroup = "";
 
   container.innerHTML = units.map((unit) => {
-    const group = unit.textType === "dynamic_object_bundle_description"
-      ? "Pacchetti oggetto"
-      : "Oggetti singoli";
+    const group = unit.textType === "interaction_item_description"
+      ? "Catalogo ufficiale"
+      : unit.textType === "dynamic_object_bundle_description"
+        ? "Pacchetti oggetto"
+        : "Template eventi custom";
     const heading = group !== previousGroup
       ? `<h3 class="quest-group-heading">${escapeHtml(group)}</h3>`
       : "";
@@ -4848,7 +4851,13 @@ function renderCustomEventObjectsList() {
         data-custom-event-object-key="${escapeHtml(unit.textKey)}"
       >
         <strong>${escapeHtml(unit.itemLabel || unit.fieldLabel)}</strong>
-        <small>${escapeHtml(unit.metadata?.category || unit.category || "Evento custom")} - ${escapeHtml(unit.textType === "dynamic_object_bundle_description" ? "Pacchetto" : "Oggetto")}</small>
+        <small>${escapeHtml(unit.metadata?.category || unit.category || "Oggetti")} - ${escapeHtml(
+          unit.textType === "interaction_item_description"
+            ? "Ufficiale"
+            : unit.textType === "dynamic_object_bundle_description"
+              ? "Pacchetto"
+              : "Template"
+        )}</small>
       </button>
     `;
   }).join("");

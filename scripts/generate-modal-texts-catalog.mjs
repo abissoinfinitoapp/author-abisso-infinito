@@ -13,6 +13,15 @@ const customEventObjectLibrarySource = {
     "dashboard/js/config/dynamic-object-templates-config.js"
   )
 };
+const interactionItemsLibrarySource = {
+  modalId: "custom_event_objects",
+  modalLabel: "Catalogo oggetti",
+  category: "Oggetti",
+  sourcePath: path.resolve(
+    GAME_ROOT,
+    "dashboard/js/config/interaction-items-library.js"
+  )
+};
 
 const modalSources = [
   {
@@ -1463,6 +1472,28 @@ function loadDynamicObjectLibraryEntries(sourcePath) {
   return config.getDynamicObjectLibraryEntries();
 }
 
+function loadInteractionItems(sourcePath) {
+  const source = fs.readFileSync(sourcePath, "utf8");
+  const context = {
+    window: {},
+    console: {
+      log() {},
+      warn() {},
+      error() {}
+    }
+  };
+
+  vm.createContext(context);
+  vm.runInContext(source, context, { filename: sourcePath });
+
+  const library = context.window.AbissoInteractionItemsLibrary;
+  if (!library?.listItems) {
+    throw new Error("Catalogo ufficiale oggetti non disponibile.");
+  }
+
+  return library.listItems();
+}
+
 function extractBalancedObject(source, declarationName) {
   const declarationIndex = source.indexOf(`const ${declarationName} =`);
   if (declarationIndex < 0) return "";
@@ -2502,6 +2533,63 @@ for (const sourceConfig of environmentEffectSources) {
       provisionalText: effect.description
     });
   }
+}
+
+const interactionItems = loadInteractionItems(
+  interactionItemsLibrarySource.sourcePath
+);
+
+for (const item of interactionItems) {
+  const itemKey = cleanText(item.key);
+  const title = cleanText(item.title || itemKey);
+  const image = cleanText(item.imageUrl || item.image || "");
+  const interactionNature = cleanText(item.interactionNature);
+
+  if (!itemKey || !title) continue;
+
+  units.push({
+    textKey: `modal:${interactionItemsLibrarySource.modalId}:official_item:${itemKey}:description`,
+    modalId: interactionItemsLibrarySource.modalId,
+    modalLabel: interactionItemsLibrarySource.modalLabel,
+    category: interactionItemsLibrarySource.category,
+    sourceFile: path.basename(interactionItemsLibrarySource.sourcePath),
+    sourcePath: interactionItemsLibrarySource.sourcePath,
+    fieldKey: `official_item:${itemKey}:description`,
+    fieldLabel: `Descrizione oggetto ufficiale: ${title}`,
+    textType: "interaction_item_description",
+    itemKey,
+    itemLabel: title,
+    image,
+    imageUrl: normalizeImageUrl(image),
+    metadata: {
+      entryType: "official_item",
+      category:
+        interactionNature === "magical"
+          ? "Catalogo ufficiale · Magici"
+          : "Catalogo ufficiale · Reali",
+      interactionNature,
+      interactionSkill: cleanText(item.interactionSkill),
+      type: cleanText(item.type),
+      family: cleanText(item.family),
+      itemSource: cleanText(item.itemSource),
+      catalogSource: cleanText(item.catalogSource),
+      stackable: Boolean(item.stackable),
+      maxQuantity: Number(item.maxQuantity || 0),
+      cargoMode: cleanText(item.cargoMode),
+      unitSpace: Number(item.unitSpace || 0),
+      consumable: Boolean(item.consumable),
+      starterItem: Boolean(item.starterItem),
+      marketAvailable: Boolean(item.marketAvailable),
+      customEventSelectable: Boolean(item.customEventSelectable),
+      placementAllowed: Boolean(item.placementAllowed),
+      defaultUsePolicy: cleanText(item.defaultUsePolicy),
+      possibleUses: Array.isArray(item.possibleUses)
+        ? item.possibleUses.map(cleanText).filter(Boolean)
+        : [],
+      tags: Array.isArray(item.tags) ? item.tags.map(cleanText).filter(Boolean) : []
+    },
+    provisionalText: cleanText(item.description)
+  });
 }
 
 const dynamicObjectLibraryEntries = loadDynamicObjectLibraryEntries(
