@@ -2,15 +2,20 @@
 // Generato da scripts/generate-modal-texts-catalog.mjs.
 
 window.AuthorModalTextsCatalog = {
-  "generatedAt": "2026-08-27T09:35:12.380Z",
-  "modalCount": 22,
-  "textCount": 439,
+  "generatedAt": "2026-08-27T10:34:22.717Z",
+  "modalCount": 27,
+  "textCount": 459,
   "categories": [
     "Ambiente",
+    "Bande",
+    "Boss",
+    "Creature",
     "Destino",
     "Eventi custom",
     "Locanda",
     "Mercati",
+    "Mostri",
+    "Poteri",
     "Regno"
   ],
   "modals": [
@@ -160,6 +165,41 @@ window.AuthorModalTextsCatalog = {
       "category": "Regno",
       "sourceFile": "bank-robbery-modal.html",
       "textCount": 5
+    },
+    {
+      "id": "creatures",
+      "label": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "textCount": 5
+    },
+    {
+      "id": "powers",
+      "label": "Poteri Speciali",
+      "category": "Poteri",
+      "sourceFile": "powers-modal.html",
+      "textCount": 4
+    },
+    {
+      "id": "boss_progress",
+      "label": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "textCount": 5
+    },
+    {
+      "id": "monsters_progress",
+      "label": "Progressi Mostri",
+      "category": "Mostri",
+      "sourceFile": "monsters-progress-modal.html",
+      "textCount": 3
+    },
+    {
+      "id": "bands_progress",
+      "label": "Bande",
+      "category": "Bande",
+      "sourceFile": "bands-progress-modal.html",
+      "textCount": 3
     },
     {
       "id": "custom_event_objects",
@@ -2569,6 +2609,246 @@ window.AuthorModalTextsCatalog = {
       "fieldLabel": "Stato caricamento",
       "textType": "status",
       "provisionalText": "Caricamento della sala operativa…"
+    },
+    {
+      "textKey": "modal:creatures:document_title",
+      "modalId": "creatures",
+      "modalLabel": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "sourcePath": "dashboard/creatures-modal.html",
+      "fieldKey": "document_title",
+      "fieldLabel": "Titolo documento",
+      "textType": "title",
+      "provisionalText": "Santuario delle Creature"
+    },
+    {
+      "textKey": "modal:creatures:header_title",
+      "modalId": "creatures",
+      "modalLabel": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "sourcePath": "dashboard/creatures-modal.html",
+      "fieldKey": "header_title",
+      "fieldLabel": "Titolo header",
+      "textType": "heading",
+      "provisionalText": "Santuario delle Creature"
+    },
+    {
+      "textKey": "modal:creatures:header_description",
+      "modalId": "creatures",
+      "modalLabel": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "sourcePath": "dashboard/creatures-modal.html",
+      "fieldKey": "header_description",
+      "fieldLabel": "Descrizione header",
+      "textType": "description",
+      "provisionalText": "Le dieci creature sono condivise da tutta la sessione. Il legame richiede almeno 200 Prestigio e dura fino alla fine della partita oppure finché la creatura non perde tutta la propria vita."
+    },
+    {
+      "textKey": "modal:creatures:loading_status",
+      "modalId": "creatures",
+      "modalLabel": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "sourcePath": "dashboard/creatures-modal.html",
+      "fieldKey": "loading_status",
+      "fieldLabel": "Stato caricamento",
+      "textType": "status",
+      "provisionalText": "Preparazione del Santuario..."
+    },
+    {
+      "textKey": "modal:creatures:empty_catalog",
+      "modalId": "creatures",
+      "modalLabel": "Santuario delle Creature",
+      "category": "Creature",
+      "sourceFile": "creatures-modal.html",
+      "sourcePath": "dashboard/creatures-modal.html",
+      "fieldKey": "empty_catalog",
+      "fieldLabel": "Messaggio catalogo vuoto",
+      "textType": "empty",
+      "provisionalText": "Nessuna creatura disponibile nel catalogo della sessione."
+    },
+    {
+      "textKey": "modal:powers:document_title",
+      "modalId": "powers",
+      "modalLabel": "Poteri Speciali",
+      "category": "Poteri",
+      "sourceFile": "powers-modal.html",
+      "sourcePath": "dashboard/powers-modal.html",
+      "fieldKey": "document_title",
+      "fieldLabel": "Titolo documento",
+      "textType": "title",
+      "provisionalText": "Poteri Speciali"
+    },
+    {
+      "textKey": "modal:powers:header_title",
+      "modalId": "powers",
+      "modalLabel": "Poteri Speciali",
+      "category": "Poteri",
+      "sourceFile": "powers-modal.html",
+      "sourcePath": "dashboard/powers-modal.html",
+      "fieldKey": "header_title",
+      "fieldLabel": "Titolo header",
+      "textType": "heading",
+      "provisionalText": "Poteri Speciali"
+    },
+    {
+      "textKey": "modal:powers:header_description",
+      "modalId": "powers",
+      "modalLabel": "Poteri Speciali",
+      "category": "Poteri",
+      "sourceFile": "powers-modal.html",
+      "sourcePath": "dashboard/powers-modal.html",
+      "fieldKey": "header_description",
+      "fieldLabel": "Descrizione header",
+      "textType": "description",
+      "provisionalText": "Vista manuale dei poteri del giocatore attivo"
+    },
+    {
+      "textKey": "modal:powers:load_error",
+      "modalId": "powers",
+      "modalLabel": "Poteri Speciali",
+      "category": "Poteri",
+      "sourceFile": "powers-modal.html",
+      "sourcePath": "dashboard/powers-modal.html",
+      "fieldKey": "load_error",
+      "fieldLabel": "Messaggio progresso non disponibile",
+      "textType": "empty",
+      "provisionalText": "Progresso ufficiale non disponibile."
+    },
+    {
+      "textKey": "modal:boss_progress:document_title",
+      "modalId": "boss_progress",
+      "modalLabel": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "sourcePath": "dashboard/boss-progress-modal.html",
+      "fieldKey": "document_title",
+      "fieldLabel": "Titolo documento",
+      "textType": "title",
+      "provisionalText": "Boss Finale"
+    },
+    {
+      "textKey": "modal:boss_progress:header_title",
+      "modalId": "boss_progress",
+      "modalLabel": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "sourcePath": "dashboard/boss-progress-modal.html",
+      "fieldKey": "header_title",
+      "fieldLabel": "Titolo header",
+      "textType": "heading",
+      "provisionalText": "Bel, Signore dell’Abisso"
+    },
+    {
+      "textKey": "modal:boss_progress:loading_status",
+      "modalId": "boss_progress",
+      "modalLabel": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "sourcePath": "dashboard/boss-progress-modal.html",
+      "fieldKey": "loading_status",
+      "fieldLabel": "Stato caricamento",
+      "textType": "status",
+      "provisionalText": "Caricamento dello stato finale…"
+    },
+    {
+      "textKey": "modal:boss_progress:boss_state_loading",
+      "modalId": "boss_progress",
+      "modalLabel": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "sourcePath": "dashboard/boss-progress-modal.html",
+      "fieldKey": "boss_state_loading",
+      "fieldLabel": "Stato caricamento di Bel",
+      "textType": "status",
+      "provisionalText": "Caricamento dello stato di Bel…"
+    },
+    {
+      "textKey": "modal:boss_progress:player_state_loading",
+      "modalId": "boss_progress",
+      "modalLabel": "Bel, Signore dell'Abisso",
+      "category": "Boss",
+      "sourceFile": "boss-progress-modal.html",
+      "sourcePath": "dashboard/boss-progress-modal.html",
+      "fieldKey": "player_state_loading",
+      "fieldLabel": "Stato caricamento guerriero",
+      "textType": "status",
+      "provisionalText": "Caricamento del guerriero…"
+    },
+    {
+      "textKey": "modal:monsters_progress:document_title",
+      "modalId": "monsters_progress",
+      "modalLabel": "Progressi Mostri",
+      "category": "Mostri",
+      "sourceFile": "monsters-progress-modal.html",
+      "sourcePath": "dashboard/monsters-progress-modal.html",
+      "fieldKey": "document_title",
+      "fieldLabel": "Titolo documento",
+      "textType": "title",
+      "provisionalText": "Progressi Mostri"
+    },
+    {
+      "textKey": "modal:monsters_progress:header_title",
+      "modalId": "monsters_progress",
+      "modalLabel": "Progressi Mostri",
+      "category": "Mostri",
+      "sourceFile": "monsters-progress-modal.html",
+      "sourcePath": "dashboard/monsters-progress-modal.html",
+      "fieldKey": "header_title",
+      "fieldLabel": "Titolo header",
+      "textType": "heading",
+      "provisionalText": "Progressi Mostri"
+    },
+    {
+      "textKey": "modal:monsters_progress:header_description",
+      "modalId": "monsters_progress",
+      "modalLabel": "Progressi Mostri",
+      "category": "Mostri",
+      "sourceFile": "monsters-progress-modal.html",
+      "sourcePath": "dashboard/monsters-progress-modal.html",
+      "fieldKey": "header_description",
+      "fieldLabel": "Descrizione header",
+      "textType": "description",
+      "provisionalText": "Stato dei mostri del giocatore attivo"
+    },
+    {
+      "textKey": "modal:bands_progress:document_title",
+      "modalId": "bands_progress",
+      "modalLabel": "Bande",
+      "category": "Bande",
+      "sourceFile": "bands-progress-modal.html",
+      "sourcePath": "dashboard/bands-progress-modal.html",
+      "fieldKey": "document_title",
+      "fieldLabel": "Titolo documento",
+      "textType": "title",
+      "provisionalText": "Bande"
+    },
+    {
+      "textKey": "modal:bands_progress:header_title",
+      "modalId": "bands_progress",
+      "modalLabel": "Bande",
+      "category": "Bande",
+      "sourceFile": "bands-progress-modal.html",
+      "sourcePath": "dashboard/bands-progress-modal.html",
+      "fieldKey": "header_title",
+      "fieldLabel": "Titolo header",
+      "textType": "heading",
+      "provisionalText": "Bande"
+    },
+    {
+      "textKey": "modal:bands_progress:header_description",
+      "modalId": "bands_progress",
+      "modalLabel": "Bande",
+      "category": "Bande",
+      "sourceFile": "bands-progress-modal.html",
+      "sourcePath": "dashboard/bands-progress-modal.html",
+      "fieldKey": "header_description",
+      "fieldLabel": "Descrizione header",
+      "textType": "description",
+      "provisionalText": "Stato, valore e proprietà delle bande della sessione"
     },
     {
       "textKey": "modal:market_food:food:cena_viandante:description",

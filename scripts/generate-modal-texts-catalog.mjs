@@ -1398,6 +1398,166 @@ const modalSources = [
         pattern: /(Caricamento della sala operativa[.…]*)/i
       }
     ]
+  },
+  {
+    modalId: "creatures",
+    modalLabel: "Santuario delle Creature",
+    category: "Creature",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/creatures-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Preparazione del Santuario[.…]*)/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio catalogo vuoto",
+        textType: "empty",
+        pattern: /(Nessuna creatura disponibile nel catalogo della sessione\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "powers",
+    modalLabel: "Poteri Speciali",
+    category: "Poteri",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/powers-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "load_error",
+        fieldLabel: "Messaggio progresso non disponibile",
+        textType: "empty",
+        pattern: /(Progresso ufficiale non disponibile\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "boss_progress",
+    modalLabel: "Bel, Signore dell'Abisso",
+    category: "Boss",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/boss-progress-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /<div id="bossModalStatus"[^>]*>\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "boss_state_loading",
+        fieldLabel: "Stato caricamento di Bel",
+        textType: "status",
+        pattern: /<div id="bossSummary"[^>]*>\s*([\s\S]*?)\s*<\/div>/i
+      },
+      {
+        fieldKey: "player_state_loading",
+        fieldLabel: "Stato caricamento guerriero",
+        textType: "status",
+        pattern: /<div id="playerSummary"[^>]*>\s*([\s\S]*?)\s*<\/div>/i
+      }
+    ]
+  },
+  {
+    modalId: "monsters_progress",
+    modalLabel: "Progressi Mostri",
+    category: "Mostri",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/monsters-progress-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      }
+    ]
+  },
+  {
+    modalId: "bands_progress",
+    modalLabel: "Bande",
+    category: "Bande",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/bands-progress-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      }
+    ]
   }
 ];
 

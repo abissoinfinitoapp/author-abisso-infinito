@@ -6,7 +6,7 @@
 
   <title>Area Autore - Abisso Infinito</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20260827-1" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -443,9 +443,25 @@
         </div>
 
         <div class="filter-box">
+          <label for="modalTextStateFilter">Stato</label>
+          <select id="modalTextStateFilter">
+            <option value="all">Tutti</option>
+            <option value="pending">Da rivedere (segnaposto + vuoti)</option>
+            <option value="placeholder">Solo segnaposto</option>
+            <option value="authored">Gia scritti</option>
+          </select>
+        </div>
+
+        <div class="filter-box">
           <label for="modalTextSearch">Cerca testo</label>
           <input id="modalTextSearch" type="search" placeholder="Modale, campo o testo..." />
         </div>
+
+        <p class="modal-text-legend">
+          <span class="modal-text-legend-item modal-text-authored">Scritto</span>
+          <span class="modal-text-legend-item modal-text-placeholder">Segnaposto</span>
+          <span class="modal-text-legend-item modal-text-todo">Da scrivere</span>
+        </p>
 
         <p id="modalTextCatalogMeta" class="status"></p>
         <div id="modalTextsList"></div>
@@ -1119,10 +1135,10 @@
 <script src="author-creatures-catalog.js?v=20260808-1"></script>
 <script src="author-zone-guardians-catalog.js?v=20260808-1"></script>
 <script src="author-fragments-catalog.js?v=20260808-1"></script>
-<script src="author-modal-texts-catalog.js?v=20260814-7"></script>
+<script src="author-modal-texts-catalog.js?v=20260827-2"></script>
 <script src="author-bot-narratives-catalog.js?v=20260820-1"></script>
 <script src="author-player-nona-ora-catalog.js?v=20260827-1"></script>
-<script src="app.js?v=20260820-1"></script>
+<script src="app.js?v=20260827-1"></script>
 <script src="author-map-planner.js?v=20260827-1"></script>
 </body>
 </html>

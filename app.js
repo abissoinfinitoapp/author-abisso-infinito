@@ -220,6 +220,11 @@ let currentPublishedModalTextRows = new Map();
 let modalTextLoadId = 0;
 let activeModalTextContext = "modals";
 let activeModalTextKey = currentModalText?.textKey || "";
+// Indice { text_key -> { content, provisional, status, updatedBy } } di tutte
+// le righe author_modal_texts, per evidenziare nella lista cosa e' gia' scritto
+// dall'autore e cosa e' ancora un segnaposto importato dal gioco.
+let modalTextStateIndex = new Map();
+const MODAL_TEXT_PLACEHOLDER_AUTHOR = "Import - Abisso";
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindSearch();
@@ -582,6 +587,8 @@ async function enterApp(user) {
     await selectChapter(currentChapter);
   }
 
+  loadModalTextStateIndex();
+
   startRealtime();
 }
 
@@ -605,6 +612,8 @@ function enterLocalApp() {
   if (currentChapter) {
     selectChapter(currentChapter);
   }
+
+  loadModalTextStateIndex();
 }
 
 function showLogin() {
@@ -2592,8 +2601,9 @@ function switchAuthorWorkspace(workspace) {
     loadCurrentFragment();
   }
 
-  if (showModals && currentModalText) {
-    loadCurrentModalText();
+  if (showModals) {
+    loadModalTextStateIndex();
+    if (currentModalText) loadCurrentModalText();
   }
 
   if (showCustomEventObjects && currentCustomEventObjectText) {
@@ -5127,10 +5137,16 @@ function bindModalTextWorkspace() {
   const search = document.getElementById("modalTextSearch");
   const reloadButton = document.getElementById("reloadModalTextBtn");
 
+  const stateFilter = document.getElementById("modalTextStateFilter");
+
   modalsTab?.addEventListener("click", () => switchAuthorWorkspace("modals"));
   modalFilter?.addEventListener("change", renderModalTextsList);
+  stateFilter?.addEventListener("change", renderModalTextsList);
   search?.addEventListener("input", renderModalTextsList);
-  reloadButton?.addEventListener("click", () => loadCurrentModalText());
+  reloadButton?.addEventListener("click", () => {
+    loadCurrentModalText();
+    loadModalTextStateIndex();
+  });
 
   if (modalFilter) {
     modalFilter.innerHTML = [
@@ -5143,27 +5159,129 @@ function bindModalTextWorkspace() {
     ].join("");
   }
 
-  const meta = document.getElementById("modalTextCatalogMeta");
+  updateModalTextCatalogMeta();
+  renderModalTextsList();
+  loadModalTextStateIndex();
+}
 
-  if (meta) {
-    const units = getRegularModalTextUnits();
-    const modals = getRegularModalDefinitions();
-    meta.textContent =
-      `${modals.length} modali - ${units.length} testi`;
+// Carica lo stato editoriale di tutte le righe author_modal_texts in un colpo
+// solo, cosi' la lista puo' mostrare cosa e' scritto e cosa e' segnaposto.
+async function loadModalTextStateIndex({ rerender = true } = {}) {
+  const index = new Map();
+
+  try {
+    if (useSupabase && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from(tableNames.modalTexts)
+        .select("text_key, content, provisional_text, status, updated_by");
+
+      if (error) {
+        console.warn("Indice stato testi modali non caricato:", error);
+        return;
+      }
+
+      for (const row of data || []) {
+        index.set(row.text_key, {
+          content: row.content || "",
+          provisional: row.provisional_text || "",
+          status: row.status || "draft",
+          updatedBy: row.updated_by || ""
+        });
+      }
+    } else {
+      for (const unit of modalTextCatalog.units || []) {
+        const row = readLocalJson(modalTextLocalDraftKey(unit.textKey), null);
+        if (!row) continue;
+        index.set(unit.textKey, {
+          content: row.content || "",
+          provisional: row.provisional_text || "",
+          status: row.status || "draft",
+          updatedBy: row.updated_by || ""
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Indice stato testi modali non caricato:", err);
+    return;
   }
 
-  renderModalTextsList();
+  modalTextStateIndex = index;
+
+  if (rerender) {
+    updateModalTextCatalogMeta();
+    renderModalTextsList();
+  }
+}
+
+// Stato di un singolo testo: "authored" (riscritto dall'autore),
+// "placeholder" (testo del gioco importato, ancora da rivedere),
+// "todo" (nessun contenuto).
+function getModalTextProgress(unit) {
+  const row = modalTextStateIndex.get(unit.textKey);
+  const content = String(row?.content || "").trim();
+
+  if (!content) return { state: "todo", status: row?.status || null };
+
+  const provisional = String(
+    row?.provisional || unit.provisionalText || ""
+  ).trim();
+  const isPlaceholder =
+    row?.updatedBy === MODAL_TEXT_PLACEHOLDER_AUTHOR ||
+    (Boolean(provisional) && content === provisional);
+
+  return {
+    state: isPlaceholder ? "placeholder" : "authored",
+    status: row?.status || "draft"
+  };
+}
+
+function getModalTextProgressLabel(state) {
+  if (state === "authored") return "Scritto";
+  if (state === "placeholder") return "Segnaposto";
+  return "Da scrivere";
+}
+
+function summarizeModalTextProgress(units) {
+  const totals = { authored: 0, placeholder: 0, todo: 0 };
+  for (const unit of units) {
+    totals[getModalTextProgress(unit).state] += 1;
+  }
+  return totals;
+}
+
+function updateModalTextCatalogMeta() {
+  const meta = document.getElementById("modalTextCatalogMeta");
+  if (!meta) return;
+
+  const units = getRegularModalTextUnits();
+  const modals = getRegularModalDefinitions();
+  const totals = summarizeModalTextProgress(units);
+  const remaining = totals.placeholder + totals.todo;
+
+  meta.textContent =
+    `${modals.length} modali · ${units.length} testi · ` +
+    `${totals.authored} scritti · ${remaining} da rivedere`;
 }
 
 function getFilteredModalTexts() {
   const modalId =
     document.getElementById("modalTextModalFilter")?.value || "all";
+  const stateFilter =
+    document.getElementById("modalTextStateFilter")?.value || "all";
   const query = (
     document.getElementById("modalTextSearch")?.value || ""
   ).trim().toLocaleLowerCase("it-IT");
 
   return (modalTextCatalog.units || []).filter((unit) => {
     if (modalId !== "all" && unit.modalId !== modalId) return false;
+
+    if (stateFilter !== "all") {
+      const { state } = getModalTextProgress(unit);
+      if (stateFilter === "pending" && state === "authored") return false;
+      if (stateFilter === "authored" && state !== "authored") return false;
+      if (stateFilter === "placeholder" && state !== "placeholder") return false;
+    }
+
     if (!query) return true;
 
     const text = [
@@ -5224,21 +5342,43 @@ function renderModalTextsList() {
   let previousModal = "";
 
   container.innerHTML = units.map((unit) => {
-    const heading = unit.modalId !== previousModal
-      ? `<h3 class="quest-group-heading">${escapeHtml(unit.modalLabel || "Modale")}</h3>`
-      : "";
+    let heading = "";
+
+    if (unit.modalId !== previousModal) {
+      const modalUnits = (modalTextCatalog.units || []).filter(
+        (item) => item.modalId === unit.modalId
+      );
+      const totals = summarizeModalTextProgress(modalUnits);
+      const done = totals.authored;
+      const complete = modalUnits.length > 0 && done === modalUnits.length;
+
+      heading = `
+        <h3 class="quest-group-heading modal-text-group-heading ${complete ? "is-complete" : ""}">
+          <span>${escapeHtml(unit.modalLabel || "Modale")}</span>
+          <span class="modal-text-group-count">${done}/${modalUnits.length}</span>
+        </h3>
+      `;
+    }
 
     previousModal = unit.modalId;
+
+    const { state } = getModalTextProgress(unit);
 
     return `
       ${heading}
       <button
         type="button"
-        class="quest-unit-btn modal-text-unit-btn ${currentModalText?.textKey === unit.textKey ? "active" : ""}"
+        class="quest-unit-btn modal-text-unit-btn modal-text-${state} ${currentModalText?.textKey === unit.textKey ? "active" : ""}"
         data-modal-text-key="${escapeHtml(unit.textKey)}"
       >
-        <strong>${escapeHtml(unit.fieldLabel)}</strong>
-        <small>${escapeHtml(unit.itemLabel || unit.textType)} - ${escapeHtml(unit.sourceFile)}</small>
+        <strong>
+          <span class="modal-text-dot" aria-hidden="true"></span>
+          ${escapeHtml(unit.fieldLabel)}
+        </strong>
+        <small>
+          <span class="modal-text-tag">${escapeHtml(getModalTextProgressLabel(state))}</span>
+          ${escapeHtml(unit.itemLabel || unit.textType)} - ${escapeHtml(unit.sourceFile)}
+        </small>
       </button>
     `;
   }).join("");
@@ -5814,8 +5954,27 @@ function renderModalTextBlock(context = "modals", unit = null) {
 
   const draft = currentModalTextRows.get(activeUnit.textKey);
   const published = currentPublishedModalTextRows.get(activeUnit.textKey);
-  const isPublished =
-    published && published.content === String(draft?.content || "").trim();
+  const draftContent = String(draft?.content || "").trim();
+  const isPublished = published && published.content === draftContent;
+  const provisionalRef = String(activeUnit.provisionalText || "").trim();
+  const isPlaceholderDraft =
+    Boolean(draftContent) &&
+    (draft?.updated_by === MODAL_TEXT_PLACEHOLDER_AUTHOR ||
+      (Boolean(provisionalRef) && draftContent === provisionalRef));
+  const pillState = isPublished
+    ? "published"
+    : !draftContent
+      ? "todo"
+      : isPlaceholderDraft
+        ? "placeholder"
+        : "authored";
+  const pillLabel = isPublished
+    ? "Pubblicato"
+    : !draftContent
+      ? "Da scrivere"
+      : isPlaceholderDraft
+        ? "Segnaposto da rivedere"
+        : "Testo autore";
   const allowPublish = canPublishQuestTexts();
   const hasImagePreview = Boolean(activeUnit.imageUrl);
   const factsHtml = getModalTextFacts(activeUnit).map(([label, value]) => `
@@ -5832,8 +5991,8 @@ function renderModalTextBlock(context = "modals", unit = null) {
             ${escapeHtml(activeUnit.modalLabel)} - ${escapeHtml(activeUnit.fieldKey)}
           </small>
         </div>
-        <span class="quest-status-pill ${isPublished ? "published" : ""}">
-          ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da riscrivere"}
+        <span class="quest-status-pill modal-text-pill-${pillState} ${isPublished ? "published" : ""}">
+          ${escapeHtml(pillLabel)}
         </span>
       </div>
 
@@ -6003,6 +6162,15 @@ async function saveModalText(textKey, { quiet = false } = {}) {
   }
 
   currentModalTextRows.set(textKey, payload);
+
+  modalTextStateIndex.set(textKey, {
+    content: payload.content || "",
+    provisional: payload.provisional_text || "",
+    status: payload.status || "draft",
+    updatedBy: payload.updated_by || ""
+  });
+  updateModalTextCatalogMeta();
+  renderModalTextsList();
 
   if (!quiet) {
     setModalTextStatus(textKey, "Bozza salvata.", "ok");

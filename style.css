@@ -19,6 +19,9 @@
   --accent-soft: rgba(45, 212, 191, 0.12);
   --danger: #ef5b58;
   --ok: #6ee7a8;
+  --progress-authored: #6ee7a8;
+  --progress-placeholder: #f0b45c;
+  --progress-todo: #6b7d7a;
   --rail-w: 232px;
   --rail-w-collapsed: 76px;
   --shell-radius: 18px;
@@ -2484,4 +2487,113 @@ button.danger {
   .map-body { display: flex; flex-direction: column; }
   .map-catalog { border-right: 0; border-bottom: 1px solid var(--border-soft); max-height: 40vh; }
   .map-viewport { height: 60vh; }
+}
+
+/* --- Stato editoriale testi modali: scritto / segnaposto / da scrivere --- */
+.modal-text-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 4px 0 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.modal-text-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-text-legend-item::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--progress-todo);
+}
+
+.modal-text-legend-item.modal-text-authored::before { background: var(--progress-authored); }
+.modal-text-legend-item.modal-text-placeholder::before { background: var(--progress-placeholder); }
+.modal-text-legend-item.modal-text-todo::before { background: var(--progress-todo); }
+
+.modal-text-group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modal-text-group-count {
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-text-group-heading.is-complete .modal-text-group-count {
+  color: var(--progress-authored);
+}
+
+.modal-text-unit-btn {
+  border-left: 3px solid var(--progress-todo);
+}
+
+.modal-text-unit-btn.modal-text-authored { border-left-color: var(--progress-authored); }
+.modal-text-unit-btn.modal-text-placeholder { border-left-color: var(--progress-placeholder); }
+.modal-text-unit-btn.modal-text-todo { border-left-color: var(--progress-todo); }
+
+.modal-text-unit-btn strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.modal-text-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--progress-todo);
+}
+
+.modal-text-authored .modal-text-dot { background: var(--progress-authored); }
+.modal-text-placeholder .modal-text-dot { background: var(--progress-placeholder); }
+.modal-text-todo .modal-text-dot { background: var(--progress-todo); }
+
+.modal-text-tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid #3a3a3a;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #cfcfcf;
+}
+
+.modal-text-authored .modal-text-tag {
+  border-color: rgba(110, 231, 168, 0.5);
+  color: var(--progress-authored);
+}
+
+.modal-text-placeholder .modal-text-tag {
+  border-color: rgba(240, 180, 92, 0.55);
+  color: var(--progress-placeholder);
+}
+
+.modal-text-unit-btn.active .modal-text-tag,
+.modal-text-unit-btn.active .modal-text-dot {
+  filter: brightness(0.5);
+}
+
+.quest-status-pill.modal-text-pill-authored {
+  border-color: rgba(110, 231, 168, 0.45);
+  color: var(--progress-authored);
+}
+
+.quest-status-pill.modal-text-pill-placeholder {
+  border-color: rgba(240, 180, 92, 0.55);
+  color: var(--progress-placeholder);
 }
