@@ -2,9 +2,9 @@
 // Generato da scripts/generate-modal-texts-catalog.mjs.
 
 window.AuthorModalTextsCatalog = {
-  "generatedAt": "2026-08-16T04:02:20.084Z",
+  "generatedAt": "2026-08-16T14:21:19.580Z",
   "modalCount": 10,
-  "textCount": 361,
+  "textCount": 374,
   "categories": [
     "Ambiente",
     "Destino",
@@ -19,28 +19,28 @@ window.AuthorModalTextsCatalog = {
       "label": "Banco del Cibo",
       "category": "Mercati",
       "sourceFile": "market-food-modal.html",
-      "textCount": 16
+      "textCount": 18
     },
     {
       "id": "chef_gustav",
       "label": "Chef Gustav",
       "category": "Locanda",
       "sourceFile": "chef-gustav-modal.html",
-      "textCount": 11
+      "textCount": 13
     },
     {
       "id": "messenger_pact",
       "label": "Messaggero del Patto",
       "category": "Destino",
       "sourceFile": "messenger-modal.html",
-      "textCount": 22
+      "textCount": 24
     },
     {
       "id": "saloon",
       "label": "Saloon del Regno",
       "category": "Regno",
       "sourceFile": "saloon-modal.html",
-      "textCount": 24
+      "textCount": 30
     },
     {
       "id": "commercial_bank",
@@ -54,7 +54,7 @@ window.AuthorModalTextsCatalog = {
       "label": "Emporio Alchemico",
       "category": "Mercati",
       "sourceFile": "potion-market-modal.html",
-      "textCount": 28
+      "textCount": 29
     },
     {
       "id": "barracks",
@@ -135,6 +135,30 @@ window.AuthorModalTextsCatalog = {
       "provisionalText": "Il cuoco sta contando le porzioni e aggiornando la dispensa…"
     },
     {
+      "textKey": "modal:market_food:default_status",
+      "modalId": "market_food",
+      "modalLabel": "Banco del Cibo",
+      "category": "Mercati",
+      "sourceFile": "market-food-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\market-food-modal.html",
+      "fieldKey": "default_status",
+      "fieldLabel": "Stato iniziale",
+      "textType": "status",
+      "provisionalText": "Scegli la tua pietanza, ma non contemplarla troppo a lungo: le scorte sono condivise e gli altri guerrieri potrebbero lasciarti soltanto le briciole."
+    },
+    {
+      "textKey": "modal:market_food:load_error_empty",
+      "modalId": "market_food",
+      "modalLabel": "Banco del Cibo",
+      "category": "Mercati",
+      "sourceFile": "market-food-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\market-food-modal.html",
+      "fieldKey": "load_error_empty",
+      "fieldLabel": "Messaggio errore caricamento",
+      "textType": "empty",
+      "provisionalText": "Il Banco del Cibo non risponde. Il cuoco potrebbe essere fuggito, la dispensa potrebbe essere vuota… oppure qualcosa ha mangiato entrambi. Riprova tra poco."
+    },
+    {
       "textKey": "modal:chef_gustav:document_title",
       "modalId": "chef_gustav",
       "modalLabel": "Chef Gustav",
@@ -195,6 +219,30 @@ window.AuthorModalTextsCatalog = {
       "provisionalText": "Guerriero"
     },
     {
+      "textKey": "modal:chef_gustav:default_status",
+      "modalId": "chef_gustav",
+      "modalLabel": "Chef Gustav",
+      "category": "Locanda",
+      "sourceFile": "chef-gustav-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\chef-gustav-modal.html",
+      "fieldKey": "default_status",
+      "fieldLabel": "Stato iniziale ordine",
+      "textType": "status",
+      "provisionalText": "Scegli il tuo menù con cura: Chef Gustav accetta un solo ordine alla volta, perché la perfezione non divide né la fiamma né l’attenzione."
+    },
+    {
+      "textKey": "modal:chef_gustav:load_error_empty",
+      "modalId": "chef_gustav",
+      "modalLabel": "Chef Gustav",
+      "category": "Locanda",
+      "sourceFile": "chef-gustav-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\chef-gustav-modal.html",
+      "fieldKey": "load_error_empty",
+      "fieldLabel": "Messaggio errore caricamento",
+      "textType": "empty",
+      "provisionalText": "Chef Gustav non può ricevere ordinazioni. Forse la cucina è chiusa, oppure gli ingredienti non si sono dimostrati all’altezza. Riprova tra poco."
+    },
+    {
       "textKey": "modal:messenger_pact:document_title",
       "modalId": "messenger_pact",
       "modalLabel": "Messaggero del Patto",
@@ -243,6 +291,18 @@ window.AuthorModalTextsCatalog = {
       "provisionalText": "Il Patto concede ricchezza e potere, ma consuma l’Anima e alimenta la Corruzione. Soltanto il guerriero davanti al Messaggero può affidarsi ai dadi e pronunciare la scelta finale: nessuno tratta con il destino per conto di un altro."
     },
     {
+      "textKey": "modal:messenger_pact:loading_status",
+      "modalId": "messenger_pact",
+      "modalLabel": "Messaggero del Patto",
+      "category": "Destino",
+      "sourceFile": "messenger-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\messenger-modal.html",
+      "fieldKey": "loading_status",
+      "fieldLabel": "Stato caricamento",
+      "textType": "status",
+      "provisionalText": "Il Messaggero esamina il Patto… e misura quanto della tua Anima sei ancora disposto a perdere."
+    },
+    {
       "textKey": "modal:messenger_pact:choice_title",
       "modalId": "messenger_pact",
       "modalLabel": "Messaggero del Patto",
@@ -289,6 +349,18 @@ window.AuthorModalTextsCatalog = {
       "fieldLabel": "Etichetta ribalta evento",
       "textType": "label",
       "provisionalText": "Ribalta evento"
+    },
+    {
+      "textKey": "modal:messenger_pact:no_material_reward",
+      "modalId": "messenger_pact",
+      "modalLabel": "Messaggero del Patto",
+      "category": "Destino",
+      "sourceFile": "messenger-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\messenger-modal.html",
+      "fieldKey": "no_material_reward",
+      "fieldLabel": "Messaggio nessun premio materiale",
+      "textType": "empty",
+      "provisionalText": "Nessun bottino da reclamare."
     },
     {
       "textKey": "modal:messenger_pact:history_title",
@@ -361,6 +433,18 @@ window.AuthorModalTextsCatalog = {
       "fieldLabel": "Descrizione header",
       "textType": "description",
       "provisionalText": "Al Saloon ogni desiderio possiede un prezzo: il vino ridesta il coraggio, la compagnia lenisce le ferite e i gioielli trasformano la ricchezza in Prestigio. Le monete saldano il conto davanti all’oste; la Corruzione riscuote il resto nell’ombra."
+    },
+    {
+      "textKey": "modal:saloon:initial_status",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "initial_status",
+      "fieldLabel": "Stato iniziale",
+      "textType": "status",
+      "provisionalText": "Il Saloon apre le bottiglie…"
     },
     {
       "textKey": "modal:saloon:services_title",
@@ -493,6 +577,66 @@ window.AuthorModalTextsCatalog = {
       "fieldLabel": "Descrizione nessuna estrazione",
       "textType": "empty",
       "provisionalText": "Custodisci il biglietto nell’inventario. Quando il Master proclamerà una lotteria dalla propria barra Utility, l’annuncio raggiungerà tutti i guerrieri e tu potrai scegliere se consegnare il biglietto al destino e partecipare all’estrazione."
+    },
+    {
+      "textKey": "modal:saloon:empty_history",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "empty_history",
+      "fieldLabel": "Messaggio cronologia vuota",
+      "textType": "empty",
+      "provisionalText": "Nessun brindisi, vizio o affare da confessare: il Saloon non ha ancora nulla da vendere."
+    },
+    {
+      "textKey": "modal:saloon:loading_offers_status",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "loading_offers_status",
+      "fieldLabel": "Stato caricamento offerte",
+      "textType": "status",
+      "provisionalText": "Il Saloon prepara le sue tentazioni…"
+    },
+    {
+      "textKey": "modal:saloon:ready_status",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "ready_status",
+      "fieldLabel": "Stato pronto",
+      "textType": "status",
+      "provisionalText": "Il Saloon è aperto: ordina pure."
+    },
+    {
+      "textKey": "modal:saloon:operation_status",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "operation_status",
+      "fieldLabel": "Stato operazione",
+      "textType": "status",
+      "provisionalText": "L'oste sta prendendo l'ordine..."
+    },
+    {
+      "textKey": "modal:saloon:load_error_status",
+      "modalId": "saloon",
+      "modalLabel": "Saloon del Regno",
+      "category": "Regno",
+      "sourceFile": "saloon-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\saloon-modal.html",
+      "fieldKey": "load_error_status",
+      "fieldLabel": "Messaggio errore caricamento",
+      "textType": "empty",
+      "provisionalText": "Le porte del Saloon restano chiuse: persino il vizio conosce serate storte."
     },
     {
       "textKey": "modal:commercial_bank:document_title",
@@ -1297,6 +1441,18 @@ window.AuthorModalTextsCatalog = {
       "fieldLabel": "Conferma acquisto trasportabile",
       "textType": "description",
       "provisionalText": "La pozione verrà aggiunta all’Inventario generale."
+    },
+    {
+      "textKey": "modal:potion_market:alchemy_auto_note",
+      "modalId": "potion_market",
+      "modalLabel": "Emporio Alchemico",
+      "category": "Mercati",
+      "sourceFile": "potion-market-modal.html",
+      "sourcePath": "C:\\Users\\Utente\\Desktop\\abissoinfinito app refactor\\dashboard\\potion-market-modal.html",
+      "fieldKey": "alchemy_auto_note",
+      "fieldLabel": "Nota effetto automatico",
+      "textType": "description",
+      "provisionalText": "L’effetto viene applicato automaticamente alla scadenza."
     },
     {
       "textKey": "modal:potion_market:use_portable_button",

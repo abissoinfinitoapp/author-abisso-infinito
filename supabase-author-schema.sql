@@ -366,6 +366,60 @@ create index if not exists author_published_modal_texts_field_idx
 create index if not exists author_published_modal_texts_item_idx
   on public.author_published_modal_texts (modal_id, item_key);
 
+-- Planner mappe / collegamenti minimappe: un unico documento JSON per mappa
+-- (data = { rooms: {...}, edges: [...] }). Nessun versioning ne pubblicazione.
+create table if not exists public.author_map_documents (
+  map_key    text primary key,
+  data       jsonb not null default '{"rooms":{},"edges":[]}'::jsonb,
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+-- Player "Nona Ora": catalogo personaggi giocanti, un text_key per blocco
+-- editoriale (personaggio, caratteristica, dotazione, background, aspetto,
+-- parentele, libero). Stesso schema di author_quest_texts.
+create table if not exists public.author_player_texts (
+  text_key text primary key,
+  player_id text not null,
+  player_name text not null,
+  field_key text not null,
+  field_label text not null,
+  provisional_text text not null default '',
+  content text not null default '',
+  status text not null default 'draft'
+    check (status in ('draft', 'review', 'approved')),
+  updated_by text,
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists author_player_texts_player_idx
+  on public.author_player_texts (player_id, field_key);
+
+create table if not exists public.author_player_text_versions (
+  id uuid primary key default gen_random_uuid(),
+  text_key text not null,
+  content text not null default '',
+  edited_by text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists author_player_text_versions_key_created_idx
+  on public.author_player_text_versions (text_key, created_at desc);
+
+create table if not exists public.author_published_player_texts (
+  text_key text primary key,
+  player_id text not null,
+  player_name text not null,
+  field_key text not null,
+  field_label text not null,
+  content text not null,
+  published_by text,
+  published_at timestamptz not null default now()
+);
+
+create index if not exists author_published_player_texts_player_idx
+  on public.author_published_player_texts (player_id, field_key);
+
 create or replace function public.is_author_allowed()
 returns boolean
 language sql
@@ -419,6 +473,10 @@ alter table public.author_published_fragment_texts enable row level security;
 alter table public.author_modal_texts enable row level security;
 alter table public.author_modal_text_versions enable row level security;
 alter table public.author_published_modal_texts enable row level security;
+alter table public.author_map_documents enable row level security;
+alter table public.author_player_texts enable row level security;
+alter table public.author_player_text_versions enable row level security;
+alter table public.author_published_player_texts enable row level security;
 
 drop policy if exists "author_allowed_users_select_self" on public.author_allowed_users;
 create policy "author_allowed_users_select_self"
@@ -893,6 +951,73 @@ for delete
 to authenticated
 using (public.is_author_admin());
 
+drop policy if exists "author_map_documents_select_allowed" on public.author_map_documents;
+create policy "author_map_documents_select_allowed"
+on public.author_map_documents
+for select
+to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_map_documents_insert_allowed" on public.author_map_documents;
+create policy "author_map_documents_insert_allowed"
+on public.author_map_documents
+for insert
+to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_map_documents_update_allowed" on public.author_map_documents;
+create policy "author_map_documents_update_allowed"
+on public.author_map_documents
+for update
+to authenticated
+using (public.is_author_allowed())
+with check (public.is_author_allowed());
+
+drop policy if exists "author_player_texts_select_allowed" on public.author_player_texts;
+create policy "author_player_texts_select_allowed"
+on public.author_player_texts for select to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_player_texts_insert_allowed" on public.author_player_texts;
+create policy "author_player_texts_insert_allowed"
+on public.author_player_texts for insert to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "author_player_texts_update_allowed" on public.author_player_texts;
+create policy "author_player_texts_update_allowed"
+on public.author_player_texts for update to authenticated
+using (public.is_author_allowed()) with check (public.is_author_allowed());
+
+drop policy if exists "author_player_versions_select_allowed" on public.author_player_text_versions;
+create policy "author_player_versions_select_allowed"
+on public.author_player_text_versions for select to authenticated
+using (public.is_author_allowed());
+
+drop policy if exists "author_player_versions_insert_allowed" on public.author_player_text_versions;
+create policy "author_player_versions_insert_allowed"
+on public.author_player_text_versions for insert to authenticated
+with check (public.is_author_allowed());
+
+drop policy if exists "published_player_texts_public_read" on public.author_published_player_texts;
+create policy "published_player_texts_public_read"
+on public.author_published_player_texts for select to anon, authenticated
+using (true);
+
+drop policy if exists "published_player_texts_admin_insert" on public.author_published_player_texts;
+create policy "published_player_texts_admin_insert"
+on public.author_published_player_texts for insert to authenticated
+with check (public.is_author_admin());
+
+drop policy if exists "published_player_texts_admin_update" on public.author_published_player_texts;
+create policy "published_player_texts_admin_update"
+on public.author_published_player_texts for update to authenticated
+using (public.is_author_admin()) with check (public.is_author_admin());
+
+drop policy if exists "published_player_texts_admin_delete" on public.author_published_player_texts;
+create policy "published_player_texts_admin_delete"
+on public.author_published_player_texts for delete to authenticated
+using (public.is_author_admin());
+
 revoke all privileges on table public.author_quest_texts from anon, authenticated;
 revoke all privileges on table public.author_quest_text_versions from anon, authenticated;
 revoke all privileges on table public.author_published_quest_texts from anon, authenticated;
@@ -936,6 +1061,17 @@ grant select, insert, update on table public.author_modal_texts to authenticated
 grant select, insert on table public.author_modal_text_versions to authenticated;
 grant select on table public.author_published_modal_texts to anon, authenticated;
 grant insert, update, delete on table public.author_published_modal_texts to authenticated;
+
+revoke all privileges on table public.author_map_documents from anon;
+grant select, insert, update on table public.author_map_documents to authenticated;
+
+revoke all privileges on table public.author_player_texts from anon, authenticated;
+revoke all privileges on table public.author_player_text_versions from anon, authenticated;
+revoke all privileges on table public.author_published_player_texts from anon, authenticated;
+grant select, insert, update on table public.author_player_texts to authenticated;
+grant select, insert on table public.author_player_text_versions to authenticated;
+grant select on table public.author_published_player_texts to anon, authenticated;
+grant insert, update, delete on table public.author_published_player_texts to authenticated;
 
 revoke execute on function public.is_author_allowed() from public, anon;
 revoke execute on function public.is_author_admin() from public, anon;

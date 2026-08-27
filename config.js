@@ -28,6 +28,10 @@ window.AUTHOR_CONFIG = {
     publishedFragmentTexts: "author_published_fragment_texts",
     modalTexts: "author_modal_texts",
     modalVersions: "author_modal_text_versions",
-    publishedModalTexts: "author_published_modal_texts"
+    publishedModalTexts: "author_published_modal_texts",
+    mapDocuments: "author_map_documents",
+    playerTexts: "author_player_texts",
+    playerVersions: "author_player_text_versions",
+    publishedPlayerTexts: "author_published_player_texts"
   }
 };

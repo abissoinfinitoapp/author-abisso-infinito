@@ -58,13 +58,13 @@ const modalSources = [
         fieldKey: "default_status",
         fieldLabel: "Stato iniziale",
         textType: "status",
-        pattern: /"(Scegli una pietanza\. Le scorte sono condivise con[\s\S]*?sessione\.)"/i
+        pattern: /"([^"\n]*Scegli la tua pietanza[^"\n]*)"/i
       },
       {
         fieldKey: "load_error_empty",
         fieldLabel: "Messaggio errore caricamento",
         textType: "empty",
-        pattern: /gridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?Impossibile caricare il Banco del Cibo\.)\s*<\/div>/i
+        pattern: /gridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?)\s*<\/div>/i
       }
     ]
   },
@@ -108,13 +108,13 @@ const modalSources = [
         fieldKey: "default_status",
         fieldLabel: "Stato iniziale ordine",
         textType: "status",
-        pattern: /"([^"]*Scegli un men[^"]*Chef Gustav[^"]*)"/i
+        pattern: /"([^"\n]*Scegli il tuo men[^"\n]*Chef Gustav[^"\n]*)"/i
       },
       {
         fieldKey: "load_error_empty",
         fieldLabel: "Messaggio errore caricamento",
         textType: "empty",
-        pattern: /menuGridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?Impossibile caricare Chef Gustav\.)\s*<\/div>/i
+        pattern: /menuGridEl\.innerHTML\s*=\s*`\s*<div class="empty">\s*([\s\S]*?)\s*<\/div>/i
       }
     ]
   },
@@ -152,7 +152,7 @@ const modalSources = [
         fieldKey: "loading_status",
         fieldLabel: "Stato caricamento",
         textType: "status",
-        pattern: /<div\s+id="status"[\s\S]*?>\s*([\s\S]*?Controllo del Patto[\s\S]*?)\s*<\/div>/i
+        pattern: /<div\s+id="status"[\s\S]*?>\s*([\s\S]*?)\s*<\/div>/i
       },
       {
         fieldKey: "choice_title",
@@ -182,7 +182,7 @@ const modalSources = [
         fieldKey: "no_material_reward",
         fieldLabel: "Messaggio nessun premio materiale",
         textType: "empty",
-        pattern: /<div class="effect-line">\s*(Nessun premio materiale\.)\s*<\/div>/i
+        pattern: /<div class="effect-line">\s*(Nessun bottino da reclamare\.)\s*<\/div>/i
       },
       {
         fieldKey: "history_title",
@@ -232,7 +232,7 @@ const modalSources = [
         fieldKey: "initial_status",
         fieldLabel: "Stato iniziale",
         textType: "status",
-        pattern: /<div\s+id="statusLine"[\s\S]*?>\s*([\s\S]*?Preparazione del Saloon[\s\S]*?)\s*<\/div>/i
+        pattern: /<div\s+id="statusLine"[\s\S]*?>\s*([\s\S]*?)\s*<\/div>/i
       },
       {
         fieldKey: "services_title",
@@ -304,31 +304,31 @@ const modalSources = [
         fieldKey: "empty_history",
         fieldLabel: "Messaggio cronologia vuota",
         textType: "empty",
-        pattern: /<div class="history-row">\s*([\s\S]*?Nessuna attivit[\s\S]*?Saloon\.)\s*<\/div>/i
+        pattern: /<div class="history-row">\s*([\s\S]*?)\s*<\/div>/i
       },
       {
         fieldKey: "loading_offers_status",
         fieldLabel: "Stato caricamento offerte",
         textType: "status",
-        pattern: /setStatus\("([^"]*Caricamento delle offerte del Saloon[^"]*)"\)/i
+        pattern: /setStatus\("([^"]*Il Saloon prepara le sue tentazioni[^"]*)"\)/i
       },
       {
         fieldKey: "ready_status",
         fieldLabel: "Stato pronto",
         textType: "status",
-        pattern: /\?\s*"([^"]*Il Saloon [^"]* pronto a ricevere ordini[^"]*)"/i
+        pattern: /\?\s*"([^"]*Il Saloon è aperto:[^"]*)"/i
       },
       {
         fieldKey: "operation_status",
         fieldLabel: "Stato operazione",
         textType: "status",
-        pattern: /setStatus\("([^"]*Il Saloon sta registrando[^"]*)"\)/i
+        pattern: /setStatus\("([^"]*oste sta prendendo l'ordine[^"]*)"\)/i
       },
       {
         fieldKey: "load_error_status",
         fieldLabel: "Messaggio errore caricamento",
         textType: "empty",
-        pattern: /error\?\.message\s*\|\|\s*"([^"]*Impossibile caricare il Saloon[^"]*)"/i
+        pattern: /error\?\.message\s*\|\|\s*"([^"]*Le porte del Saloon[^"]*)"/i
       }
     ]
   },
@@ -752,7 +752,7 @@ const modalSources = [
         fieldKey: "alchemy_auto_note",
         fieldLabel: "Nota effetto automatico",
         textType: "description",
-        pattern: /`(L[\s\S]*?effetto viene applicato automaticamente alla scadenza\.)`/i
+        pattern: /(L’effetto viene applicato automaticamente alla scadenza\.)/i
       },
       {
         fieldKey: "use_portable_button",
@@ -2223,7 +2223,11 @@ for (const modal of modalSources) {
   for (const extractor of modal.textExtractors) {
     const provisionalText = extractText(source, extractor);
 
-    if (!provisionalText) continue;
+    if (!provisionalText) {
+      console.warn(
+        `Testo non estratto, chiave mantenuta nel catalogo: modal:${modal.modalId}:${extractor.fieldKey}`
+      );
+    }
 
     units.push({
       textKey: `modal:${modal.modalId}:${extractor.fieldKey}`,

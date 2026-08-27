@@ -25,33 +25,92 @@
     </div>
   </section>
 
-  <div id="appView" class="hidden">
+  <div id="appView" class="app-shell hidden">
 
-    <header class="topbar">
-      <div>
-        <h1>Area Autore</h1>
-        <p>Capitoli, testi delle quest, commenti e revisioni</p>
-        <nav class="workspace-tabs" aria-label="Sezioni area autore">
-          <button id="chaptersTabBtn" type="button" class="workspace-tab active">Capitoli</button>
-          <button id="questsTabBtn" type="button" class="workspace-tab">Testi quest</button>
-          <button id="weaponsTabBtn" type="button" class="workspace-tab">Armi</button>
-          <button id="creaturesTabBtn" type="button" class="workspace-tab">Creature</button>
-          <button id="zoneGuardiansTabBtn" type="button" class="workspace-tab">Guardiani zone</button>
-          <button id="fragmentsTabBtn" type="button" class="workspace-tab">Echi</button>
-          <button id="modalsTabBtn" type="button" class="workspace-tab">Modali</button>
-          <button id="customEventObjectsTabBtn" type="button" class="workspace-tab">Oggetti</button>
-        </nav>
+    <nav id="appRail" class="app-rail" aria-label="Sezioni area autore">
+      <div class="rail-brand">
+        <span class="rail-mark">AI</span>
+        <div class="rail-brand-text">
+          <strong>Area Autore</strong>
+          <span>Abisso Infinito</span>
+        </div>
+        <button id="railCloseBtn" type="button" class="small-btn rail-close" aria-label="Chiudi menu">✕</button>
       </div>
 
-      <div class="user-box">
+      <div class="rail-tabs">
+        <button id="chaptersTabBtn" type="button" class="rail-tab active">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M4 5.5c2.2-1.3 5-1.3 7 .5 2-1.8 4.8-1.8 7-.5v13c-2.2-1.3-5-1.3-7 .5-2-1.8-4.8-1.8-7-.5z"/><path d="M11 6v13"/></svg></span>
+          <span class="rail-label">Capitoli</span>
+        </button>
+        <button id="questsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.4 5.8L20 11l-5.6 2.2L12 19l-2.4-5.8L4 11l5.6-2.2z"/></svg></span>
+          <span class="rail-label">Testi quest</span>
+        </button>
+        <button id="weaponsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M14.5 3.5l6 6-2 2-6-6z"/><path d="M4 20l7.5-7.5"/><path d="M9 12.5l2.5 2.5"/><path d="M3.5 20.5l2-2"/></svg></span>
+          <span class="rail-label">Armi</span>
+        </button>
+        <button id="creaturesTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><circle cx="7" cy="8" r="1.6"/><circle cx="12" cy="6.2" r="1.6"/><circle cx="17" cy="8" r="1.6"/><path d="M8 15.5c0-2.4 1.8-4 4-4s4 1.6 4 4-1.8 3-4 3-4-0.6-4-3z"/></svg></span>
+          <span class="rail-label">Creature</span>
+        </button>
+        <button id="zoneGuardiansTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M12 3.5l6.5 2.6v5.4c0 4.6-2.8 7.4-6.5 8.4-3.7-1-6.5-3.8-6.5-8.4V6.1z"/></svg></span>
+          <span class="rail-label">Guardiani zone</span>
+        </button>
+        <button id="fragmentsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.4"/><path d="M12 12m-4.5 0a4.5 4.5 0 1 0 9 0 4.5 4.5 0 1 0 -9 0"/><path d="M12 12m-8.5 0a8.5 8.5 0 1 0 17 0 8.5 8.5 0 1 0 -17 0"/></svg></span>
+          <span class="rail-label">Echi</span>
+        </button>
+        <button id="modalsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17"/></svg></span>
+          <span class="rail-label">Modali</span>
+        </button>
+        <button id="customEventObjectsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M12 3.5l8 4.2v8.6l-8 4.2-8-4.2V7.7z"/><path d="M4 7.7l8 4.2 8-4.2"/><path d="M12 11.9v8.6"/></svg></span>
+          <span class="rail-label">Oggetti</span>
+        </button>
+        <button id="botsTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><rect x="5" y="9" width="14" height="10" rx="2.5"/><path d="M12 9V5.5"/><circle cx="12" cy="4" r="1.2"/><circle cx="9" cy="14" r="1.3"/><circle cx="15" cy="14" r="1.3"/></svg></span>
+          <span class="rail-label">Bot</span>
+        </button>
+        <button id="mappeTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><path d="M9 4.5 3.5 6.5v13L9 17.5l6 2 5.5-2v-13L15 6.5z"/><path d="M9 4.5v13"/><path d="M15 6.5v13"/></svg></span>
+          <span class="rail-label">Map Nona Ora</span>
+        </button>
+        <button id="playersTabBtn" type="button" class="rail-tab">
+          <span class="rail-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 19.5c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/></svg></span>
+          <span class="rail-label">Player Nona Ora</span>
+        </button>
+      </div>
+
+      <div class="rail-footer">
         <input id="userName" type="text" placeholder="Il tuo nome" />
         <select id="userRole">
           <option value="Autore">Autore</option>
           <option value="Revisore">Revisore</option>
           <option value="Admin">Admin</option>
         </select>
-        <button onclick="saveUser()">Salva</button>
-        <button id="logoutBtn" type="button">Esci</button>
+        <div class="rail-footer-actions">
+          <button onclick="saveUser()">Salva</button>
+          <button id="logoutBtn" type="button">Esci</button>
+        </div>
+      </div>
+    </nav>
+
+    <div id="railOverlay" class="app-overlay"></div>
+
+    <div class="app-main">
+
+    <header class="topbar">
+      <div class="topbar-heading">
+        <button id="navToggleBtn" type="button" class="nav-toggle" aria-label="Apri menu">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div>
+          <h1>Area Autore</h1>
+          <p>Capitoli, testi delle quest, commenti e revisioni</p>
+        </div>
       </div>
     </header>
 
@@ -462,7 +521,593 @@
         </div>
       </section>
     </main>
+
+    <main id="botsWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Bot</h2>
+
+        <div class="filter-box">
+          <label for="botNarrativeBotFilter">Personaggio</label>
+          <select id="botNarrativeBotFilter"></select>
+        </div>
+
+        <div class="filter-box">
+          <label for="botNarrativeSearch">Cerca azione</label>
+          <input id="botNarrativeSearch" type="search" placeholder="Azione, significato o comando..." />
+        </div>
+
+        <p id="botNarrativeCatalogMeta" class="status"></p>
+        <div id="botNarrativesList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Frase narrativa selezionata</p>
+            <h2 id="botNarrativeTitle">Seleziona un'azione</h2>
+            <p id="botNarrativeMeta" class="status"></p>
+          </div>
+          <button id="reloadBotNarrativeBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            Ogni bot richiede tre frasi diverse e coerenti per ciascuna delle 28
+            azioni narrative. Il significato e i comandi mostrati sono indicazioni
+            tecniche: il campo autore deve contenere soltanto la frase pronunciata dal bot.
+          </p>
+        </div>
+
+        <div id="botNarrativeBlockEditor">
+          <div class="card">
+            <p class="empty">Seleziona una frase dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main id="mappeWorkspace" class="map-workspace hidden">
+      <div class="map-toolbar">
+        <div class="map-toolbar-group">
+          <button id="mapSelectModeBtn" type="button" class="map-btn is-active">Sposta / Seleziona</button>
+          <button id="mapConnectModeBtn" type="button" class="map-btn">Collega stanze</button>
+        </div>
+
+        <select id="mapConnectionType" class="map-inline-select">
+          <option value="porta">Porta</option>
+          <option value="corridoio">Corridoio</option>
+          <option value="scala">Scala</option>
+          <option value="passaggio">Passaggio</option>
+          <option value="tunnel">Tunnel</option>
+          <option value="esterno">Esterno</option>
+          <option value="segreto">Segreto</option>
+          <option value="altro">Altro</option>
+        </select>
+
+        <select id="mapConnectionDirection" class="map-inline-select">
+          <option value="both">Bidirezionale</option>
+          <option value="forward">Solo A &rarr; B</option>
+        </select>
+
+        <div class="map-zoom">
+          <button id="mapZoomOutBtn" type="button" class="map-btn map-btn-icon" aria-label="Riduci zoom">&minus;</button>
+          <span id="mapZoomLabel" class="map-pill">80%</span>
+          <button id="mapZoomInBtn" type="button" class="map-btn map-btn-icon" aria-label="Aumenta zoom">+</button>
+        </div>
+
+        <div class="map-toolbar-group map-toolbar-actions">
+          <button id="mapResetLayoutBtn" type="button" class="map-btn">Riordina griglia</button>
+          <button id="mapExportBtn" type="button" class="map-btn">Esporta JSON</button>
+          <button id="mapImportBtn" type="button" class="map-btn">Importa JSON</button>
+          <input id="mapImportFile" type="file" accept="application/json,.json" hidden />
+          <button id="mapClearBtn" type="button" class="map-btn map-btn-danger">Azzera</button>
+        </div>
+
+        <span id="mapSaveStatus" class="map-status">Pronto</span>
+      </div>
+
+      <div class="map-body">
+        <aside class="map-catalog">
+          <div class="map-catalog-head">
+            <h2>Stanze</h2>
+            <span id="mapRoomCount" class="map-pill">0</span>
+          </div>
+
+          <input id="mapRoomSearch" type="search" placeholder="Cerca stanza..." />
+
+          <div class="map-add-row">
+            <input id="mapNewRoomFile" type="text" placeholder="nuova-stanza.png" />
+            <button id="mapAddRoomBtn" type="button" class="map-btn map-btn-icon">+</button>
+          </div>
+
+          <div id="mapRoomList" class="map-room-list"></div>
+        </aside>
+
+        <div id="mapViewport" class="map-viewport">
+          <div id="mapScene" class="map-scene">
+            <svg id="mapLinksSvg" aria-hidden="true">
+              <defs>
+                <marker id="mapArrowEnd" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#2dd4bf"></path>
+                </marker>
+                <marker id="mapArrowStart" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto-start-reverse" markerUnits="strokeWidth">
+                  <path d="M9,0 L9,6 L0,3 z" fill="#2dd4bf"></path>
+                </marker>
+              </defs>
+            </svg>
+            <div id="mapCardsLayer"></div>
+          </div>
+        </div>
+
+        <aside class="map-detail">
+          <button id="mapDetailToggle" type="button" class="map-detail-toggle">
+            <span>Dettaglio stanza</span>
+            <span class="map-detail-chevron">&#9662;</span>
+          </button>
+
+          <div class="map-detail-body">
+            <div id="mapSelectedPanel" class="map-empty">
+              Seleziona una stanza per vedere immagine e collegamenti.
+            </div>
+
+            <h3>Collegamenti</h3>
+            <div id="mapConnectionList" class="map-connection-list"></div>
+
+            <div id="mapConnectionHint" class="map-hint" hidden></div>
+
+            <h3>Uso rapido</h3>
+            <p class="map-usage">
+              1. Sposta le stanze trascinandole.<br>
+              2. Premi <b>Collega stanze</b>.<br>
+              3. Clicca la stanza A e poi la stanza B.<br>
+              4. Tipo e direzione dai selettori in alto.<br>
+              5. Rotella = scorri, Ctrl + rotella = zoom, Shift + rotella = scorri in orizzontale, trascina il vuoto = sposta la vista.<br>
+              6. Tutto viene salvato sul database.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <div id="mapImageModal" class="map-image-modal" aria-hidden="true">
+        <div id="mapImageModalBackdrop" class="map-image-modal-backdrop"></div>
+
+        <div class="map-image-modal-panel" role="dialog" aria-modal="true" aria-labelledby="mapImageModalTitle">
+          <div class="map-image-modal-header">
+            <div id="mapImageModalTitle" class="map-image-modal-title">Anteprima</div>
+
+            <div class="map-image-modal-toolbar">
+              <button id="mapImageZoomOutBtn" type="button" class="map-btn map-btn-icon" aria-label="Riduci zoom">&minus;</button>
+              <button id="mapImageZoomResetBtn" type="button" class="map-btn">100%</button>
+              <button id="mapImageZoomInBtn" type="button" class="map-btn map-btn-icon" aria-label="Aumenta zoom">+</button>
+              <span id="mapImageZoomLabel" class="map-pill">100%</span>
+              <button id="mapAnnotationAddBtn" type="button" class="map-btn">Nuova etichetta</button>
+              <button id="mapAnnotationLinkModeBtn" type="button" class="map-btn">Collega etichette</button>
+              <button id="mapAnnotationDeleteBtn" type="button" class="map-btn map-btn-danger">Elimina etichetta</button>
+            </div>
+
+            <button id="mapImageModalClose" type="button" class="map-btn map-btn-icon map-image-modal-close" aria-label="Chiudi immagine">&#10005;</button>
+          </div>
+
+          <div id="mapImageModalStage" class="map-image-modal-stage">
+            <div class="map-image-modal-canvas-wrap">
+              <div id="mapImageModalCanvas" class="map-image-modal-canvas">
+                <img id="mapImageModalImage" src="" alt="" />
+                <div id="mapImageModalOverlay" class="map-image-modal-overlay"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="mapAnnotationLinkEditor" class="map-annotation-link-editor" hidden></div>
+
+          <div class="map-image-modal-note">
+            <label for="mapImageModalNote">Note sulla stanza</label>
+            <textarea id="mapImageModalNote" rows="2" placeholder="Annotazioni, idee, collegamenti narrativi, variazioni..."></textarea>
+          </div>
+
+          <div id="mapImageModalHint" class="map-image-modal-hint">
+            Clicca <b>Nuova etichetta</b>, inserisci il testo e poi clicca sull'immagine per posizionarlo.
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <main id="playersWorkspace" class="layout hidden">
+      <aside class="sidebar">
+        <h2>Player Nona Ora</h2>
+
+        <div class="filter-box">
+          <label for="playerSearch">Cerca personaggio</label>
+          <input id="playerSearch" type="search" placeholder="Nome, caratteristica o background..." />
+        </div>
+
+        <p id="playerCatalogMeta" class="status"></p>
+        <div id="playersList"></div>
+      </aside>
+
+      <section class="content">
+        <div class="card chapter-card">
+          <div>
+            <p class="eyebrow">Personaggio selezionato</p>
+            <h2 id="playerTitle">Seleziona un personaggio</h2>
+            <p id="playerMeta" class="status"></p>
+          </div>
+          <button id="reloadPlayerBtn" type="button">Aggiorna</button>
+        </div>
+
+        <div class="card quest-help">
+          <strong>Come funziona</strong>
+          <p>
+            In cima trovi l'immagine del personaggio e il suo nome, modificabile.
+            Seguono 7 blocchi editoriali: Personaggio, Caratteristica speciale,
+            Dotazione iniziale, Background, Aspetto fisico, Parentele, Campo
+            libero. Caratteristica, Dotazione e Background hanno una traccia
+            placeholder da cui partire; gli altri sono liberi (solo campo
+            autore). Salva la bozza e — se sei revisore o admin — pubblica nel
+            gioco.
+          </p>
+        </div>
+
+        <div id="playerFieldsEditor">
+          <div class="card">
+            <p class="empty">Seleziona un personaggio dalla lista.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    </div>
   </div>
+
+<script>
+  (function () {
+    var rail = document.getElementById("appRail");
+    var overlay = document.getElementById("railOverlay");
+    var openBtn = document.getElementById("navToggleBtn");
+    var closeBtn = document.getElementById("railCloseBtn");
+
+    function openRail() {
+      rail.classList.add("open");
+      overlay.classList.add("open");
+    }
+
+    function closeRail() {
+      rail.classList.remove("open");
+      overlay.classList.remove("open");
+    }
+
+    openBtn && openBtn.addEventListener("click", openRail);
+    closeBtn && closeBtn.addEventListener("click", closeRail);
+    overlay && overlay.addEventListener("click", closeRail);
+
+    rail && rail.querySelectorAll(".rail-tab").forEach(function (btn) {
+      btn.addEventListener("click", closeRail);
+    });
+  })();
+
+  (function () {
+    var mobileQuery = window.matchMedia("(max-width: 760px)");
+
+    document.querySelectorAll(".layout").forEach(function (layout) {
+      var sidebar = layout.querySelector(":scope > .sidebar");
+      var content = layout.querySelector(":scope > .content");
+      if (!sidebar || !content) return;
+
+      var toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "list-toggle-btn";
+      toggle.innerHTML = "<span>Sfoglia elenco</span><span class=\"list-toggle-count\"></span>";
+      content.insertBefore(toggle, content.firstChild);
+
+      var countBadge = toggle.querySelector(".list-toggle-count");
+
+      function updateCount() {
+        var total = sidebar.querySelectorAll("button").length;
+        var headers = sidebar.querySelectorAll(".list-group-header").length;
+        countBadge.textContent = Math.max(0, total - headers);
+      }
+
+      function openInline() {
+        // Sposta davvero la lista subito sotto il pulsante, dentro il contenuto,
+        // così compare li' e non in fondo alla pagina dopo tutte le card.
+        content.insertBefore(sidebar, toggle.nextSibling);
+        sidebar.classList.add("open");
+        toggle.classList.add("is-open");
+      }
+
+      function closeInline() {
+        sidebar.classList.remove("open");
+        toggle.classList.remove("is-open");
+        // Riporta la lista nella sua posizione originale (prima del contenuto),
+        // necessaria per il layout a due colonne su desktop.
+        layout.insertBefore(sidebar, content);
+      }
+
+      toggle.addEventListener("click", function () {
+        if (sidebar.classList.contains("open")) {
+          closeInline();
+        } else {
+          openInline();
+        }
+      });
+
+      sidebar.addEventListener("click", function (event) {
+        var isItem = event.target.closest("button") && !event.target.closest(".list-group-header");
+        if (isItem && mobileQuery.matches) {
+          closeInline();
+        }
+      });
+
+      mobileQuery.addEventListener("change", function (event) {
+        if (!event.matches) {
+          closeInline();
+        }
+      });
+
+      new MutationObserver(updateCount).observe(sidebar, { childList: true, subtree: true });
+      updateCount();
+    });
+
+    function enhanceGroupedList(container) {
+      var children = Array.prototype.slice.call(container.children);
+      var hasHeading = children.some(function (el) {
+        return el.classList && el.classList.contains("quest-group-heading");
+      });
+      if (!hasHeading) return;
+
+      var frag = document.createDocumentFragment();
+      var groups = [];
+      var current = null;
+
+      children.forEach(function (el) {
+        if (el.classList && el.classList.contains("quest-group-heading")) {
+          current = { headingHtml: el.innerHTML, items: [] };
+          groups.push(current);
+        } else if (current) {
+          current.items.push(el);
+        } else {
+          frag.appendChild(el);
+        }
+      });
+
+      groups.forEach(function (group) {
+        var hasActive = group.items.some(function (item) {
+          return item.classList && item.classList.contains("active");
+        });
+
+        var wrapper = document.createElement("div");
+        wrapper.className = "list-group" + (hasActive ? " has-active is-open" : "");
+
+        var header = document.createElement("button");
+        header.type = "button";
+        header.className = "list-group-header";
+        header.innerHTML =
+          "<span class=\"list-group-title\">" + group.headingHtml + "</span>" +
+          "<span class=\"list-group-count\">" + group.items.length + "</span>" +
+          "<span class=\"list-group-chevron\">\u25BE</span>";
+
+        var body = document.createElement("div");
+        body.className = "list-group-body" + (hasActive ? "" : " collapsed");
+        group.items.forEach(function (item) {
+          body.appendChild(item);
+        });
+
+        header.addEventListener("click", function () {
+          var collapsed = body.classList.toggle("collapsed");
+          wrapper.classList.toggle("is-open", !collapsed);
+        });
+
+        wrapper.appendChild(header);
+        wrapper.appendChild(body);
+        frag.appendChild(wrapper);
+      });
+
+      container.innerHTML = "";
+      container.appendChild(frag);
+    }
+
+    var groupedListIds = [
+      "questUnitsList", "weaponsList", "creaturesList", "zoneGuardiansList",
+      "fragmentsList", "modalTextsList", "customEventObjectsList", "botNarrativesList"
+    ];
+
+    groupedListIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      new MutationObserver(function () {
+        enhanceGroupedList(el);
+      }).observe(el, { childList: true });
+      enhanceGroupedList(el);
+    });
+  })();
+
+  (function () {
+    // Abbina ogni blocco di "Testo da seguire" (officialText) al blocco
+    // corrispondente di "Testo autore" (authorBlocksEditor), nello stesso
+    // ordine: Introduzione+Introduzione, Origine della banda+Origine della
+    // banda, ecc. Ogni metà della coppia resta collassabile singolarmente.
+    var mergedChapterVisual = false;
+
+    function attemptMergeChapterBlocks() {
+      var officialContainer = document.getElementById("officialText");
+      var authorContainer = document.getElementById("authorBlocksEditor");
+      if (!officialContainer || !authorContainer) return;
+
+      var officialNodes = Array.prototype.slice.call(officialContainer.children).filter(function (el) {
+        return el.classList && (el.classList.contains("official-intro") || el.classList.contains("official-block"));
+      });
+      var authorCards = Array.prototype.slice.call(authorContainer.querySelectorAll(":scope > .author-block-card"));
+
+      if (!officialNodes.length || !authorCards.length) return;
+      if (officialNodes.length !== authorCards.length) return; // le due liste non sono ancora allineate, riprova al prossimo aggiornamento
+
+      var multiple = authorCards.length > 1;
+
+      authorCards.forEach(function (card, index) {
+        if (card.dataset.pairedInit === "1") return;
+        card.dataset.pairedInit = "1";
+
+        var officialNode = officialNodes[index];
+        var titleEl = card.querySelector(".author-block-head h3");
+        var titleText = titleEl ? titleEl.textContent.trim() : "Blocco";
+
+        var refWrapper = document.createElement("div");
+        refWrapper.className = "official-block-ref" + (multiple ? "" : " is-open");
+
+        var refHeader = document.createElement("button");
+        refHeader.type = "button";
+        refHeader.className = "field-collapse-header";
+        refHeader.innerHTML =
+          "<span>Testo da seguire \u00b7 " + titleText.replace(/</g, "&lt;") + "</span>" +
+          "<span class=\"field-collapse-chevron\">\u25BE</span>";
+
+        var refBody = document.createElement("div");
+        refBody.className = "field-collapse-body" + (multiple ? " collapsed" : "");
+        refBody.appendChild(officialNode);
+
+        refHeader.addEventListener("click", function () {
+          var collapsed = refBody.classList.toggle("collapsed");
+          refWrapper.classList.toggle("is-open", !collapsed);
+        });
+
+        refWrapper.appendChild(refHeader);
+        refWrapper.appendChild(refBody);
+
+        card.parentNode.insertBefore(refWrapper, card);
+      });
+
+      // L'immagine del capitolo (se presente) resta visibile sopra la lista abbinata.
+      if (!mergedChapterVisual) {
+        var chapterVisual = document.getElementById("chapterVisual");
+        if (chapterVisual && authorContainer.parentNode) {
+          authorContainer.parentNode.insertBefore(chapterVisual, authorContainer);
+          mergedChapterVisual = true;
+        }
+      }
+
+      // Il vecchio pannello "Guida ufficiale" e' ormai vuoto: nascondilo.
+      var officialPanel = document.querySelector(".official-panel");
+      if (officialPanel) officialPanel.classList.add("merged-away");
+    }
+
+    var officialContainerEl = document.getElementById("officialText");
+    var authorContainerEl = document.getElementById("authorBlocksEditor");
+
+    if (officialContainerEl) {
+      new MutationObserver(attemptMergeChapterBlocks).observe(officialContainerEl, { childList: true });
+    }
+    if (authorContainerEl) {
+      new MutationObserver(attemptMergeChapterBlocks).observe(authorContainerEl, { childList: true });
+    }
+    attemptMergeChapterBlocks();
+  })();
+
+  (function () {
+    // Traccia/esempio + testo autore: trasforma ogni coppia in due sezioni
+    // impilate e collassabili (apro l'esempio, leggo, collasso, scrivo sotto).
+    function enhanceFieldCollapse(container) {
+      container.querySelectorAll(".quest-field-grid").forEach(function (grid) {
+        if (grid.dataset.collapseInit === "1") return;
+        grid.dataset.collapseInit = "1";
+
+        grid.querySelectorAll(":scope > .quest-field-column").forEach(function (column) {
+          var labelEl = column.querySelector(".quest-field-label");
+          var labelText = labelEl ? labelEl.textContent.trim() : "Sezione";
+          if (labelEl) labelEl.remove();
+
+          var header = document.createElement("button");
+          header.type = "button";
+          header.className = "field-collapse-header";
+          header.innerHTML =
+            "<span>" + labelText.replace(/</g, "&lt;") + "</span>" +
+            "<span class=\"field-collapse-chevron\">\u25BE</span>";
+
+          var body = document.createElement("div");
+          body.className = "field-collapse-body";
+          while (column.firstChild) {
+            body.appendChild(column.firstChild);
+          }
+
+          column.classList.add("field-collapse", "is-open");
+          column.appendChild(header);
+          column.appendChild(body);
+
+          header.addEventListener("click", function () {
+            var collapsed = body.classList.toggle("collapsed");
+            column.classList.toggle("is-open", !collapsed);
+          });
+        });
+      });
+    }
+
+    var fieldCollapseContainerIds = [
+      "questFieldsEditor", "weaponBlockEditor", "creatureBlockEditor", "zoneGuardianBlockEditor",
+      "fragmentBlockEditor", "modalTextBlockEditor", "customEventObjectBlockEditor", "botNarrativeBlockEditor",
+      "playerFieldsEditor"
+    ];
+
+    fieldCollapseContainerIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      new MutationObserver(function () {
+        enhanceFieldCollapse(el);
+      }).observe(el, { childList: true });
+      enhanceFieldCollapse(el);
+    });
+  })();
+
+  (function () {
+    // Blocchi autore con titolo (es. capitoli con piu' sezioni: "Origine
+    // della banda", "Identita"...): ogni blocco diventa un accordio.
+    // Titolo sempre visibile, corpo (testo + commenti) collassato di
+    // default quando ci sono piu' blocchi, per evitare una lista infinita.
+    function enhanceAuthorBlocks(container) {
+      var cards = container.querySelectorAll(".author-block-card");
+      var multiple = cards.length > 1;
+
+      cards.forEach(function (card) {
+        if (card.dataset.collapseInit === "1") return;
+        card.dataset.collapseInit = "1";
+
+        var head = card.querySelector(".author-block-head");
+        if (!head) return;
+
+        var body = document.createElement("div");
+        body.className = "author-block-body" + (multiple ? " collapsed" : "");
+
+        var node = head.nextSibling;
+        while (node) {
+          var next = node.nextSibling;
+          body.appendChild(node);
+          node = next;
+        }
+        card.appendChild(body);
+
+        var chevron = document.createElement("span");
+        chevron.className = "author-block-chevron";
+        chevron.innerHTML = "\u25BE";
+        head.insertBefore(chevron, head.firstChild);
+
+        head.classList.add("author-block-head-toggle");
+        if (!multiple) card.classList.add("is-open");
+
+        head.addEventListener("click", function (event) {
+          if (event.target.closest("[data-save-author-block]")) return;
+          var collapsed = body.classList.toggle("collapsed");
+          card.classList.toggle("is-open", !collapsed);
+        });
+      });
+    }
+
+    var authorBlocksContainer = document.getElementById("authorBlocksEditor");
+    if (authorBlocksContainer) {
+      new MutationObserver(function () {
+        enhanceAuthorBlocks(authorBlocksContainer);
+      }).observe(authorBlocksContainer, { childList: true });
+      enhanceAuthorBlocks(authorBlocksContainer);
+    }
+  })();
+</script>
 
 <script src="config.js"></script>
 <script src="cell-rules-config.js"></script>
@@ -475,6 +1120,9 @@
 <script src="author-zone-guardians-catalog.js?v=20260808-1"></script>
 <script src="author-fragments-catalog.js?v=20260808-1"></script>
 <script src="author-modal-texts-catalog.js?v=20260814-7"></script>
-<script src="app.js?v=20260814-7"></script>
+<script src="author-bot-narratives-catalog.js?v=20260820-1"></script>
+<script src="author-player-nona-ora-catalog.js?v=20260827-1"></script>
+<script src="app.js?v=20260820-1"></script>
+<script src="author-map-planner.js?v=20260827-1"></script>
 </body>
 </html>

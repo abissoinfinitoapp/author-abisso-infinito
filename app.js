@@ -39,7 +39,12 @@ const tableNames = {
   modalVersions:
     cfg.TABLES?.modalVersions || "author_modal_text_versions",
   publishedModalTexts:
-    cfg.TABLES?.publishedModalTexts || "author_published_modal_texts"
+    cfg.TABLES?.publishedModalTexts || "author_published_modal_texts",
+  playerTexts: cfg.TABLES?.playerTexts || "author_player_texts",
+  playerVersions:
+    cfg.TABLES?.playerVersions || "author_player_text_versions",
+  publishedPlayerTexts:
+    cfg.TABLES?.publishedPlayerTexts || "author_published_player_texts"
 };
 
 const cellRulesConfig = window.AbissoCellRulesConfig;
@@ -181,14 +186,35 @@ let currentFragment = fragmentCatalog.fragments?.[0] || null;
 let currentFragmentRows = new Map();
 let currentPublishedFragmentRows = new Map();
 let fragmentLoadId = 0;
-const modalTextCatalog = window.AuthorModalTextsCatalog || {
+const baseModalTextCatalog = window.AuthorModalTextsCatalog || {
   units: [],
   modals: []
 };
+const botNarrativeCatalog = window.AuthorBotNarrativesCatalog || {
+  bots: [],
+  actions: [],
+  units: []
+};
+const botNarrativeModalId = "bot_narratives";
+const modalTextCatalog = {
+  ...baseModalTextCatalog,
+  units: [...(baseModalTextCatalog.units || []), ...(botNarrativeCatalog.units || [])],
+  modals: baseModalTextCatalog.modals || []
+};
+const playerCatalog = window.AuthorPlayerNonaOraCatalog || {
+  players: [],
+  fields: []
+};
+let currentPlayer = playerCatalog.players?.[0] || null;
+let currentPlayerRows = new Map();
+let currentPublishedPlayerRows = new Map();
+let playerLoadId = 0;
+
 const customEventObjectModalId = "custom_event_objects";
 let currentModalText =
   getRegularModalTextUnits()[0] || modalTextCatalog.units?.[0] || null;
 let currentCustomEventObjectText = getCustomEventObjectTextUnits()[0] || null;
+let currentBotNarrativeText = botNarrativeCatalog.units?.[0] || null;
 let currentModalTextRows = new Map();
 let currentPublishedModalTextRows = new Map();
 let modalTextLoadId = 0;
@@ -207,6 +233,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindFragmentWorkspace();
   bindModalTextWorkspace();
   bindCustomEventObjectWorkspace();
+  bindBotNarrativeWorkspace();
+  bindPlayerWorkspace();
 
   useSupabase = shouldUseSupabase();
 
@@ -2509,6 +2537,9 @@ function switchAuthorWorkspace(workspace) {
   const showFragments = workspace === "fragments";
   const showModals = workspace === "modals";
   const showCustomEventObjects = workspace === "customEventObjects";
+  const showBots = workspace === "bots";
+  const showMappe = workspace === "mappe";
+  const showPlayers = workspace === "players";
 
   document.getElementById("chaptersWorkspace")?.classList.toggle("hidden", !showChapters);
   document.getElementById("questsWorkspace")?.classList.toggle("hidden", !showQuests);
@@ -2518,6 +2549,9 @@ function switchAuthorWorkspace(workspace) {
   document.getElementById("fragmentsWorkspace")?.classList.toggle("hidden", !showFragments);
   document.getElementById("modalsWorkspace")?.classList.toggle("hidden", !showModals);
   document.getElementById("customEventObjectsWorkspace")?.classList.toggle("hidden", !showCustomEventObjects);
+  document.getElementById("botsWorkspace")?.classList.toggle("hidden", !showBots);
+  document.getElementById("mappeWorkspace")?.classList.toggle("hidden", !showMappe);
+  document.getElementById("playersWorkspace")?.classList.toggle("hidden", !showPlayers);
   document.getElementById("chaptersTabBtn")?.classList.toggle("active", showChapters);
   document.getElementById("questsTabBtn")?.classList.toggle("active", showQuests);
   document.getElementById("weaponsTabBtn")?.classList.toggle("active", showWeapons);
@@ -2526,6 +2560,17 @@ function switchAuthorWorkspace(workspace) {
   document.getElementById("fragmentsTabBtn")?.classList.toggle("active", showFragments);
   document.getElementById("modalsTabBtn")?.classList.toggle("active", showModals);
   document.getElementById("customEventObjectsTabBtn")?.classList.toggle("active", showCustomEventObjects);
+  document.getElementById("botsTabBtn")?.classList.toggle("active", showBots);
+  document.getElementById("mappeTabBtn")?.classList.toggle("active", showMappe);
+  document.getElementById("playersTabBtn")?.classList.toggle("active", showPlayers);
+
+  if (showMappe) {
+    window.AuthorMapPlanner?.onShow();
+  }
+
+  if (showPlayers && currentPlayer) {
+    loadCurrentPlayer();
+  }
 
   if (showQuests && currentQuestUnit) {
     loadCurrentQuestUnit();
@@ -2555,6 +2600,13 @@ function switchAuthorWorkspace(workspace) {
     loadCurrentModalText({
       context: "customEventObjects",
       unit: currentCustomEventObjectText
+    });
+  }
+
+  if (showBots && currentBotNarrativeText) {
+    loadCurrentModalText({
+      context: "bots",
+      unit: currentBotNarrativeText
     });
   }
 }
@@ -2922,6 +2974,460 @@ async function publishQuestText(textKey) {
   currentPublishedQuestRows.set(textKey, payload);
   setQuestFieldStatus(textKey, "Testo pubblicato.", "ok");
   renderQuestFields();
+}
+
+/* =========================================================================
+   Player "Nona Ora" — catalogo personaggi giocanti, 7 blocchi editoriali
+   per personaggio. Stesso flusso bozza/versioni/pubblicazione dei testi quest.
+   ========================================================================= */
+
+function bindPlayerWorkspace() {
+  const tab = document.getElementById("playersTabBtn");
+  const search = document.getElementById("playerSearch");
+  const reloadButton = document.getElementById("reloadPlayerBtn");
+
+  tab?.addEventListener("click", () => switchAuthorWorkspace("players"));
+  search?.addEventListener("input", renderPlayersList);
+  reloadButton?.addEventListener("click", () => loadCurrentPlayer());
+
+  const meta = document.getElementById("playerCatalogMeta");
+  if (meta) {
+    meta.textContent =
+      `${playerCatalog.playerCount || 0} personaggi · ${playerCatalog.fieldCount || 0} blocchi`;
+  }
+
+  renderPlayersList();
+}
+
+function getFilteredPlayers() {
+  const query = (
+    document.getElementById("playerSearch")?.value || ""
+  ).trim().toLocaleLowerCase("it-IT");
+
+  return (playerCatalog.players || []).filter((player) => {
+    if (!query) return true;
+
+    const text = [
+      player.name,
+      player.playerId,
+      ...player.fields.map((field) => field.provisionalText)
+    ].join(" ").toLocaleLowerCase("it-IT");
+
+    return text.includes(query);
+  });
+}
+
+function renderPlayersList() {
+  const container = document.getElementById("playersList");
+  if (!container) return;
+
+  const players = getFilteredPlayers();
+
+  if (!players.length) {
+    container.innerHTML = `<p class="empty">Nessun personaggio trovato.</p>`;
+    return;
+  }
+
+  container.innerHTML = players.map((player) => `
+    <button
+      type="button"
+      class="quest-unit-btn player-unit-btn ${currentPlayer?.textKey === player.textKey ? "active" : ""}"
+      data-player-text-key="${escapeHtml(player.textKey)}"
+    >
+      <strong>${escapeHtml(player.name)}</strong>
+      <small>${escapeHtml(player.fields.find((f) => f.fieldKey === "caratteristica")?.provisionalText || "")}</small>
+    </button>
+  `).join("");
+
+  container.querySelectorAll("[data-player-text-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const player = (playerCatalog.players || []).find(
+        (item) => item.textKey === button.dataset.playerTextKey
+      );
+
+      if (!player) return;
+
+      currentPlayer = player;
+      renderPlayersList();
+      loadCurrentPlayer();
+    });
+  });
+}
+
+function playerLocalDraftKey(textKey) {
+  return `author_player_text_${textKey}`;
+}
+
+function playerLocalPublishedKey(textKey) {
+  return `author_published_player_text_${textKey}`;
+}
+
+async function loadCurrentPlayer() {
+  if (!currentPlayer) return;
+
+  const loadId = ++playerLoadId;
+  const keys = currentPlayer.fields.map((field) => field.textKey);
+
+  document.getElementById("playerTitle").textContent = currentPlayer.name;
+  document.getElementById("playerMeta").textContent =
+    `${currentPlayer.playerId} · ${currentPlayer.fields.filter((f) => f.fieldKey !== "nome").length} blocchi`;
+  document.getElementById("playerFieldsEditor").innerHTML =
+    `<div class="card"><p class="empty">Caricamento personaggio...</p></div>`;
+
+  let drafts = [];
+  let published = [];
+
+  if (useSupabase && supabaseClient) {
+    const [draftResult, publishedResult] = await Promise.all([
+      supabaseClient
+        .from(tableNames.playerTexts)
+        .select("*")
+        .in("text_key", keys),
+      supabaseClient
+        .from(tableNames.publishedPlayerTexts)
+        .select("*")
+        .in("text_key", keys)
+    ]);
+
+    if (loadId !== playerLoadId) return;
+
+    if (draftResult.error || publishedResult.error) {
+      console.error(draftResult.error || publishedResult.error);
+      document.getElementById("playerFieldsEditor").innerHTML =
+        `<div class="card"><p class="empty error">Errore nel caricamento del personaggio.</p></div>`;
+      return;
+    }
+
+    drafts = draftResult.data || [];
+    published = publishedResult.data || [];
+  } else {
+    drafts = keys
+      .map((key) => readLocalJson(playerLocalDraftKey(key), null))
+      .filter(Boolean);
+    published = keys
+      .map((key) => readLocalJson(playerLocalPublishedKey(key), null))
+      .filter(Boolean);
+  }
+
+  currentPlayerRows = new Map(drafts.map((row) => [row.text_key, row]));
+  currentPublishedPlayerRows = new Map(
+    published.map((row) => [row.text_key, row])
+  );
+
+  renderPlayerFields();
+}
+
+function getPlayerNomeField() {
+  return currentPlayer?.fields.find((field) => field.fieldKey === "nome") || null;
+}
+
+function getPlayerDisplayName() {
+  const nomeField = getPlayerNomeField();
+  const draft = nomeField && currentPlayerRows.get(nomeField.textKey);
+  return (
+    String(draft?.content || "").trim() ||
+    nomeField?.provisionalText ||
+    currentPlayer?.name ||
+    ""
+  );
+}
+
+function renderPlayerFields() {
+  const container = document.getElementById("playerFieldsEditor");
+  if (!container || !currentPlayer) return;
+
+  const allowPublish = canPublishQuestTexts();
+  const displayName = getPlayerDisplayName();
+
+  const titleEl = document.getElementById("playerTitle");
+  if (titleEl) titleEl.textContent = displayName || currentPlayer.name;
+
+  const nomeField = getPlayerNomeField();
+  const nomeDraft = nomeField && currentPlayerRows.get(nomeField.textKey);
+  const nomePublished = nomeField && currentPublishedPlayerRows.get(nomeField.textKey);
+  const nomeIsPublished =
+    nomePublished &&
+    nomePublished.content === String(nomeDraft?.content || "").trim();
+
+  const heroHtml = `
+    <section class="card player-hero">
+      ${currentPlayer.imageUrl ? `
+        <figure class="player-hero-image">
+          <img
+            src="${escapeHtml(currentPlayer.imageUrl)}"
+            alt="${escapeHtml(displayName)}"
+            onerror="this.closest('.player-hero-image').classList.add('is-broken')"
+          />
+        </figure>
+      ` : ""}
+
+      <div class="player-hero-info">
+        <p class="eyebrow">Personaggio giocante</p>
+        ${nomeField ? `
+          <label class="quest-field-label" for="player-nome">Nome del personaggio</label>
+          <div class="player-hero-name-row">
+            <input
+              id="player-nome"
+              type="text"
+              class="player-name-input"
+              data-player-text-key="${escapeHtml(nomeField.textKey)}"
+              value="${escapeHtml(String(nomeDraft?.content || "") || nomeField.provisionalText || currentPlayer.name)}"
+              placeholder="Nome del personaggio"
+            />
+            <button type="button" data-save-player-text="${escapeHtml(nomeField.textKey)}">Salva</button>
+            ${allowPublish ? `
+              <button type="button" class="quest-publish-btn" data-publish-player-text="${escapeHtml(nomeField.textKey)}">
+                Pubblica
+              </button>
+            ` : ""}
+          </div>
+          <div class="player-hero-name-status">
+            <span class="quest-status-pill ${nomeIsPublished ? "published" : ""}">
+              ${nomeIsPublished ? "Pubblicato" : nomeDraft?.content ? "Bozza salvata" : "Nome originale"}
+            </span>
+            <span class="status" data-player-field-status="${escapeHtml(nomeField.textKey)}"></span>
+          </div>
+        ` : ""}
+        <p class="player-hero-file">${escapeHtml(currentPlayer.image)}</p>
+      </div>
+    </section>
+  `;
+
+  const blockFields = currentPlayer.fields.filter(
+    (field) => field.fieldKey !== "nome"
+  );
+
+  const fieldsHtml = blockFields.map((field, index) => {
+    const draft = currentPlayerRows.get(field.textKey);
+    const published = currentPublishedPlayerRows.get(field.textKey);
+    const isPublished =
+      published && published.content === String(draft?.content || "").trim();
+    const hasProvisional = Boolean(field.provisionalText);
+
+    const bodyHtml = hasProvisional
+      ? `
+        <div class="quest-field-grid">
+          <div class="quest-field-column">
+            <span class="quest-field-label">Traccia provvisoria</span>
+            <p class="quest-provisional-text">${escapeHtml(field.provisionalText)}</p>
+          </div>
+
+          <div class="quest-field-column">
+            <label class="quest-field-label" for="player-${index}">Testo autore</label>
+            <textarea
+              id="player-${index}"
+              class="quest-author-text"
+              data-player-text-key="${escapeHtml(field.textKey)}"
+              placeholder="Scrivi qui il testo del blocco..."
+            >${escapeHtml(draft?.content || "")}</textarea>
+          </div>
+        </div>
+      `
+      : `
+        <div class="player-single-field">
+          <label class="quest-field-label" for="player-${index}">Testo autore</label>
+          <textarea
+            id="player-${index}"
+            class="quest-author-text"
+            data-player-text-key="${escapeHtml(field.textKey)}"
+            placeholder="Scrivi qui il testo del blocco..."
+          >${escapeHtml(draft?.content || "")}</textarea>
+        </div>
+      `;
+
+    return `
+      <section class="card quest-field-card" data-player-field-card="${escapeHtml(field.textKey)}">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Blocco ${String(index + 1).padStart(2, "0")}</p>
+            <h3>${escapeHtml(field.fieldLabel)}</h3>
+          </div>
+          <span class="quest-status-pill ${isPublished ? "published" : ""}">
+            ${isPublished ? "Pubblicato" : draft?.content ? "Bozza salvata" : "Da scrivere"}
+          </span>
+        </div>
+
+        ${bodyHtml}
+
+        <div class="quest-field-actions">
+          ${hasProvisional ? `
+            <button type="button" data-copy-player-provisional="${escapeHtml(field.textKey)}">
+              Copia la traccia
+            </button>
+          ` : ""}
+          <button type="button" data-save-player-text="${escapeHtml(field.textKey)}">
+            Salva bozza
+          </button>
+          ${allowPublish ? `
+            <button
+              type="button"
+              class="quest-publish-btn"
+              data-publish-player-text="${escapeHtml(field.textKey)}"
+            >
+              Pubblica nel gioco
+            </button>
+          ` : ""}
+          <span class="status" data-player-field-status="${escapeHtml(field.textKey)}"></span>
+        </div>
+      </section>
+    `;
+  }).join("");
+
+  container.innerHTML = heroHtml + fieldsHtml;
+
+  container.querySelectorAll("[data-copy-player-provisional]").forEach((button) => {
+    button.addEventListener("click", () => copyPlayerProvisional(button.dataset.copyPlayerProvisional));
+  });
+
+  container.querySelectorAll("[data-save-player-text]").forEach((button) => {
+    button.addEventListener("click", () => savePlayerText(button.dataset.savePlayerText));
+  });
+
+  container.querySelectorAll("[data-publish-player-text]").forEach((button) => {
+    button.addEventListener("click", () => publishPlayerText(button.dataset.publishPlayerText));
+  });
+}
+
+function getPlayerField(textKey) {
+  return currentPlayer?.fields.find((field) => field.textKey === textKey) || null;
+}
+
+function getPlayerTextarea(textKey) {
+  return document.querySelector(`[data-player-text-key="${textKey}"]`);
+}
+
+function setPlayerFieldStatus(textKey, message, type = "") {
+  const status = document.querySelector(`[data-player-field-status="${textKey}"]`);
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.className = `status ${type}`.trim();
+}
+
+function copyPlayerProvisional(textKey) {
+  const field = getPlayerField(textKey);
+  const textarea = getPlayerTextarea(textKey);
+
+  if (!field || !textarea) return;
+
+  textarea.value = field.provisionalText;
+  textarea.focus();
+  setPlayerFieldStatus(textKey, "Traccia copiata. Salva la bozza.", "ok");
+}
+
+async function savePlayerText(textKey, { quiet = false } = {}) {
+  const field = getPlayerField(textKey);
+  const textarea = getPlayerTextarea(textKey);
+
+  if (!field || !textarea || !currentPlayer) return null;
+
+  const content = textarea.value.trim();
+  const previous = currentPlayerRows.get(textKey);
+
+  if (previous?.content === content) {
+    if (!quiet) setPlayerFieldStatus(textKey, "Nessuna modifica da salvare.");
+    return previous;
+  }
+
+  const user = getUser();
+  const now = new Date().toISOString();
+  const payload = {
+    text_key: textKey,
+    player_id: currentPlayer.playerId,
+    player_name: currentPlayer.name,
+    field_key: field.fieldKey,
+    field_label: field.fieldLabel,
+    provisional_text: field.provisionalText,
+    content,
+    status: "draft",
+    updated_by: `${user.name} - ${user.role}`,
+    updated_at: now
+  };
+
+  if (!quiet) setPlayerFieldStatus(textKey, "Salvataggio...");
+
+  if (useSupabase && supabaseClient) {
+    if (previous) {
+      const { error: versionError } = await supabaseClient
+        .from(tableNames.playerVersions)
+        .insert({
+          text_key: textKey,
+          content: previous.content || "",
+          edited_by: payload.updated_by
+        });
+
+      if (versionError) {
+        console.warn("Cronologia testo player non salvata:", versionError);
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from(tableNames.playerTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setPlayerFieldStatus(textKey, "Errore nel salvataggio.", "error");
+      return null;
+    }
+  } else {
+    localStorage.setItem(playerLocalDraftKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPlayerRows.set(textKey, payload);
+
+  if (!quiet) {
+    setPlayerFieldStatus(textKey, "Bozza salvata.", "ok");
+    renderPlayerFields();
+  }
+
+  return payload;
+}
+
+async function publishPlayerText(textKey) {
+  if (!canPublishQuestTexts()) {
+    setPlayerFieldStatus(textKey, "Solo revisore o admin può pubblicare.", "error");
+    return;
+  }
+
+  const draft = await savePlayerText(textKey, { quiet: true });
+
+  if (!draft?.content) {
+    setPlayerFieldStatus(textKey, "Scrivi e salva un testo prima di pubblicare.", "error");
+    return;
+  }
+
+  const user = getUser();
+  const payload = {
+    text_key: draft.text_key,
+    player_id: draft.player_id,
+    player_name: draft.player_name,
+    field_key: draft.field_key,
+    field_label: draft.field_label,
+    content: draft.content,
+    published_by: `${user.name} - ${user.role}`,
+    published_at: new Date().toISOString()
+  };
+
+  setPlayerFieldStatus(textKey, "Pubblicazione...");
+
+  if (useSupabase && supabaseClient) {
+    const { error } = await supabaseClient
+      .from(tableNames.publishedPlayerTexts)
+      .upsert(payload, { onConflict: "text_key" });
+
+    if (error) {
+      console.error(error);
+      setPlayerFieldStatus(textKey, "Errore nella pubblicazione.", "error");
+      return;
+    }
+  } else {
+    localStorage.setItem(playerLocalPublishedKey(textKey), JSON.stringify(payload));
+  }
+
+  currentPublishedPlayerRows.set(textKey, payload);
+  setPlayerFieldStatus(textKey, "Testo pubblicato.", "ok");
+  renderPlayerFields();
 }
 
 function bindWeaponWorkspace() {
@@ -4556,7 +5062,8 @@ async function publishFragmentText(textKey) {
 
 function getRegularModalTextUnits() {
   return (modalTextCatalog.units || []).filter((unit) => {
-    return unit.modalId !== customEventObjectModalId;
+    return unit.modalId !== customEventObjectModalId &&
+      unit.modalId !== botNarrativeModalId;
   });
 }
 
@@ -4573,6 +5080,18 @@ function getRegularModalDefinitions() {
 }
 
 function getModalTextWorkspaceUi(context = "modals") {
+  if (context === "bots") {
+    return {
+      titleId: "botNarrativeTitle",
+      metaId: "botNarrativeMeta",
+      editorId: "botNarrativeBlockEditor",
+      loadingText: "Caricamento frase del bot...",
+      errorText: "Errore nel caricamento della frase del bot.",
+      blockEyebrow: "Voce del bot",
+      placeholder: "Scrivi qui la frase pronunciata dal bot..."
+    };
+  }
+
   if (context === "customEventObjects") {
     return {
       titleId: "customEventObjectTitle",
@@ -4783,6 +5302,101 @@ function bindCustomEventObjectWorkspace() {
   renderCustomEventObjectsList();
 }
 
+function bindBotNarrativeWorkspace() {
+  const tab = document.getElementById("botsTabBtn");
+  const botFilter = document.getElementById("botNarrativeBotFilter");
+  const search = document.getElementById("botNarrativeSearch");
+  const reloadButton = document.getElementById("reloadBotNarrativeBtn");
+
+  tab?.addEventListener("click", () => switchAuthorWorkspace("bots"));
+  botFilter?.addEventListener("change", () => {
+    const first = getFilteredBotNarrativeTexts()[0] || null;
+    currentBotNarrativeText = first;
+    renderBotNarrativesList();
+    if (first) loadCurrentModalText({ context: "bots", unit: first });
+  });
+  search?.addEventListener("input", renderBotNarrativesList);
+  reloadButton?.addEventListener("click", () => {
+    if (currentBotNarrativeText) {
+      loadCurrentModalText({ context: "bots", unit: currentBotNarrativeText });
+    }
+  });
+
+  if (botFilter) {
+    botFilter.innerHTML = (botNarrativeCatalog.bots || []).map((bot) => `
+      <option value="${escapeHtml(bot.key)}">${escapeHtml(bot.label)}</option>
+    `).join("");
+  }
+
+  const meta = document.getElementById("botNarrativeCatalogMeta");
+  if (meta) {
+    meta.textContent = `${botNarrativeCatalog.botCount || 0} bot - ${botNarrativeCatalog.actionCount || 0} azioni - ${botNarrativeCatalog.phraseCount || 0} frasi`;
+  }
+
+  renderBotNarrativesList();
+}
+
+function getFilteredBotNarrativeTexts() {
+  const botKey = document.getElementById("botNarrativeBotFilter")?.value ||
+    botNarrativeCatalog.bots?.[0]?.key || "";
+  const query = (document.getElementById("botNarrativeSearch")?.value || "")
+    .trim()
+    .toLocaleLowerCase("it-IT");
+
+  return (botNarrativeCatalog.units || []).filter((unit) => {
+    if (unit.metadata?.botKey !== botKey) return false;
+    if (!query) return true;
+    return [
+      unit.metadata?.actionLabel,
+      unit.metadata?.actionMeaning,
+      ...(unit.metadata?.providers || [])
+    ].join(" ").toLocaleLowerCase("it-IT").includes(query);
+  });
+}
+
+function renderBotNarrativesList() {
+  const container = document.getElementById("botNarrativesList");
+  if (!container) return;
+  const units = getFilteredBotNarrativeTexts();
+
+  if (!units.length) {
+    container.innerHTML = `<p class="empty">Nessuna azione trovata.</p>`;
+    return;
+  }
+
+  let previousAction = "";
+  container.innerHTML = units.map((unit) => {
+    const actionKey = unit.metadata?.actionKey || "";
+    const heading = actionKey !== previousAction
+      ? `<h3 class="quest-group-heading">${Number(unit.metadata?.actionIndex || 0)}. ${escapeHtml(unit.metadata?.actionLabel || "Azione")}</h3>`
+      : "";
+    previousAction = actionKey;
+    return `
+      ${heading}
+      <button
+        type="button"
+        class="quest-unit-btn modal-text-unit-btn ${currentBotNarrativeText?.textKey === unit.textKey ? "active" : ""}"
+        data-bot-narrative-key="${escapeHtml(unit.textKey)}"
+      >
+        <strong>Frase ${Number(unit.metadata?.phraseSlot || 0)}</strong>
+        <small>${escapeHtml(unit.metadata?.actionMeaning || "")}</small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll("[data-bot-narrative-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const unit = (botNarrativeCatalog.units || []).find(
+        (item) => item.textKey === button.dataset.botNarrativeKey
+      );
+      if (!unit) return;
+      currentBotNarrativeText = unit;
+      renderBotNarrativesList();
+      loadCurrentModalText({ context: "bots", unit });
+    });
+  });
+}
+
 function getFilteredCustomEventObjectTexts() {
   const category =
     document.getElementById("customEventObjectCategoryFilter")?.value || "all";
@@ -4892,7 +5506,11 @@ async function loadCurrentModalText(options = {}) {
   const context = options.context || "modals";
   const unit =
     options.unit ||
-    (context === "customEventObjects" ? currentCustomEventObjectText : currentModalText);
+    (context === "customEventObjects"
+      ? currentCustomEventObjectText
+      : context === "bots"
+        ? currentBotNarrativeText
+        : currentModalText);
 
   if (!unit) return;
 
@@ -5025,6 +5643,7 @@ function formatModalPotionProgression(progression = []) {
 }
 
 function getModalItemLabel(unit) {
+  if (unit.textType === "bot_narrative_phrase") return "Bot";
   if (unit.textType === "food_description") return "Pietanza";
   if (unit.textType === "soldier_description") return "Unità";
   if (unit.textType === "card_description") return "Carta";
@@ -5049,7 +5668,14 @@ function getModalTextFacts(unit) {
     facts.push([getModalItemLabel(unit), unit.itemLabel || unit.itemKey]);
   }
 
-  if (unit.textType === "food_description") {
+  if (unit.textType === "bot_narrative_phrase") {
+    facts.push(
+      ["Azione", metadata.actionLabel || "-"],
+      ["Significato", metadata.actionMeaning || "-"],
+      ["Action / Provider", Array.isArray(metadata.providers) ? metadata.providers.join(", ") : "-"],
+      ["Variante", `Frase ${Number(metadata.phraseSlot || 0)} di 3`]
+    );
+  } else if (unit.textType === "food_description") {
     const incremento = metadata.incremento || {};
 
     facts.push(
@@ -5229,8 +5855,8 @@ function renderModalTextBlock(context = "modals", unit = null) {
 
       <div class="quest-field-grid">
         <div class="quest-field-column">
-          <span class="quest-field-label">Testo provvisorio</span>
-          <p class="quest-provisional-text">${escapeHtml(activeUnit.provisionalText)}</p>
+          <span class="quest-field-label">${activeUnit.textType === "bot_narrative_phrase" ? "Indicazione editoriale" : "Testo provvisorio"}</span>
+          <p class="quest-provisional-text">${escapeHtml(activeUnit.textType === "bot_narrative_phrase" ? activeUnit.metadata?.actionMeaning : activeUnit.provisionalText)}</p>
         </div>
 
         <div class="quest-field-column">
@@ -5245,9 +5871,11 @@ function renderModalTextBlock(context = "modals", unit = null) {
       </div>
 
       <div class="quest-field-actions">
-        <button type="button" data-copy-modal-text="${escapeHtml(activeUnit.textKey)}">
-          Copia testo
-        </button>
+        ${activeUnit.textType === "bot_narrative_phrase" ? "" : `
+          <button type="button" data-copy-modal-text="${escapeHtml(activeUnit.textKey)}">
+            Copia testo
+          </button>
+        `}
         <button type="button" data-save-modal-text="${escapeHtml(activeUnit.textKey)}">
           Salva bozza
         </button>
