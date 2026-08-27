@@ -2,7 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-const GAME_ROOT = "C:/Users/Utente/Desktop/abissoinfinito app refactor";
+const GAME_ROOT_CANDIDATES = [
+  process.env.GAME_ROOT,
+  "C:/Users/Utente/Desktop/abissoinfinito app refactor",
+  "C:/Users/Angelo/Desktop/abissoinfinito app refactor"
+].filter(Boolean);
+const GAME_ROOT =
+  GAME_ROOT_CANDIDATES.find((candidate) => fs.existsSync(candidate)) ||
+  GAME_ROOT_CANDIDATES[0];
 const outputPath = path.resolve("author-modal-texts-catalog.js");
 const customEventObjectLibrarySource = {
   modalId: "custom_event_objects",
@@ -903,6 +910,492 @@ const modalSources = [
         fieldLabel: "Nota migrazione",
         textType: "description",
         pattern: /<section class="migration-note">\s*([\s\S]*?)<\/section>/i
+      }
+    ]
+  },
+  {
+    modalId: "materials_market",
+    modalLabel: "Mercato dei Materiali",
+    category: "Mercati",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/materials-market-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Apertura del registro dei materiali[.…]*)/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio catalogo vuoto",
+        textType: "empty",
+        pattern: /(Nessun materiale disponibile nel catalogo\.)/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /(Nessuna operazione registrata per questo guerriero\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "workers_market",
+    modalLabel: "Mercato del Lavoro",
+    category: "Mercati",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/workers-market-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Consultazione del registro delle maestranze[.…]*)/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio catalogo vuoto",
+        textType: "empty",
+        pattern: /(Nessuna maestranza disponibile nel catalogo\.)/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /(Nessun contratto registrato per questo guerriero\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "mercenaries",
+    modalLabel: "Taverna dei Mercenari",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/mercenaries-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_eyebrow",
+        fieldLabel: "Eyebrow header",
+        textType: "label",
+        pattern: /<div class="eyebrow">([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Apertura della Taverna[.…]*)/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio catalogo non disponibile",
+        textType: "empty",
+        pattern: /(Catalogo mercenari non disponibile\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "weapons",
+    modalLabel: "Armeria del Regno",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/weapons-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Apertura dei registri del Fabbro[.…]*)/i
+      },
+      {
+        fieldKey: "order_status",
+        fieldLabel: "Stato ordine in corso",
+        textType: "status",
+        pattern: /(Il Fabbro sta eseguendo l['’]ordine[.…]*)/i
+      },
+      {
+        fieldKey: "empty_weapons",
+        fieldLabel: "Messaggio nessuna arma",
+        textType: "empty",
+        pattern: /(Nessuna arma configurata per questo guerriero\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "warehouse",
+    modalLabel: "Magazzino Generale",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/warehouse-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Apertura del Magazzino Generale[.…]*)/i
+      },
+      {
+        fieldKey: "empty_resources",
+        fieldLabel: "Messaggio nessuna risorsa",
+        textType: "empty",
+        pattern: /(Nessuna risorsa posseduta\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "training",
+    modalLabel: "Campo di Allenamento",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/training-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_eyebrow",
+        fieldLabel: "Eyebrow header",
+        textType: "label",
+        pattern: /<div class="eyebrow">([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p id="trainingRulesText">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "preparing_status",
+        fieldLabel: "Stato preparazione",
+        textType: "status",
+        pattern: /(Preparazione del campo[.…]*)/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Consultazione del registro degli allenamenti[.…]*)/i
+      }
+    ]
+  },
+  {
+    modalId: "scrigni",
+    modalLabel: "Scrigni",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/scrigni-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio nessuno Scrigno",
+        textType: "empty",
+        pattern: /(Nessuno Scrigno disponibile[\s\S]*?nel catalogo del regno\.)/i
+      },
+      {
+        fieldKey: "load_error",
+        fieldLabel: "Messaggio errore caricamento",
+        textType: "empty",
+        pattern: /<div class="empty">\s*(Impossibile caricare[\s\S]*?dal database\.)\s*<\/div>/i
+      }
+    ]
+  },
+  {
+    modalId: "inventory",
+    modalLabel: "Zaino",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/inventory-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p class="subtitle">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Apertura dello Zaino[.…]*)/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /(Nessuna operazione registrata\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "items_progress",
+    modalLabel: "Kit per l'Abisso",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/items-progress-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Preparazione del Kit per l['’]Abisso[.…]*)/i
+      },
+      {
+        fieldKey: "empty_catalog",
+        fieldLabel: "Messaggio catalogo non disponibile",
+        textType: "empty",
+        pattern: /(Catalogo del Kit non disponibile\.)/i
+      },
+      {
+        fieldKey: "empty_history",
+        fieldLabel: "Messaggio cronologia vuota",
+        textType: "empty",
+        pattern: /(Nessuna azione registrata per il Kit\.)/i
+      }
+    ]
+  },
+  {
+    modalId: "resource_gather",
+    modalLabel: "Raccolta Materiali",
+    category: "Ambiente",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/resource-gather-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<p id="description">([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Controllo del luogo di raccolta[.…]*)/i
+      }
+    ]
+  },
+  {
+    modalId: "destiny_resurrection",
+    modalLabel: "Resurrezione del Destino",
+    category: "Destino",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/destiny-resurrection-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_eyebrow",
+        fieldLabel: "Eyebrow header",
+        textType: "label",
+        pattern: /<div class="eyebrow">([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Caricamento del rituale[.…]*)/i
+      }
+    ]
+  },
+  {
+    modalId: "bank_robbery",
+    modalLabel: "Rapina alla Banca",
+    category: "Regno",
+    sourcePath: path.resolve(GAME_ROOT, "dashboard/bank-robbery-modal.html"),
+    textExtractors: [
+      {
+        fieldKey: "document_title",
+        fieldLabel: "Titolo documento",
+        textType: "title",
+        pattern: /<title>([\s\S]*?)<\/title>/i
+      },
+      {
+        fieldKey: "header_title",
+        fieldLabel: "Titolo header",
+        textType: "heading",
+        pattern: /<h1[^>]*>([\s\S]*?)<\/h1>/i
+      },
+      {
+        fieldKey: "header_eyebrow",
+        fieldLabel: "Eyebrow header",
+        textType: "label",
+        pattern: /<div class="eyebrow">([\s\S]*?)<\/div>/i
+      },
+      {
+        fieldKey: "header_description",
+        fieldLabel: "Descrizione header",
+        textType: "description",
+        pattern: /<h1[^>]*>[\s\S]*?<\/h1>\s*<p>([\s\S]*?)<\/p>/i
+      },
+      {
+        fieldKey: "loading_status",
+        fieldLabel: "Stato caricamento",
+        textType: "status",
+        pattern: /(Caricamento della sala operativa[.…]*)/i
       }
     ]
   }
@@ -2692,6 +3185,17 @@ const modals = modalDefinitions.map((modal) => ({
 const categories = [...new Set(modals.map((modal) => modal.category))]
   .filter(Boolean)
   .sort((a, b) => a.localeCompare(b, "it-IT", { sensitivity: "base" }));
+
+// Normalizza sourcePath in percorso relativo a GAME_ROOT con separatori POSIX:
+// il catalogo generato resta identico su qualsiasi macchina.
+for (const unit of units) {
+  if (unit.sourcePath) {
+    unit.sourcePath = path
+      .relative(GAME_ROOT, unit.sourcePath)
+      .split(path.sep)
+      .join("/");
+  }
+}
 
 const catalog = {
   generatedAt: new Date().toISOString(),
